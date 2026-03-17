@@ -1,6 +1,7 @@
 "use client";
 
-import { MdDifference, MdCode } from "react-icons/md";
+import { MdDifference } from "react-icons/md";
+import { FaGithub } from "react-icons/fa";
 import { useAppStore } from "@/store/useAppStore";
 import clsx from "clsx";
 
@@ -54,7 +55,7 @@ export function Header() {
           </button>
         </nav>
       </div>
-      
+
       <div className="flex items-center h-full">
         <a
           href="https://github.com/comparecode-web/comparecode-web"
@@ -62,7 +63,7 @@ export function Header() {
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold text-text-secondary hover:text-accent-primary hover:bg-hover-overlay rounded transition-all"
         >
-          <MdCode className="text-xl" />
+          <FaGithub className="text-xl" />
           <span>GitHub</span>
         </a>
       </div>
