@@ -28,20 +28,30 @@ export function OptionsView() {
             type="checkbox"
             checked={settings.ignoreWhitespace}
             onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
-            className="w-4 h-4 text-accent-primary rounded border-border-default"
+            className="w-4 h-4 custom-checkbox rounded"
           />
           <span className="text-sm font-medium text-text-primary">Ignore Whitespace</span>
         </label>
-        <div className="flex bg-bg-secondary rounded-md p-1 mt-2">
+        <div className="flex gap-2 mt-2">
           <button
             onClick={() => updateSettings({ precision: PrecisionLevel.Word })}
-            className={clsx("flex-1 text-sm py-1.5 rounded", settings.precision === PrecisionLevel.Word ? "bg-bg-primary shadow text-accent-primary font-medium" : "text-text-secondary hover:bg-hover-overlay")}
+            className={clsx(
+              "flex-1 text-sm py-1.5 rounded border transition-all",
+              settings.precision === PrecisionLevel.Word
+                ? "bg-bg-selected border-accent-primary text-accent-primary font-semibold shadow-sm"
+                : "bg-transparent border-border-default text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+            )}
           >
             Word
           </button>
           <button
             onClick={() => updateSettings({ precision: PrecisionLevel.Character })}
-            className={clsx("flex-1 text-sm py-1.5 rounded", settings.precision === PrecisionLevel.Character ? "bg-bg-primary shadow text-accent-primary font-medium" : "text-text-secondary hover:bg-hover-overlay")}
+            className={clsx(
+              "flex-1 text-sm py-1.5 rounded border transition-all",
+              settings.precision === PrecisionLevel.Character
+                ? "bg-bg-selected border-accent-primary text-accent-primary font-semibold shadow-sm"
+                : "bg-transparent border-border-default text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+            )}
           >
             Character
           </button>
@@ -55,7 +65,7 @@ export function OptionsView() {
             type="checkbox"
             checked={settings.isWordWrapEnabled}
             onChange={(e) => updateSettings({ isWordWrapEnabled: e.target.checked })}
-            className="w-4 h-4 text-accent-primary rounded border-border-default"
+            className="w-4 h-4 custom-checkbox rounded"
           />
           <span className="text-sm font-medium text-text-primary">Word Wrap</span>
         </label>
@@ -71,23 +81,33 @@ export function OptionsView() {
             step="1"
             value={settings.fontSize}
             onChange={(e) => updateSettings({ fontSize: parseInt(e.target.value, 10) })}
-            className="w-full accent-accent-primary cursor-pointer"
+            className="w-full custom-slider"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
-        <div className="flex bg-bg-secondary rounded-md p-1 mt-1">
+        <div className="flex gap-2 mt-1">
           <button
             onClick={() => updateSettings({ viewMode: ViewMode.Split })}
-            className={clsx("flex-1 text-sm py-1.5 rounded", settings.viewMode === ViewMode.Split ? "bg-bg-primary shadow text-accent-primary font-medium" : "text-text-secondary hover:bg-hover-overlay")}
+            className={clsx(
+              "flex-1 text-sm py-1.5 rounded border transition-all",
+              settings.viewMode === ViewMode.Split
+                ? "bg-bg-selected border-accent-primary text-accent-primary font-semibold shadow-sm"
+                : "bg-transparent border-border-default text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+            )}
           >
             Split
           </button>
           <button
             onClick={() => updateSettings({ viewMode: ViewMode.Unified })}
-            className={clsx("flex-1 text-sm py-1.5 rounded", settings.viewMode === ViewMode.Unified ? "bg-bg-primary shadow text-accent-primary font-medium" : "text-text-secondary hover:bg-hover-overlay")}
+            className={clsx(
+              "flex-1 text-sm py-1.5 rounded border transition-all",
+              settings.viewMode === ViewMode.Unified
+                ? "bg-bg-selected border-accent-primary text-accent-primary font-semibold shadow-sm"
+                : "bg-transparent border-border-default text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+            )}
           >
             Unified
           </button>
