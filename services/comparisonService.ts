@@ -54,6 +54,7 @@ export class ComparisonService {
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
+
       const block: ChangeBlock = {
         id: crypto.randomUUID(),
         kind: chunk.type,
@@ -92,36 +93,11 @@ export class ComparisonService {
         block.isWhitespaceChange = isWs;
         currentOldIndex += chunk.oldLines.length;
       } else {
-        const maxLen = Math.max(chunk.oldLines.length, chunk.newLines.length);
-        let isWhitespaceOnlyBlock = true;
-
-        for (let j = 0; j < maxLen; j++) {
-          const oldStr = j < chunk.oldLines.length ? chunk.oldLines[j] : null;
-          const newStr = j < chunk.newLines.length ? chunk.newLines[j] : null;
-
-          if (oldStr !== null && newStr !== null) {
-            const diffResult = this.generateInlineDiff(oldStr, newStr, settings, currentOldIndex + j + 1, currentNewIndex + j + 1);
-            block.oldLines.push(diffResult.oldLine);
-            block.newLines.push(diffResult.newLine);
-            if (!diffResult.isWhitespaceOnly) {
-              isWhitespaceOnlyBlock = false;
-            }
-          } else if (oldStr !== null) {
-            block.oldLines.push(this.createLine(oldStr, DiffChangeType.Deleted, currentOldIndex + j + 1));
-            block.newLines.push(this.createImaginaryLine());
-            if (oldStr.trim() !== "") {
-              isWhitespaceOnlyBlock = false;
-            }
-          } else if (newStr !== null) {
-            block.oldLines.push(this.createImaginaryLine());
-            block.newLines.push(this.createLine(newStr, DiffChangeType.Inserted, currentNewIndex + j + 1));
-            if (newStr.trim() !== "") {
-              isWhitespaceOnlyBlock = false;
-            }
-          }
-        }
-
-        block.isWhitespaceChange = isWhitespaceOnlyBlock;
+        const diffResult = this.alignAndDiffLines(chunk.oldLines, chunk.newLines, settings, currentOldIndex + 1, currentNewIndex + 1);
+        block.oldLines = diffResult.oldLinesResult;
+        block.newLines = diffResult.newLinesResult;
+        block.isWhitespaceChange = diffResult.isWhitespaceOnlyBlock;
+        
         currentOldIndex += chunk.oldLines.length;
         currentNewIndex += chunk.newLines.length;
       }
@@ -132,15 +108,159 @@ export class ComparisonService {
     return { blocks };
   }
 
-  private static createLine(text: string, kind: DiffChangeType, lineNumber: number): ChangeLine {
+  private static alignAndDiffLines(
+    oldBlockLines: Array<string>, 
+    newBlockLines: Array<string>, 
+    settings: CompareSettings, 
+    startOldLineNum: number, 
+    startNewLineNum: number
+  ) {
+    const n = oldBlockLines.length;
+    const m = newBlockLines.length;
+    const dp: number[][] = [ ];
+    const dir: number[][] = [ ];
+    
+    for (let i = 0; i <= n; i++) {
+      dp[i] = [ ];
+      dir[i] = [ ];
+      for (let j = 0; j <= m; j++) {
+        dp[i][j] = 0;
+        dir[i][j] = 0;
+      }
+    }
+    
+    for (let i = 1; i <= n; i++) { dp[i][0] = -i; dir[i][0] = 2; }
+    for (let j = 1; j <= m; j++) { dp[0][j] = -j; dir[0][j] = 3; }
+    
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        const sim = this.getSimilarity(oldBlockLines[i - 1], newBlockLines[j - 1]);
+        const matchScore = sim >= 0.35 ? (sim * 3) : -3;
+        
+        const diag = dp[i - 1][j - 1] + matchScore;
+        const up = dp[i - 1][j] - 1;
+        const left = dp[i][j - 1] - 1;
+        
+        if (diag >= up && diag >= left) {
+          dp[i][j] = diag;
+          dir[i][j] = 1;
+        } else if (up >= left) {
+          dp[i][j] = up;
+          dir[i][j] = 2;
+        } else {
+          dp[i][j] = left;
+          dir[i][j] = 3;
+        }
+      }
+    }
+    
+    const dpResult: Array<{ oldLine: string | null, newLine: string | null }> = [ ];
+    let i = n, j = m;
+    while (i > 0 || j > 0) {
+      if (dir[i][j] === 1) {
+        dpResult.unshift({ oldLine: oldBlockLines[i - 1], newLine: newBlockLines[j - 1] });
+        i--; j--;
+      } else if (dir[i][j] === 2) {
+        dpResult.unshift({ oldLine: oldBlockLines[i - 1], newLine: null });
+        i--;
+      } else {
+        dpResult.unshift({ oldLine: null, newLine: newBlockLines[j - 1] });
+        j--;
+      }
+    }
+    
+    const compressed: Array<{ oldLine: string | null, newLine: string | null }> = [ ];
+    let oldBuffer: string[] = [ ];
+    let newBuffer: string[] = [ ];
+    
+    const flushBuffers = () => {
+      const maxLen = Math.max(oldBuffer.length, newBuffer.length);
+      for (let idx = 0; idx < maxLen; idx++) {
+        compressed.push({
+          oldLine: idx < oldBuffer.length ? oldBuffer[idx] : null,
+          newLine: idx < newBuffer.length ? newBuffer[idx] : null
+        });
+      }
+      oldBuffer = [ ];
+      newBuffer = [ ];
+    };
+    
+    for (let k = 0; k < dpResult.length; k++) {
+      const pair = dpResult[k];
+      if (pair.oldLine !== null && pair.newLine !== null) {
+        flushBuffers();
+        compressed.push({ oldLine: pair.oldLine, newLine: pair.newLine });
+      } else if (pair.oldLine !== null) {
+        oldBuffer.push(pair.oldLine);
+      } else if (pair.newLine !== null) {
+        newBuffer.push(pair.newLine);
+      }
+    }
+    flushBuffers();
+    
+    const oldLinesResult: Array<ChangeLine> = [ ];
+    const newLinesResult: Array<ChangeLine> = [ ];
+    let isWhitespaceOnlyBlock = true;
+    let currentOldLineNum = startOldLineNum;
+    let currentNewLineNum = startNewLineNum;
+    
+    for (let k = 0; k < compressed.length; k++) {
+      const row = compressed[k];
+      
+      if (row.oldLine !== null && row.newLine !== null) {
+        const diffResult = this.generateInlineDiff(row.oldLine, row.newLine, settings, currentOldLineNum++, currentNewLineNum++);
+        oldLinesResult.push(diffResult.oldLine);
+        newLinesResult.push(diffResult.newLine);
+        if (!diffResult.isWhitespaceOnly) isWhitespaceOnlyBlock = false;
+      } else if (row.oldLine !== null) {
+        oldLinesResult.push(this.createLine(row.oldLine, DiffChangeType.Deleted, currentOldLineNum++, DiffChangeType.Deleted));
+        newLinesResult.push(this.createImaginaryLine());
+        if (row.oldLine.trim() !== "") isWhitespaceOnlyBlock = false;
+      } else if (row.newLine !== null) {
+        oldLinesResult.push(this.createImaginaryLine());
+        newLinesResult.push(this.createLine(row.newLine, DiffChangeType.Inserted, currentNewLineNum++, DiffChangeType.Inserted));
+        if (row.newLine.trim() !== "") isWhitespaceOnlyBlock = false;
+      }
+    }
+    
+    return { oldLinesResult, newLinesResult, isWhitespaceOnlyBlock };
+  }
+
+  private static getSimilarity(s1: string, s2: string): number {
+    if (s1 === s2 && s1.trim() !== "") return 1;
+    const s1Trim = s1.trim();
+    const s2Trim = s2.trim();
+    
+    if (s1Trim === s2Trim && s1Trim.length > 0) return 1;
+    if (s1Trim === "" && s2Trim === "") return 0.5; 
+    
+    const len = Math.max(s1Trim.length, s2Trim.length);
+    if (len === 0) return 0;
+    
+    const diffs = Diff.diffWords(s1Trim, s2Trim);
+    let matchCount = 0;
+    for (let i = 0; i < diffs.length; i++) {
+      if (!diffs[i].added && !diffs[i].removed) {
+        matchCount += diffs[i].value.length;
+      }
+    }
+    return matchCount / len;
+  }
+
+  private static createLine(
+    text: string, 
+    kind: DiffChangeType, 
+    lineNumber: number, 
+    fragmentKind: DiffChangeType = DiffChangeType.Unchanged
+  ): ChangeLine {
     return {
       lineNumber,
       kind,
-      isInModifiedBlock: kind === DiffChangeType.Modified,
+      isInModifiedBlock: false,
       fragments: [
         {
           text,
-          kind,
+          kind: fragmentKind,
           isWhitespaceChange: text.trim() === ""
         }
       ]
