@@ -52,7 +52,7 @@ export function HistoryView() {
         {items.length > 0 && (
           <button
             onClick={handleDeleteAll}
-            className="flex items-center gap-1 rounded bg-danger px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-danger-hover"
+            className="flex items-center gap-1 rounded bg-danger-bg px-3 py-1.5 text-sm font-semibold text-danger border border-danger/20 transition-all hover:brightness-95"
             title="Clear all history"
           >
             <MdDelete className="text-lg" />

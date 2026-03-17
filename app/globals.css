@@ -70,14 +70,14 @@
   --success: #22c55e;
   --success-hover: #16a34a;
 
-  --diff-added-bg: #04260f;
-  --diff-added-fg: #2ea043;
-  --diff-removed-bg: #3b0b12;
-  --diff-removed-fg: #f85149;
+  --diff-added-bg: #0d2115;
+  --diff-added-fg: #1f6b35;
+  --diff-removed-bg: #2d0e12;
+  --diff-removed-fg: #a1292d;
   --diff-empty-bg: #21262d;
   --hover-overlay: rgba(255, 255, 255, 0.05);
-  --minimap-added: #2ea043;
-  --minimap-removed: #f85149;
+  --minimap-added: #1f6b35;
+  --minimap-removed: #a1292d;
   --minimap-empty: #374151;
 }
 
