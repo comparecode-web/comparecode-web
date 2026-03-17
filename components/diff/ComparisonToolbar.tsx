@@ -94,7 +94,7 @@ export function ComparisonToolbar() {
             )}
           </button>
           <div className="w-px h-6 bg-border-default mx-2" />
-          <button onClick={executeClear} className="flex items-center gap-1 bg-danger text-white px-3 py-1.5 rounded text-sm font-semibold hover:bg-danger-hover transition-colors">
+          <button onClick={executeClear} className="flex items-center gap-1 bg-danger-bg text-danger border border-danger/20 px-3 py-1.5 rounded text-sm font-semibold hover:brightness-95 transition-all">
             <MdDelete className="text-lg" />
             Clear
           </button>
