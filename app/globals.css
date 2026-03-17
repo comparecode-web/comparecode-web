@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-selected: var(--bg-selected);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-default: var(--border-default);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-hover: var(--accent-hover);
+
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-bg: var(--danger-bg);
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+
+  --color-diff-added-bg: var(--diff-added-bg);
+  --color-diff-added-fg: var(--diff-added-fg);
+  --color-diff-removed-bg: var(--diff-removed-bg);
+  --color-diff-removed-fg: var(--diff-removed-fg);
+  --color-diff-empty-bg: var(--diff-empty-bg);
+  --color-hover-overlay: var(--hover-overlay);
+  --color-minimap-added: var(--minimap-added);
+  --color-minimap-removed: var(--minimap-removed);
+  --color-minimap-empty: var(--minimap-empty);
+}
+
+:root, [data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-selected: #f0f8ff;
+  --text-primary: #24292e;
+  --text-secondary: #6b7280;
+  --border-default: #d1d5db;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-bg: #fef2f2;
+  --success: #16a34a;
+  --success-hover: #15803d;
+
+  --diff-added-bg: #e6ffed;
+  --diff-added-fg: #acf2bd;
+  --diff-removed-bg: #ffeef0;
+  --diff-removed-fg: #fdb8c0;
+  --diff-empty-bg: #f0f0f0;
+  --hover-overlay: rgba(0, 0, 0, 0.05);
+  --minimap-added: #8fe3c7;
+  --minimap-removed: #f5a4a4;
+  --minimap-empty: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-selected: #1f2937;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --border-default: #30363d;
+  --accent-primary: #3b82f6;
+  --accent-hover: #60a5fa;
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --danger-bg: #450a0a;
+  --success: #22c55e;
+  --success-hover: #16a34a;
+
+  --diff-added-bg: #04260f;
+  --diff-added-fg: #2ea043;
+  --diff-removed-bg: #3b0b12;
+  --diff-removed-fg: #f85149;
+  --diff-empty-bg: #21262d;
+  --hover-overlay: rgba(255, 255, 255, 0.05);
+  --minimap-added: #2ea043;
+  --minimap-removed: #f85149;
+  --minimap-empty: #374151;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
+
+.hide-vertical-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 8px;
+}
+
+.hide-vertical-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hide-vertical-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: 10px;
+}
+
+.hide-vertical-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
