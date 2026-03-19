@@ -4,7 +4,7 @@ import { useRef, useState, useMemo } from "react";
 import { VirtualItem } from "@tanstack/react-virtual";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { BlockType } from "@/types/diff";
+import { BlockType, DiffChangeType } from "@/types/diff";
 import { useSyncedScroll } from "@/hooks/useSyncedScroll";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { SplitRow, SplitRowData } from "./SplitRow";
@@ -24,6 +24,25 @@ export function SplitView() {
     const result: Array<SplitRowData> = [ ];
     if (!comparisonResult) return result;
 
+    const isImaginary = (line: { kind: DiffChangeType } | undefined) => !line || line.kind === DiffChangeType.Imaginary;
+    const hasOnlyLeadingGhostRows = (lines: Array<{ kind: DiffChangeType }>, untilIndexExclusive: number) => {
+      if (untilIndexExclusive <= 0) {
+        return false;
+      }
+
+      for (let i = 0; i < untilIndexExclusive; i++) {
+        if (!isImaginary(lines[i])) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    const rotateLeadingGhostRowsToBottom = (indices: Array<number>, pivot: number): Array<number> => {
+      return indices.slice(pivot).concat(indices.slice(0, pivot));
+    };
+
     comparisonResult.blocks.forEach((block) => {
       const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
       const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
@@ -31,12 +50,45 @@ export function SplitView() {
 
       if (maxLines === 0) return;
 
+      let oldDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
+      let newDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
+
+      if (block.kind === BlockType.Modified && maxLines > 1) {
+        let firstComparableIndex = -1;
+
+        for (let idx = 0; idx < maxLines; idx++) {
+          const oldLine = block.oldLines[idx];
+          const newLine = block.newLines[idx];
+          const oldIsImaginary = isImaginary(oldLine);
+          const newIsImaginary = isImaginary(newLine);
+
+          if (!oldIsImaginary && !newIsImaginary) {
+            firstComparableIndex = idx;
+            break;
+          }
+        }
+
+        if (firstComparableIndex > 0) {
+          if (hasOnlyLeadingGhostRows(block.oldLines, firstComparableIndex)) {
+            oldDisplayIndices = rotateLeadingGhostRowsToBottom(oldDisplayIndices, firstComparableIndex);
+          }
+
+          if (hasOnlyLeadingGhostRows(block.newLines, firstComparableIndex)) {
+            newDisplayIndices = rotateLeadingGhostRowsToBottom(newDisplayIndices, firstComparableIndex);
+          }
+        }
+      }
+
       for (let i = 0; i < maxLines; i++) {
+        const oldIndex = oldDisplayIndices[i] ?? -1;
+        const newIndex = newDisplayIndices[i] ?? -1;
+
         result.push({
           id: `${block.id}-line-${i}`,
           type: "line",
           block,
-          index: i,
+          oldIndex,
+          newIndex,
           isFirst: i === 0,
           isLast: i === maxLines - 1 && !block.isSelected,
           isSelectable
@@ -48,7 +100,8 @@ export function SplitView() {
           id: `${block.id}-controls`,
           type: "controls",
           block,
-          index: -1,
+          oldIndex: -1,
+          newIndex: -1,
           isFirst: false,
           isLast: true,
           isSelectable
