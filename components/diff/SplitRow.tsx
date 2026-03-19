@@ -12,7 +12,8 @@ export interface SplitRowData {
   id: string;
   type: "line" | "controls";
   block: ChangeBlock;
-  index: number;
+  oldIndex: number;
+  newIndex: number;
   isFirst: boolean;
   isLast: boolean;
   isSelectable: boolean;
@@ -58,8 +59,14 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
     );
   }
 
-  const oldLine = row.block.oldLines[row.index] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
-  const newLine = row.block.newLines[row.index] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
+  const oldLine = row.block.oldLines[row.oldIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
+  const newLine = row.block.newLines[row.newIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
+  const oldBackgroundClass = oldLine.kind === DiffChangeType.Imaginary
+    ? "bg-diff-empty-bg"
+    : getBlockColorClass(row.block.kind, "old", row.block.isWhitespaceChange, settings.ignoreWhitespace);
+  const newBackgroundClass = newLine.kind === DiffChangeType.Imaginary
+    ? "bg-diff-empty-bg"
+    : getBlockColorClass(row.block.kind, "new", row.block.isWhitespaceChange, settings.ignoreWhitespace);
 
   return (
     <div
@@ -78,10 +85,10 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
           {(renderMode === "wrap" || renderMode === "left") && (
             <div
               onMouseDown={() => setSelectionSide("left")}
-              className={clsx("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", getBlockColorClass(row.block.kind, "old", row.block.isWhitespaceChange, settings.ignoreWhitespace), oldLine.kind === DiffChangeType.Imaginary && "bg-diff-empty-bg", selectionSide === "right" && "select-none")}
+              className={clsx("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", oldBackgroundClass, selectionSide === "right" && "select-none")}
             >
               <div className="flex min-h-[24px] w-full">
-                <div className="w-10 shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10">
+                <div className={clsx("w-10 shrink-0 select-none px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10", oldLine.kind === DiffChangeType.Imaginary ? "bg-diff-empty-bg" : "bg-bg-secondary")}>
                   {oldLine.lineNumber}
                 </div>
                 <div className={clsx("px-2 py-0.5 font-mono", wordWrapClass)}>
@@ -98,10 +105,10 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
           {(renderMode === "wrap" || renderMode === "right") && (
             <div
               onMouseDown={() => setSelectionSide("right")}
-              className={clsx("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", getBlockColorClass(row.block.kind, "new", row.block.isWhitespaceChange, settings.ignoreWhitespace), newLine.kind === DiffChangeType.Imaginary && "bg-diff-empty-bg", selectionSide === "left" && "select-none")}
+              className={clsx("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", newBackgroundClass, selectionSide === "left" && "select-none")}
             >
               <div className="flex min-h-[24px] w-full">
-                <div className="w-10 shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10">
+                <div className={clsx("w-10 shrink-0 select-none px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10", newLine.kind === DiffChangeType.Imaginary ? "bg-diff-empty-bg" : "bg-bg-secondary")}>
                   {newLine.lineNumber}
                 </div>
                 <div className={clsx("px-2 py-0.5 font-mono", wordWrapClass)}>
