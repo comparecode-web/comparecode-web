@@ -428,38 +428,75 @@ export class ComparisonService {
   ) {
     const oldJoined = oldBlockLines.join("\n");
     const newJoined = newBlockLines.join("\n");
-    const stableMatches = this.findStableSubstringMatches(oldJoined, newJoined, 4);
+    const minStableInternalLength = 4;
+    const oldTrimEnd = this.getTrimmedEndIndex(oldJoined);
+    const newTrimEnd = this.getTrimmedEndIndex(newJoined);
+    const prefixLength = this.getCommonPrefixLength(oldJoined, oldTrimEnd, newJoined, newTrimEnd);
+    const suffixLength = this.getCommonSuffixLength(oldJoined, oldTrimEnd, newJoined, newTrimEnd, prefixLength);
+
+    const middleOldStart = prefixLength;
+    const middleOldEnd = oldTrimEnd - suffixLength;
+    const middleNewStart = prefixLength;
+    const middleNewEnd = newTrimEnd - suffixLength;
+
+    const middleOld = oldJoined.slice(middleOldStart, middleOldEnd);
+    const middleNew = newJoined.slice(middleNewStart, middleNewEnd);
+    const stableMatches = this.findStableSubstringMatches(middleOld, middleNew, minStableInternalLength);
 
     const oldFlatFragments: Array<TextFragment> = [ ];
     const newFlatFragments: Array<TextFragment> = [ ];
-    let oldCursor = 0;
-    let newCursor = 0;
+
+    if (prefixLength > 0) {
+      const prefix = oldJoined.slice(0, prefixLength);
+      this.appendMergedFragment(oldFlatFragments, prefix, DiffChangeType.Unchanged);
+      this.appendMergedFragment(newFlatFragments, prefix, DiffChangeType.Unchanged);
+    }
+
+    let oldCursor = middleOldStart;
+    let newCursor = middleNewStart;
 
     for (let i = 0; i < stableMatches.length; i++) {
       const match = stableMatches[i];
+      const matchOldStart = middleOldStart + match.oldStart;
+      const matchNewStart = middleNewStart + match.newStart;
 
-      if (oldCursor < match.oldStart) {
-        this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldCursor, match.oldStart), DiffChangeType.Deleted);
+      if (oldCursor < matchOldStart) {
+        this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldCursor, matchOldStart), DiffChangeType.Deleted);
       }
 
-      if (newCursor < match.newStart) {
-        this.appendMergedFragment(newFlatFragments, newJoined.slice(newCursor, match.newStart), DiffChangeType.Inserted);
+      if (newCursor < matchNewStart) {
+        this.appendMergedFragment(newFlatFragments, newJoined.slice(newCursor, matchNewStart), DiffChangeType.Inserted);
       }
 
-      const unchangedText = oldJoined.slice(match.oldStart, match.oldStart + match.length);
+      const unchangedText = oldJoined.slice(matchOldStart, matchOldStart + match.length);
       this.appendMergedFragment(oldFlatFragments, unchangedText, DiffChangeType.Unchanged);
       this.appendMergedFragment(newFlatFragments, unchangedText, DiffChangeType.Unchanged);
 
-      oldCursor = match.oldStart + match.length;
-      newCursor = match.newStart + match.length;
+      oldCursor = matchOldStart + match.length;
+      newCursor = matchNewStart + match.length;
     }
 
-    if (oldCursor < oldJoined.length) {
-      this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldCursor), DiffChangeType.Deleted);
+    if (oldCursor < middleOldEnd) {
+      this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldCursor, middleOldEnd), DiffChangeType.Deleted);
     }
 
-    if (newCursor < newJoined.length) {
-      this.appendMergedFragment(newFlatFragments, newJoined.slice(newCursor), DiffChangeType.Inserted);
+    if (newCursor < middleNewEnd) {
+      this.appendMergedFragment(newFlatFragments, newJoined.slice(newCursor, middleNewEnd), DiffChangeType.Inserted);
+    }
+
+    if (suffixLength > 0) {
+      const suffixStart = oldTrimEnd - suffixLength;
+      const suffix = oldJoined.slice(suffixStart, oldTrimEnd);
+      this.appendMergedFragment(oldFlatFragments, suffix, DiffChangeType.Unchanged);
+      this.appendMergedFragment(newFlatFragments, suffix, DiffChangeType.Unchanged);
+    }
+
+    if (oldTrimEnd < oldJoined.length) {
+      this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldTrimEnd), DiffChangeType.Deleted);
+    }
+
+    if (newTrimEnd < newJoined.length) {
+      this.appendMergedFragment(newFlatFragments, newJoined.slice(newTrimEnd), DiffChangeType.Inserted);
     }
 
     let isWhitespaceOnlyBlock = true;
@@ -518,6 +555,56 @@ export class ComparisonService {
       kind,
       isWhitespaceChange
     });
+  }
+
+  private static getTrimmedEndIndex(text: string): number {
+    let end = text.length;
+
+    while (end > 0 && /\s/.test(text[end - 1])) {
+      end--;
+    }
+
+    return end;
+  }
+
+  private static getCommonPrefixLength(
+    oldText: string,
+    oldEnd: number,
+    newText: string,
+    newEnd: number
+  ): number {
+    const limit = Math.min(oldEnd, newEnd);
+    let idx = 0;
+
+    while (idx < limit && oldText.charCodeAt(idx) === newText.charCodeAt(idx)) {
+      idx++;
+    }
+
+    return idx;
+  }
+
+  private static getCommonSuffixLength(
+    oldText: string,
+    oldEnd: number,
+    newText: string,
+    newEnd: number,
+    protectedPrefixLength: number
+  ): number {
+    let oldIdx = oldEnd - 1;
+    let newIdx = newEnd - 1;
+    let length = 0;
+
+    while (
+      oldIdx >= protectedPrefixLength &&
+      newIdx >= protectedPrefixLength &&
+      oldText.charCodeAt(oldIdx) === newText.charCodeAt(newIdx)
+    ) {
+      length++;
+      oldIdx--;
+      newIdx--;
+    }
+
+    return length;
   }
 
   private static normalizeCharacterChanges(changes: Array<Diff.Change>, minInternalUnchangedLength: number): Array<Diff.Change> {
@@ -585,13 +672,11 @@ export class ComparisonService {
         continue;
       }
 
-      const isEdgeMatch =
-        match.oldStart === 0 ||
-        match.newStart === 0 ||
-        match.oldStart + match.length === oldText.length ||
-        match.newStart + match.length === newText.length;
+      if (match.length < minLength) {
+        continue;
+      }
 
-      if (match.length < minLength && !isEdgeMatch) {
+      if (match.length < 8 && !this.isTokenBoundaryAnchor(oldText, newText, match.oldStart, match.newStart, match.length)) {
         continue;
       }
 
@@ -628,6 +713,40 @@ export class ComparisonService {
       return a.newStart - b.newStart;
     });
     return matches;
+  }
+
+  private static isTokenBoundaryAnchor(
+    oldText: string,
+    newText: string,
+    oldStart: number,
+    newStart: number,
+    length: number
+  ): boolean {
+    const oldEnd = oldStart + length;
+    const newEnd = newStart + length;
+
+    const oldLeftBoundary = this.isBoundaryAt(oldText, oldStart - 1, oldStart);
+    const oldRightBoundary = this.isBoundaryAt(oldText, oldEnd - 1, oldEnd);
+    const newLeftBoundary = this.isBoundaryAt(newText, newStart - 1, newStart);
+    const newRightBoundary = this.isBoundaryAt(newText, newEnd - 1, newEnd);
+
+    return oldLeftBoundary && oldRightBoundary && newLeftBoundary && newRightBoundary;
+  }
+
+  private static isBoundaryAt(text: string, leftIndex: number, rightIndex: number): boolean {
+    const leftIsWord = leftIndex >= 0 ? this.isWordCharacter(text.charCodeAt(leftIndex)) : false;
+    const rightIsWord = rightIndex < text.length ? this.isWordCharacter(text.charCodeAt(rightIndex)) : false;
+
+    return leftIsWord !== rightIsWord;
+  }
+
+  private static isWordCharacter(charCode: number): boolean {
+    return (
+      (charCode >= 48 && charCode <= 57) ||
+      (charCode >= 65 && charCode <= 90) ||
+      (charCode >= 97 && charCode <= 122) ||
+      charCode === 95
+    );
   }
 
   private static findLongestCommonSubstringInSegment(
