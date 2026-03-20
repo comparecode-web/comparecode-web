@@ -132,6 +132,13 @@ export class ComparisonService {
         this.isWhitespaceOnlyUnchangedChunk(current) &&
         this.isChangedChunk(next)
       ) {
+        // Keep two independent replace regions separated by whitespace-only unchanged lines.
+        if (this.isBidirectionalChange(previous) && this.isBidirectionalChange(next)) {
+          result.push(current);
+          i++;
+          continue;
+        }
+
         result.pop();
 
         const oldLines = previous.oldLines.concat(current.oldLines, next.oldLines);
@@ -156,6 +163,10 @@ export class ComparisonService {
 
   private static isChangedChunk(chunk: Chunk): boolean {
     return chunk.type !== BlockType.Unchanged;
+  }
+
+  private static isBidirectionalChange(chunk: Chunk): boolean {
+    return chunk.oldLines.length > 0 && chunk.newLines.length > 0;
   }
 
   private static isWhitespaceOnlyUnchangedChunk(chunk: Chunk): boolean {
