@@ -8,11 +8,12 @@ import { getBlockColorClass } from "@/utils/diffHelpers";
 import { BlockType, DiffChangeType } from "@/types/diff";
 import { UnifiedRow, UnifiedRowData } from "./UnifiedRow";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
-import clsx from "clsx";
+import { cn } from "@/utils/uiHelpers";
 
 export function UnifiedView() {
-  const { comparisonResult, selectBlock, mergeBlock } = useEditorStore();
+  const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
+
   const unifiedScrollRef = useRef<HTMLDivElement>(null);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
 
@@ -145,9 +146,12 @@ export function UnifiedView() {
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 100px)` } : {};
 
+  const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
+
   return (
-    <div className="flex-1 overflow-auto custom-scrollbar" ref={unifiedScrollRef}>
-      <div className={clsx("relative pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+    <div className="flex-1 overflow-auto custom-scrollbar" ref={unifiedScrollRef} style={customStyles}>
+      <div className={cn("relative pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
         {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
           return (

@@ -7,7 +7,8 @@ import { useEditorStore } from "@/store/useEditorStore";
 import { useAppStore } from "@/store/useAppStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { getLineCount, generatePreviewLines, getRelativeTime } from "@/utils/formatters";
-import clsx from "clsx";
+import { cn } from "@/utils/uiHelpers";
+import { Button } from "@/components/ui/Button";
 
 export function HistoryView() {
   const { items, loadHistory, deleteItem, deleteAll, toggleBookmark } = useHistoryStore();
@@ -44,20 +45,21 @@ export function HistoryView() {
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary">
-      <div className="flex items-center justify-between border-b border-border-default bg-bg-primary px-6 py-1.5">
+      <div className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-6">
         <div className="flex items-center gap-3">
           <MdHistory className="text-2xl text-text-secondary" />
           <h2 className="text-xl font-bold text-text-primary">History</h2>
         </div>
         {items.length > 0 && (
-          <button
+          <Button
+            variant="danger"
+            size="sm"
             onClick={handleDeleteAll}
-            className="flex items-center gap-1 rounded bg-danger-bg px-3 py-1.5 text-sm font-semibold text-danger border border-danger/20 transition-all hover:brightness-95"
+            leftIcon={<MdDelete className="text-lg" />}
             title="Clear all history"
           >
-            <MdDelete className="text-lg" />
             Delete All
-          </button>
+          </Button>
         )}
       </div>
 
@@ -89,8 +91,8 @@ export function HistoryView() {
                 <div
                   key={item.id}
                   onClick={() => handleRestore(item.originalText, item.modifiedText)}
-                  className={clsx(
-                    "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-4 shadow-sm transition-all hover:border-accent-primary hover:shadow-md",
+                  className={cn(
+                    "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-4 shadow-sm transition-all duration-[var(--duration-medium)] hover:border-accent-primary hover:shadow-md",
                     item.isBookmarked ? "border-accent-primary" : "border-border-default"
                   )}
                 >
@@ -136,7 +138,7 @@ export function HistoryView() {
                     <div className="flex shrink-0 items-center gap-1">
                       <button
                         onClick={(e) => handleToggleBookmark(e, item.id, item.isBookmarked)}
-                        className="rounded p-2 text-accent-primary transition-colors hover:bg-hover-overlay"
+                        className="rounded p-2 text-accent-primary transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
                         title="Bookmark this item"
                       >
                         {item.isBookmarked ? (
@@ -147,7 +149,7 @@ export function HistoryView() {
                       </button>
                       <button
                         onClick={(e) => handleDeleteItem(e, item.id)}
-                        className="rounded p-2 text-danger transition-colors hover:bg-hover-overlay"
+                        className="rounded p-2 text-danger transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
                         title="Delete this item"
                       >
                         <MdDelete className="text-2xl" />

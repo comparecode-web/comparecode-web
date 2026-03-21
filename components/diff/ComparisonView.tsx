@@ -10,7 +10,7 @@ import { ComparisonToolbar } from "./ComparisonToolbar";
 import { SplitView } from "./SplitView";
 import { UnifiedView } from "./UnifiedView";
 import { DiffMinimap } from "./DiffMinimap";
-import clsx from "clsx";
+import { cn } from "@/utils/uiHelpers";
 
 export function ComparisonView() {
   const { comparisonResult, leftText, rightText, selectBlock } = useEditorStore();
@@ -39,11 +39,17 @@ export function ComparisonView() {
 
     const container = document.getElementById("diff-container");
     if (container) {
-      const scrollArea = container.querySelector(".custom-scrollbar");
-      if (scrollArea) {
-        const targetScroll = (offsetPct / 100) * scrollArea.scrollHeight - scrollArea.clientHeight / 2;
-        scrollArea.scrollTo({ top: targetScroll, behavior: "smooth" });
-      }
+      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
+      scrollAreas.forEach((scrollArea) => {
+        const topOffset = scrollArea.clientHeight * 0.1;
+        let targetScroll = (offsetPct / 100) * scrollArea.scrollHeight - topOffset;
+        
+        if (targetScroll < 0) {
+          targetScroll = 0;
+        }
+        
+        scrollArea.scrollTop = targetScroll;
+      });
     }
   };
 
@@ -51,7 +57,7 @@ export function ComparisonView() {
   const hideBody = !hasResult && isInputExpanded;
 
   return (
-    <div className={clsx("flex w-full flex-col bg-bg-primary relative", !hideBody && "h-full")}>
+    <div className={cn("flex w-full flex-col bg-bg-primary relative", !hideBody && "h-full")}>
       <ComparisonToolbar />
 
       {!hideBody && (

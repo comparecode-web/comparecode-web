@@ -4,9 +4,8 @@ import { ChangeBlock, TextFragment } from "@/types/diff";
 import { MergeDirection } from "@/types/ui";
 import { AppSettings } from "@/types/settings";
 import { getFragmentColorClass } from "@/utils/diffHelpers";
-import { getRowContainerClass, getWordWrapClass } from "@/utils/uiHelpers";
+import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
-import clsx from "clsx";
 
 export interface UnifiedLineData {
   line1: number | string | null;
@@ -51,12 +50,12 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <RowControls 
-          block={row.block} 
-          settings={settings} 
-          layout="unified" 
-          selectBlock={selectBlock} 
-          mergeBlock={mergeBlock} 
+        <RowControls
+          block={row.block}
+          settings={settings}
+          layout="unified"
+          selectBlock={selectBlock}
+          mergeBlock={mergeBlock}
         />
       </div>
     );
@@ -78,17 +77,17 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         {isHovered && <div className="absolute inset-0 bg-hover-overlay pointer-events-none z-10" />}
         {row.isFirst && row.block.isSelected && row.isSelectable && <div className="absolute top-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />}
         <div className="flex w-full flex-col relative z-0">
-          <div className={clsx("flex min-h-[24px] w-full", l.bgClass)}>
-            <div className="w-10 shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10">
+          <div className={cn("flex min-h-[24px] w-full", l.bgClass)}>
+            <div className="shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)]">
               {l.line1}
             </div>
-            <div className="w-10 shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-[40px] z-10">
+            <div className="shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)]" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
               {l.line2}
             </div>
-            <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky left-[80px] z-10 bg-bg-secondary">
+            <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-bg-secondary" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
               {l.sign}
             </div>
-            <div className={clsx("px-2 py-0.5 font-mono", wordWrapClass)}>
+            <div className={cn("px-2 py-0.5 font-mono", wordWrapClass)}>
               {l.fragments.map((frag: TextFragment, fIdx: number) => (
                 <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
                   {frag.text}
