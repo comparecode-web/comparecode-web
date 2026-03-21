@@ -302,6 +302,13 @@ export class ComparisonService {
     startOldLineNum: number, 
     startNewLineNum: number
   ) {
+    if (
+      settings.precision === PrecisionLevel.Character &&
+      oldBlockLines.length !== newBlockLines.length
+    ) {
+      return this.generateCrossLineCharacterDiff(oldBlockLines, newBlockLines, startOldLineNum, startNewLineNum);
+    }
+
     const n = oldBlockLines.length;
     const m = newBlockLines.length;
     const dp: number[][] = [ ];
@@ -413,6 +420,538 @@ export class ComparisonService {
     return { oldLinesResult, newLinesResult, isWhitespaceOnlyBlock };
   }
 
+  private static generateCrossLineCharacterDiff(
+    oldBlockLines: Array<string>,
+    newBlockLines: Array<string>,
+    startOldLineNum: number,
+    startNewLineNum: number
+  ) {
+    const oldJoined = oldBlockLines.join("\n");
+    const newJoined = newBlockLines.join("\n");
+    const minStableInternalLength = 4;
+    const oldTrimEnd = this.getTrimmedEndIndex(oldJoined);
+    const newTrimEnd = this.getTrimmedEndIndex(newJoined);
+    const prefixLength = this.getCommonPrefixLength(oldJoined, oldTrimEnd, newJoined, newTrimEnd);
+    const suffixLength = this.getCommonSuffixLength(oldJoined, oldTrimEnd, newJoined, newTrimEnd, prefixLength);
+
+    const middleOldStart = prefixLength;
+    const middleOldEnd = oldTrimEnd - suffixLength;
+    const middleNewStart = prefixLength;
+    const middleNewEnd = newTrimEnd - suffixLength;
+
+    const middleOld = oldJoined.slice(middleOldStart, middleOldEnd);
+    const middleNew = newJoined.slice(middleNewStart, middleNewEnd);
+    const stableMatches = this.findStableSubstringMatches(middleOld, middleNew, minStableInternalLength);
+
+    const oldFlatFragments: Array<TextFragment> = [ ];
+    const newFlatFragments: Array<TextFragment> = [ ];
+
+    if (prefixLength > 0) {
+      const prefix = oldJoined.slice(0, prefixLength);
+      this.appendMergedFragment(oldFlatFragments, prefix, DiffChangeType.Unchanged);
+      this.appendMergedFragment(newFlatFragments, prefix, DiffChangeType.Unchanged);
+    }
+
+    let oldCursor = middleOldStart;
+    let newCursor = middleNewStart;
+
+    for (let i = 0; i < stableMatches.length; i++) {
+      const match = stableMatches[i];
+      const matchOldStart = middleOldStart + match.oldStart;
+      const matchNewStart = middleNewStart + match.newStart;
+
+      this.appendCrossLineGapDiff(
+        oldFlatFragments,
+        newFlatFragments,
+        oldJoined.slice(oldCursor, matchOldStart),
+        newJoined.slice(newCursor, matchNewStart)
+      );
+
+      const unchangedText = oldJoined.slice(matchOldStart, matchOldStart + match.length);
+      this.appendMergedFragment(oldFlatFragments, unchangedText, DiffChangeType.Unchanged);
+      this.appendMergedFragment(newFlatFragments, unchangedText, DiffChangeType.Unchanged);
+
+      oldCursor = matchOldStart + match.length;
+      newCursor = matchNewStart + match.length;
+    }
+
+    this.appendCrossLineGapDiff(
+      oldFlatFragments,
+      newFlatFragments,
+      oldJoined.slice(oldCursor, middleOldEnd),
+      newJoined.slice(newCursor, middleNewEnd)
+    );
+
+    if (suffixLength > 0) {
+      const suffixStart = oldTrimEnd - suffixLength;
+      const suffix = oldJoined.slice(suffixStart, oldTrimEnd);
+      this.appendMergedFragment(oldFlatFragments, suffix, DiffChangeType.Unchanged);
+      this.appendMergedFragment(newFlatFragments, suffix, DiffChangeType.Unchanged);
+    }
+
+    if (oldTrimEnd < oldJoined.length) {
+      this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldTrimEnd), DiffChangeType.Deleted);
+    }
+
+    if (newTrimEnd < newJoined.length) {
+      this.appendMergedFragment(newFlatFragments, newJoined.slice(newTrimEnd), DiffChangeType.Inserted);
+    }
+
+    const normalizedOldFlatFragments = this.rebalanceDuplicateBoundaryHighlights(oldFlatFragments);
+    const normalizedNewFlatFragments = this.rebalanceDuplicateBoundaryHighlights(newFlatFragments);
+
+    let isWhitespaceOnlyBlock = true;
+    for (let i = 0; i < normalizedOldFlatFragments.length; i++) {
+      if (normalizedOldFlatFragments[i].kind === DiffChangeType.Deleted && normalizedOldFlatFragments[i].text.trim() !== "") {
+        isWhitespaceOnlyBlock = false;
+        break;
+      }
+    }
+
+    if (isWhitespaceOnlyBlock) {
+      for (let i = 0; i < normalizedNewFlatFragments.length; i++) {
+        if (normalizedNewFlatFragments[i].kind === DiffChangeType.Inserted && normalizedNewFlatFragments[i].text.trim() !== "") {
+          isWhitespaceOnlyBlock = false;
+          break;
+        }
+      }
+    }
+
+    const oldLinesResult = this.projectFragmentsToLines(
+      normalizedOldFlatFragments,
+      oldBlockLines.length,
+      startOldLineNum,
+      DiffChangeType.Deleted
+    );
+
+    const newLinesResult = this.projectFragmentsToLines(
+      normalizedNewFlatFragments,
+      newBlockLines.length,
+      startNewLineNum,
+      DiffChangeType.Inserted
+    );
+
+    return { oldLinesResult, newLinesResult, isWhitespaceOnlyBlock };
+  }
+
+  private static appendCrossLineGapDiff(
+    oldTarget: Array<TextFragment>,
+    newTarget: Array<TextFragment>,
+    oldGap: string,
+    newGap: string
+  ) {
+    if (oldGap.length === 0 && newGap.length === 0) {
+      return;
+    }
+
+    if (oldGap.length === 0) {
+      this.appendMergedFragment(newTarget, newGap, DiffChangeType.Inserted);
+      return;
+    }
+
+    if (newGap.length === 0) {
+      this.appendMergedFragment(oldTarget, oldGap, DiffChangeType.Deleted);
+      return;
+    }
+
+    const changes = this.normalizeCrossLineCharacterChanges(Diff.diffChars(oldGap, newGap), 3);
+
+    for (let i = 0; i < changes.length; i++) {
+      const change = changes[i];
+
+      if (change.added) {
+        this.appendMergedFragment(newTarget, change.value, DiffChangeType.Inserted);
+      } else if (change.removed) {
+        this.appendMergedFragment(oldTarget, change.value, DiffChangeType.Deleted);
+      } else {
+        this.appendMergedFragment(oldTarget, change.value, DiffChangeType.Unchanged);
+        this.appendMergedFragment(newTarget, change.value, DiffChangeType.Unchanged);
+      }
+    }
+  }
+
+  private static appendMergedFragment(
+    target: Array<TextFragment>,
+    text: string,
+    kind: DiffChangeType
+  ) {
+    if (text.length === 0) {
+      return;
+    }
+
+    const isWhitespaceChange = text.trim() === "";
+    const last = target.length > 0 ? target[target.length - 1] : null;
+
+    if (last && last.kind === kind && last.isWhitespaceChange === isWhitespaceChange) {
+      last.text += text;
+      return;
+    }
+
+    target.push({
+      text,
+      kind,
+      isWhitespaceChange
+    });
+  }
+
+  private static getTrimmedEndIndex(text: string): number {
+    let end = text.length;
+
+    while (end > 0 && /\s/.test(text[end - 1])) {
+      end--;
+    }
+
+    return end;
+  }
+
+  private static getCommonPrefixLength(
+    oldText: string,
+    oldEnd: number,
+    newText: string,
+    newEnd: number
+  ): number {
+    const limit = Math.min(oldEnd, newEnd);
+    let idx = 0;
+
+    while (idx < limit && oldText.charCodeAt(idx) === newText.charCodeAt(idx)) {
+      idx++;
+    }
+
+    return idx;
+  }
+
+  private static getCommonSuffixLength(
+    oldText: string,
+    oldEnd: number,
+    newText: string,
+    newEnd: number,
+    protectedPrefixLength: number
+  ): number {
+    let oldIdx = oldEnd - 1;
+    let newIdx = newEnd - 1;
+    let length = 0;
+
+    while (
+      oldIdx >= protectedPrefixLength &&
+      newIdx >= protectedPrefixLength &&
+      oldText.charCodeAt(oldIdx) === newText.charCodeAt(newIdx)
+    ) {
+      length++;
+      oldIdx--;
+      newIdx--;
+    }
+
+    return length;
+  }
+
+  private static normalizeCharacterChanges(changes: Array<Diff.Change>, minInternalUnchangedLength: number): Array<Diff.Change> {
+    if (changes.length === 0 || minInternalUnchangedLength <= 1) {
+      return changes;
+    }
+
+    const normalized: Array<Diff.Change> = [ ];
+
+    for (let i = 0; i < changes.length; i++) {
+      const change = changes[i];
+      const isUnchanged = !change.added && !change.removed;
+
+      if (!isUnchanged) {
+        normalized.push(change);
+        continue;
+      }
+
+      const isWhitespace = change.value.trim() === "";
+      const isShort = change.value.length < minInternalUnchangedLength;
+      const prev = i > 0 ? changes[i - 1] : null;
+      const next = i + 1 < changes.length ? changes[i + 1] : null;
+      const isInternal = prev !== null && next !== null;
+      const prevIsChanged = prev !== null && (prev.added || prev.removed);
+      const nextIsChanged = next !== null && (next.added || next.removed);
+
+      if (!isWhitespace && isShort && isInternal && prevIsChanged && nextIsChanged) {
+        normalized.push({ value: change.value, added: false, removed: true, count: change.value.length });
+        normalized.push({ value: change.value, added: true, removed: false, count: change.value.length });
+      } else {
+        normalized.push(change);
+      }
+    }
+
+    return normalized;
+  }
+
+  private static normalizeCrossLineCharacterChanges(
+    changes: Array<Diff.Change>,
+    minInternalUnchangedLength: number
+  ): Array<Diff.Change> {
+    if (changes.length === 0 || minInternalUnchangedLength <= 1) {
+      return changes;
+    }
+
+    const normalized: Array<Diff.Change> = [ ];
+
+    for (let i = 0; i < changes.length; i++) {
+      const change = changes[i];
+      const isUnchanged = !change.added && !change.removed;
+
+      if (!isUnchanged) {
+        normalized.push(change);
+        continue;
+      }
+
+      const isWhitespace = change.value.trim() === "";
+      const isShort = change.value.length < minInternalUnchangedLength;
+      const prev = i > 0 ? changes[i - 1] : null;
+      const next = i + 1 < changes.length ? changes[i + 1] : null;
+      const isInternal = prev !== null && next !== null;
+      const prevIsChanged = prev !== null && (prev.added || prev.removed);
+      const nextIsChanged = next !== null && (next.added || next.removed);
+
+      if (
+        !isWhitespace &&
+        isShort &&
+        isInternal &&
+        prevIsChanged &&
+        nextIsChanged &&
+        !this.isMeaningfulShortCrossLineAnchor(change.value)
+      ) {
+        normalized.push({ value: change.value, added: false, removed: true, count: change.value.length });
+        normalized.push({ value: change.value, added: true, removed: false, count: change.value.length });
+      } else {
+        normalized.push(change);
+      }
+    }
+
+    return normalized;
+  }
+
+  private static isMeaningfulShortCrossLineAnchor(value: string): boolean {
+    if (value.indexOf("\n") !== -1 || value.indexOf("\r") !== -1) {
+      return true;
+    }
+
+    if (/^[0-9]+$/.test(value)) {
+      return true;
+    }
+
+    return /^[\"'<>/=]+$/.test(value);
+  }
+
+  private static findStableSubstringMatches(
+    oldText: string,
+    newText: string,
+    minLength: number
+  ): Array<{ oldStart: number; newStart: number; length: number }> {
+    interface Segment {
+      oldStart: number;
+      oldEnd: number;
+      newStart: number;
+      newEnd: number;
+    }
+
+    const stack: Array<Segment> = [
+      {
+        oldStart: 0,
+        oldEnd: oldText.length,
+        newStart: 0,
+        newEnd: newText.length
+      }
+    ];
+    const matches: Array<{ oldStart: number; newStart: number; length: number }> = [ ];
+
+    while (stack.length > 0) {
+      const segment = stack.pop()!;
+      const match = this.findLongestCommonSubstringInSegment(oldText, newText, segment);
+
+      if (match.length === 0) {
+        continue;
+      }
+
+      if (match.length < minLength) {
+        continue;
+      }
+
+      if (match.length < 8 && !this.isTokenBoundaryAnchor(oldText, newText, match.oldStart, match.newStart, match.length)) {
+        continue;
+      }
+
+      matches.push(match);
+
+      const leftSegment: Segment = {
+        oldStart: segment.oldStart,
+        oldEnd: match.oldStart,
+        newStart: segment.newStart,
+        newEnd: match.newStart
+      };
+
+      const rightSegment: Segment = {
+        oldStart: match.oldStart + match.length,
+        oldEnd: segment.oldEnd,
+        newStart: match.newStart + match.length,
+        newEnd: segment.newEnd
+      };
+
+      if (leftSegment.oldEnd > leftSegment.oldStart && leftSegment.newEnd > leftSegment.newStart) {
+        stack.push(leftSegment);
+      }
+
+      if (rightSegment.oldEnd > rightSegment.oldStart && rightSegment.newEnd > rightSegment.newStart) {
+        stack.push(rightSegment);
+      }
+    }
+
+    matches.sort((a, b) => {
+      if (a.oldStart !== b.oldStart) {
+        return a.oldStart - b.oldStart;
+      }
+
+      return a.newStart - b.newStart;
+    });
+    return matches;
+  }
+
+  private static isTokenBoundaryAnchor(
+    oldText: string,
+    newText: string,
+    oldStart: number,
+    newStart: number,
+    length: number
+  ): boolean {
+    const oldEnd = oldStart + length;
+    const newEnd = newStart + length;
+
+    const oldLeftBoundary = this.isBoundaryAt(oldText, oldStart - 1, oldStart);
+    const oldRightBoundary = this.isBoundaryAt(oldText, oldEnd - 1, oldEnd);
+    const newLeftBoundary = this.isBoundaryAt(newText, newStart - 1, newStart);
+    const newRightBoundary = this.isBoundaryAt(newText, newEnd - 1, newEnd);
+
+    return oldLeftBoundary && oldRightBoundary && newLeftBoundary && newRightBoundary;
+  }
+
+  private static isBoundaryAt(text: string, leftIndex: number, rightIndex: number): boolean {
+    const leftIsWord = leftIndex >= 0 ? this.isWordCharacter(text.charCodeAt(leftIndex)) : false;
+    const rightIsWord = rightIndex < text.length ? this.isWordCharacter(text.charCodeAt(rightIndex)) : false;
+
+    return leftIsWord !== rightIsWord;
+  }
+
+  private static isWordCharacter(charCode: number): boolean {
+    return (
+      (charCode >= 48 && charCode <= 57) ||
+      (charCode >= 65 && charCode <= 90) ||
+      (charCode >= 97 && charCode <= 122) ||
+      charCode === 95
+    );
+  }
+
+  private static findLongestCommonSubstringInSegment(
+    oldText: string,
+    newText: string,
+    segment: { oldStart: number; oldEnd: number; newStart: number; newEnd: number }
+  ): { oldStart: number; newStart: number; length: number } {
+    const oldLen = segment.oldEnd - segment.oldStart;
+    const newLen = segment.newEnd - segment.newStart;
+
+    if (oldLen <= 0 || newLen <= 0) {
+      return { oldStart: segment.oldStart, newStart: segment.newStart, length: 0 };
+    }
+
+    const prev = new Array<number>(newLen + 1).fill(0);
+    const curr = new Array<number>(newLen + 1).fill(0);
+    let bestLength = 0;
+    let bestOldEnd = segment.oldStart;
+    let bestNewEnd = segment.newStart;
+
+    for (let i = 1; i <= oldLen; i++) {
+      curr.fill(0);
+      const oldChar = oldText.charCodeAt(segment.oldStart + i - 1);
+
+      for (let j = 1; j <= newLen; j++) {
+        if (oldChar === newText.charCodeAt(segment.newStart + j - 1)) {
+          curr[j] = prev[j - 1] + 1;
+
+          if (curr[j] > bestLength) {
+            bestLength = curr[j];
+            bestOldEnd = segment.oldStart + i;
+            bestNewEnd = segment.newStart + j;
+          }
+        }
+      }
+
+      for (let j = 0; j <= newLen; j++) {
+        prev[j] = curr[j];
+      }
+    }
+
+    return {
+      oldStart: bestOldEnd - bestLength,
+      newStart: bestNewEnd - bestLength,
+      length: bestLength
+    };
+  }
+
+  private static projectFragmentsToLines(
+    flatFragments: Array<TextFragment>,
+    expectedLineCount: number,
+    startLineNum: number,
+    lineKind: DiffChangeType
+  ): Array<ChangeLine> {
+    const lineBuckets: Array<Array<TextFragment>> = [ [ ] ];
+
+    const appendFragment = (bucket: Array<TextFragment>, fragment: TextFragment, text: string) => {
+      if (text.length === 0) {
+        return;
+      }
+
+      bucket.push({
+        text,
+        kind: fragment.kind,
+        isWhitespaceChange: text.trim() === ""
+      });
+    };
+
+    for (let i = 0; i < flatFragments.length; i++) {
+      const fragment = flatFragments[i];
+      let cursor = 0;
+
+      while (cursor < fragment.text.length) {
+        const newlineIndex = fragment.text.indexOf("\n", cursor);
+
+        if (newlineIndex === -1) {
+          appendFragment(lineBuckets[lineBuckets.length - 1], fragment, fragment.text.slice(cursor));
+          break;
+        }
+
+        appendFragment(lineBuckets[lineBuckets.length - 1], fragment, fragment.text.slice(cursor, newlineIndex));
+        lineBuckets.push([ ]);
+        cursor = newlineIndex + 1;
+      }
+    }
+
+    if (expectedLineCount > 0 && lineBuckets.length > expectedLineCount) {
+      const overflowStart = expectedLineCount;
+      for (let i = overflowStart; i < lineBuckets.length; i++) {
+        lineBuckets[expectedLineCount - 1] = lineBuckets[expectedLineCount - 1].concat(lineBuckets[i]);
+      }
+      lineBuckets.length = expectedLineCount;
+    }
+
+    while (lineBuckets.length < expectedLineCount) {
+      lineBuckets.push([ ]);
+    }
+
+    const result: Array<ChangeLine> = [ ];
+    for (let i = 0; i < expectedLineCount; i++) {
+      result.push({
+        lineNumber: startLineNum + i,
+        kind: lineKind,
+        isInModifiedBlock: true,
+        fragments: lineBuckets[i]
+      });
+    }
+
+    return result;
+  }
+
   private static getSimilarity(s1: string, s2: string): number {
     if (s1 === s2 && s1.trim() !== "") return 1;
     const s1Trim = s1.trim();
@@ -466,7 +1005,7 @@ export class ComparisonService {
   private static generateInlineDiff(oldStr: string, newStr: string, settings: CompareSettings, oldLineNum: number, newLineNum: number) {
     let inlineChanges: Array<Diff.Change>;
     if (settings.precision === PrecisionLevel.Character) {
-      inlineChanges = Diff.diffChars(oldStr, newStr);
+      inlineChanges = this.normalizeCharacterChanges(Diff.diffChars(oldStr, newStr), 3);
     } else {
       inlineChanges = Diff.diffWordsWithSpace(oldStr, newStr);
     }
@@ -493,10 +1032,68 @@ export class ComparisonService {
       }
     }
 
+    const balancedOldFragments = this.rebalanceDuplicateBoundaryHighlights(oldFragments);
+    const balancedNewFragments = this.rebalanceDuplicateBoundaryHighlights(newFragments);
+
     return {
-      oldLine: { lineNumber: oldLineNum, kind: DiffChangeType.Deleted, isInModifiedBlock: true, fragments: oldFragments },
-      newLine: { lineNumber: newLineNum, kind: DiffChangeType.Inserted, isInModifiedBlock: true, fragments: newFragments },
+      oldLine: { lineNumber: oldLineNum, kind: DiffChangeType.Deleted, isInModifiedBlock: true, fragments: balancedOldFragments },
+      newLine: { lineNumber: newLineNum, kind: DiffChangeType.Inserted, isInModifiedBlock: true, fragments: balancedNewFragments },
       isWhitespaceOnly
     };
+  }
+
+  private static rebalanceDuplicateBoundaryHighlights(fragments: Array<TextFragment>): Array<TextFragment> {
+    if (fragments.length < 2) {
+      return fragments;
+    }
+
+    const normalized = fragments.map((fragment) => ({ ...fragment }));
+
+    for (let i = 0; i < normalized.length - 1; i++) {
+      const current = normalized[i];
+      const next = normalized[i + 1];
+
+      const isCurrentChanged = current.kind === DiffChangeType.Inserted || current.kind === DiffChangeType.Deleted;
+      const isNextUnchanged = next.kind === DiffChangeType.Unchanged;
+
+      if (!isCurrentChanged || !isNextUnchanged) {
+        continue;
+      }
+
+      if (current.text.length < 2 || next.text.length === 0) {
+        continue;
+      }
+
+      const firstChar = current.text[0];
+      const nextChar = next.text[0];
+
+      if (firstChar !== nextChar) {
+        continue;
+      }
+
+      const previous = i > 0 ? normalized[i - 1] : null;
+      if (previous && previous.kind === DiffChangeType.Unchanged) {
+        previous.text += firstChar;
+      } else {
+        normalized.splice(i, 0, {
+          text: firstChar,
+          kind: DiffChangeType.Unchanged,
+          isWhitespaceChange: firstChar.trim() === ""
+        });
+        i++;
+      }
+
+      current.text = current.text.slice(1) + nextChar;
+      next.text = next.text.slice(1);
+      current.isWhitespaceChange = current.text.trim() === "";
+      next.isWhitespaceChange = next.text.trim() === "";
+
+      if (next.text.length === 0) {
+        normalized.splice(i + 1, 1);
+        i--;
+      }
+    }
+
+    return normalized;
   }
 }
