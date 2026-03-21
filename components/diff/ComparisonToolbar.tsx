@@ -6,6 +6,7 @@ import { useEditorStore } from "@/store/useEditorStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCompareActions } from "@/hooks/useCompareActions";
 import { calculateStats } from "@/utils/diffHelpers";
+import { Button } from "@/components/ui/Button";
 
 export function ComparisonToolbar() {
   const { comparisonResult, leftText, rightText } = useEditorStore();
@@ -32,7 +33,7 @@ export function ComparisonToolbar() {
   };
 
   return (
-    <div className="flex items-center justify-between border-b border-border-default bg-bg-secondary px-4 py-1.5 shrink-0 z-20 select-none">
+    <div className="flex items-center justify-between border-b border-border-default bg-bg-secondary px-4 h-[var(--header-height)] shrink-0 z-20 select-none">
       <div className="flex flex-1 items-center justify-between">
         <div className="flex items-center gap-2">
           <MdDescription className="text-xl text-text-secondary" />
@@ -41,11 +42,11 @@ export function ComparisonToolbar() {
 
         <div className="flex items-center gap-4">
           <span className="text-sm text-text-secondary">{leftLineCount} lines</span>
-   
+
           <button
             onClick={() => handleCopy(leftText, "left")}
             disabled={copiedSide === "left" || !leftText}
-            className="flex items-center gap-1 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-success disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+            className="flex items-center gap-1 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-success disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-[var(--duration-short)]"
             title="Copy Original Text"
           >
             {copiedSide === "left" ? (
@@ -63,7 +64,7 @@ export function ComparisonToolbar() {
         </div>
       </div>
 
-      <button onClick={() => executeSwap(settings)} className="mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-1.5 rounded" title="Swap Sides">
+      <button onClick={() => executeSwap(settings)} className="mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-1.5 rounded transition-colors duration-[var(--duration-short)]" title="Swap Sides">
         <MdSwapHoriz />
       </button>
 
@@ -74,11 +75,11 @@ export function ComparisonToolbar() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-text-secondary">{rightLineCount} lines</span>
-         
+
           <button
             onClick={() => handleCopy(rightText, "right")}
             disabled={copiedSide === "right" || !rightText}
-            className="flex items-center gap-1 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-success disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+            className="flex items-center gap-1 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-success disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-[var(--duration-short)]"
             title="Copy Modified Text"
           >
             {copiedSide === "right" ? (
@@ -94,10 +95,15 @@ export function ComparisonToolbar() {
             )}
           </button>
           <div className="w-px h-6 bg-border-default mx-2" />
-          <button onClick={executeClear} className="flex items-center gap-1 bg-danger-bg text-danger border border-danger/20 px-3 py-1.5 rounded text-sm font-semibold hover:brightness-95 transition-all">
-            <MdDelete className="text-lg" />
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={executeClear}
+            leftIcon={<MdDelete className="text-lg" />}
+            title="Clear comparison"
+          >
             Clear
-          </button>
+          </Button>
         </div>
       </div>
     </div>

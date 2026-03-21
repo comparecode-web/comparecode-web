@@ -25,6 +25,12 @@
   --color-minimap-added: var(--minimap-added);
   --color-minimap-removed: var(--minimap-removed);
   --color-minimap-empty: var(--minimap-empty);
+
+  --spacing-header: var(--header-height);
+
+  --default-duration-short: var(--duration-short);
+  --default-duration-medium: var(--duration-medium);
+  --default-duration-long: var(--duration-long);
 }
 
 :root, [data-theme="light"] {
@@ -52,6 +58,11 @@
   --minimap-added: #8fe3c7;
   --minimap-removed: #f5a4a4;
   --minimap-empty: #e5e7eb;
+
+  --header-height: 3rem;
+  --duration-short: 150ms;
+  --duration-medium: 300ms;
+  --duration-long: 500ms;
 }
 
 [data-theme="dark"] {
@@ -79,6 +90,11 @@
   --minimap-added: #1f6b35;
   --minimap-removed: #a1292d;
   --minimap-empty: #374151;
+
+  --header-height: 3rem;
+  --duration-short: 150ms;
+  --duration-medium: 300ms;
+  --duration-long: 500ms;
 }
 
 body {

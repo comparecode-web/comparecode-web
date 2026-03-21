@@ -7,7 +7,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { OptionsView } from "./OptionsView";
 import { InputView } from "./InputView";
 import { ComparisonView } from "@/components/diff/ComparisonView";
-import clsx from "clsx";
+import { cn } from "@/utils/uiHelpers";
 
 export function EditorView() {
   const { comparisonResult } = useEditorStore();
@@ -19,8 +19,8 @@ export function EditorView() {
   return (
     <div className="flex h-full w-full overflow-hidden bg-bg-primary relative">
       <div
-        className={clsx(
-          "flex flex-col bg-bg-secondary transition-all duration-300 overflow-hidden h-full shrink-0 z-10",
+        className={cn(
+          "flex flex-col bg-bg-secondary transition-[width] duration-[var(--duration-medium)] overflow-hidden h-full shrink-0 z-10",
           isOptionsPanelOpen ? "w-64 border-r border-border-default" : "w-0 border-r-0"
         )}
       >
@@ -32,7 +32,7 @@ export function EditorView() {
             </div>
             <button
               onClick={() => setIsOptionsPanelOpen(false)}
-              className="flex items-center justify-center rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors"
+              className="flex items-center justify-center rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors duration-[var(--duration-short)]"
               title="Close Options"
             >
               <MdKeyboardArrowLeft className="text-2xl" />
@@ -48,7 +48,7 @@ export function EditorView() {
         {!isOptionsPanelOpen && (
           <button
             onClick={() => setIsOptionsPanelOpen(true)}
-            className="absolute left-0 top-6 z-30 flex h-12 w-6 items-center justify-center rounded-r-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors"
+            className="absolute left-0 top-6 z-30 flex h-12 w-6 items-center justify-center rounded-r-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-[var(--duration-short)]"
             title="Open Options"
           >
             <MdKeyboardArrowRight className="text-2xl" />
@@ -56,7 +56,7 @@ export function EditorView() {
         )}
 
         <div
-          className={clsx(
+          className={cn(
             "flex flex-col bg-bg-primary relative",
             hasResult || !isInputExpanded ? "flex-1 overflow-hidden" : "shrink-0 h-0"
           )}
@@ -67,7 +67,7 @@ export function EditorView() {
         {!isInputExpanded && (
           <button
             onClick={toggleInputPanel}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 flex h-8 pl-3 pr-5 items-center justify-center gap-1 rounded-t-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors text-sm font-semibold"
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 flex h-8 pl-3 pr-5 items-center justify-center gap-1 rounded-t-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-[var(--duration-short)] text-sm font-semibold"
             title="Show Input"
           >
             <MdKeyboardArrowUp className="text-xl" />
@@ -76,9 +76,9 @@ export function EditorView() {
         )}
 
         <div
-          className={clsx(
-            "flex flex-col shrink-0 transition-all duration-300 ease-in-out overflow-hidden bg-bg-primary z-10",
-            isInputExpanded ? (hasResult ? "h-[450px] border-t border-border-default shadow-sm" : "flex-1") : "h-0 opacity-0"
+          className={cn(
+            "flex flex-col shrink-0 transition-[height,opacity] duration-[var(--duration-medium)] ease-in-out overflow-hidden bg-bg-primary z-10",
+            isInputExpanded ? (hasResult ? "h-[450px] border-t border-border-default shadow-sm opacity-100" : "flex-1 opacity-100") : "h-0 opacity-0"
           )}
         >
           <InputView />

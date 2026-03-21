@@ -8,10 +8,10 @@ import { BlockType, DiffChangeType } from "@/types/diff";
 import { useSyncedScroll } from "@/hooks/useSyncedScroll";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { SplitRow, SplitRowData } from "./SplitRow";
-import clsx from "clsx";
+import { cn } from "@/utils/uiHelpers";
 
 export function SplitView() {
-  const { comparisonResult, selectBlock, mergeBlock } = useEditorStore();
+  const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
 
   const wrapScrollRef = useRef<HTMLDivElement>(null);
@@ -43,6 +43,7 @@ export function SplitView() {
     comparisonResult.blocks.forEach((block) => {
       const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
       const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
+
       const maxLines = Math.max(block.oldLines.length, block.newLines.length);
 
       if (maxLines === 0) return;
@@ -64,7 +65,6 @@ export function SplitView() {
         const oldLine = oldIndex >= 0 ? block.oldLines[oldIndex] : undefined;
         const newLine = newIndex >= 0 ? block.newLines[newIndex] : undefined;
 
-        // If both sides are ghost rows, this visual row carries no information.
         if (isImaginary(oldLine) && isImaginary(newLine)) {
           continue;
         }
@@ -142,9 +142,12 @@ export function SplitView() {
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 80px)` } : {};
 
+  const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
+
   if (settings.isWordWrapEnabled) {
     return (
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-8" ref={wrapScrollRef}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-8" ref={wrapScrollRef} style={customStyles}>
         <div className="w-full relative" style={{ height: `${wrapVirtualizer.getTotalSize()}px` }}>
           {wrapVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
@@ -171,16 +174,16 @@ export function SplitView() {
   }
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full" style={customStyles}>
       <div
-        className={clsx("flex-1 overflow-auto hide-vertical-scrollbar border-r border-border-default", selectionSide === "right" && "select-none")}
+        className={cn("flex-1 overflow-auto hide-vertical-scrollbar border-r border-border-default", selectionSide === "right" && "select-none")}
         ref={leftScrollRef}
         onScroll={handleLeftScroll}
         onMouseDown={() => setSelectionSide("left")}
       >
-        <div className={clsx("relative", containerWidthClass)} style={{ height: `${leftVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+        <div className={cn("relative", containerWidthClass)} style={{ height: `${leftVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
           {leftVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
-             const row = rows[virtualRow.index];
+            const row = rows[virtualRow.index];
             return (
               <SplitRow
                 key={virtualRow.key}
@@ -202,12 +205,12 @@ export function SplitView() {
       </div>
 
       <div
-        className={clsx("flex-1 overflow-auto custom-scrollbar", selectionSide === "left" && "select-none")}
+        className={cn("flex-1 overflow-auto custom-scrollbar", selectionSide === "left" && "select-none")}
         ref={rightScrollRef}
         onScroll={handleRightScroll}
         onMouseDown={() => setSelectionSide("right")}
       >
-        <div className={clsx("relative pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+        <div className={cn("relative pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
           {rightVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
             return (
