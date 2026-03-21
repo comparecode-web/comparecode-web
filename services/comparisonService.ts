@@ -497,17 +497,20 @@ export class ComparisonService {
       this.appendMergedFragment(newFlatFragments, newJoined.slice(newTrimEnd), DiffChangeType.Inserted);
     }
 
+    const normalizedOldFlatFragments = this.rebalanceDuplicateBoundaryHighlights(oldFlatFragments);
+    const normalizedNewFlatFragments = this.rebalanceDuplicateBoundaryHighlights(newFlatFragments);
+
     let isWhitespaceOnlyBlock = true;
-    for (let i = 0; i < oldFlatFragments.length; i++) {
-      if (oldFlatFragments[i].kind === DiffChangeType.Deleted && oldFlatFragments[i].text.trim() !== "") {
+    for (let i = 0; i < normalizedOldFlatFragments.length; i++) {
+      if (normalizedOldFlatFragments[i].kind === DiffChangeType.Deleted && normalizedOldFlatFragments[i].text.trim() !== "") {
         isWhitespaceOnlyBlock = false;
         break;
       }
     }
 
     if (isWhitespaceOnlyBlock) {
-      for (let i = 0; i < newFlatFragments.length; i++) {
-        if (newFlatFragments[i].kind === DiffChangeType.Inserted && newFlatFragments[i].text.trim() !== "") {
+      for (let i = 0; i < normalizedNewFlatFragments.length; i++) {
+        if (normalizedNewFlatFragments[i].kind === DiffChangeType.Inserted && normalizedNewFlatFragments[i].text.trim() !== "") {
           isWhitespaceOnlyBlock = false;
           break;
         }
@@ -515,14 +518,14 @@ export class ComparisonService {
     }
 
     const oldLinesResult = this.projectFragmentsToLines(
-      oldFlatFragments,
+      normalizedOldFlatFragments,
       oldBlockLines.length,
       startOldLineNum,
       DiffChangeType.Deleted
     );
 
     const newLinesResult = this.projectFragmentsToLines(
-      newFlatFragments,
+      normalizedNewFlatFragments,
       newBlockLines.length,
       startNewLineNum,
       DiffChangeType.Inserted
@@ -1029,10 +1032,68 @@ export class ComparisonService {
       }
     }
 
+    const balancedOldFragments = this.rebalanceDuplicateBoundaryHighlights(oldFragments);
+    const balancedNewFragments = this.rebalanceDuplicateBoundaryHighlights(newFragments);
+
     return {
-      oldLine: { lineNumber: oldLineNum, kind: DiffChangeType.Deleted, isInModifiedBlock: true, fragments: oldFragments },
-      newLine: { lineNumber: newLineNum, kind: DiffChangeType.Inserted, isInModifiedBlock: true, fragments: newFragments },
+      oldLine: { lineNumber: oldLineNum, kind: DiffChangeType.Deleted, isInModifiedBlock: true, fragments: balancedOldFragments },
+      newLine: { lineNumber: newLineNum, kind: DiffChangeType.Inserted, isInModifiedBlock: true, fragments: balancedNewFragments },
       isWhitespaceOnly
     };
+  }
+
+  private static rebalanceDuplicateBoundaryHighlights(fragments: Array<TextFragment>): Array<TextFragment> {
+    if (fragments.length < 2) {
+      return fragments;
+    }
+
+    const normalized = fragments.map((fragment) => ({ ...fragment }));
+
+    for (let i = 0; i < normalized.length - 1; i++) {
+      const current = normalized[i];
+      const next = normalized[i + 1];
+
+      const isCurrentChanged = current.kind === DiffChangeType.Inserted || current.kind === DiffChangeType.Deleted;
+      const isNextUnchanged = next.kind === DiffChangeType.Unchanged;
+
+      if (!isCurrentChanged || !isNextUnchanged) {
+        continue;
+      }
+
+      if (current.text.length < 2 || next.text.length === 0) {
+        continue;
+      }
+
+      const firstChar = current.text[0];
+      const nextChar = next.text[0];
+
+      if (firstChar !== nextChar) {
+        continue;
+      }
+
+      const previous = i > 0 ? normalized[i - 1] : null;
+      if (previous && previous.kind === DiffChangeType.Unchanged) {
+        previous.text += firstChar;
+      } else {
+        normalized.splice(i, 0, {
+          text: firstChar,
+          kind: DiffChangeType.Unchanged,
+          isWhitespaceChange: firstChar.trim() === ""
+        });
+        i++;
+      }
+
+      current.text = current.text.slice(1) + nextChar;
+      next.text = next.text.slice(1);
+      current.isWhitespaceChange = current.text.trim() === "";
+      next.isWhitespaceChange = next.text.trim() === "";
+
+      if (next.text.length === 0) {
+        normalized.splice(i + 1, 1);
+        i--;
+      }
+    }
+
+    return normalized;
   }
 }

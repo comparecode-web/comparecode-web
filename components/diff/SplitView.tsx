@@ -25,22 +25,19 @@ export function SplitView() {
     if (!comparisonResult) return result;
 
     const isImaginary = (line: { kind: DiffChangeType } | undefined) => !line || line.kind === DiffChangeType.Imaginary;
-    const hasOnlyLeadingGhostRows = (lines: Array<{ kind: DiffChangeType }>, untilIndexExclusive: number) => {
-      if (untilIndexExclusive <= 0) {
-        return false;
-      }
+    const reorderGhostRowsToBottom = (lines: Array<{ kind: DiffChangeType }>, maxLines: number): Array<number> => {
+      const nonGhost: Array<number> = [ ];
+      const ghost: Array<number> = [ ];
 
-      for (let i = 0; i < untilIndexExclusive; i++) {
-        if (!isImaginary(lines[i])) {
-          return false;
+      for (let idx = 0; idx < maxLines; idx++) {
+        if (isImaginary(lines[idx])) {
+          ghost.push(idx);
+        } else {
+          nonGhost.push(idx);
         }
       }
 
-      return true;
-    };
-
-    const rotateLeadingGhostRowsToBottom = (indices: Array<number>, pivot: number): Array<number> => {
-      return indices.slice(pivot).concat(indices.slice(0, pivot));
+      return nonGhost.concat(ghost);
     };
 
     comparisonResult.blocks.forEach((block) => {
@@ -54,29 +51,8 @@ export function SplitView() {
       let newDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
 
       if (block.kind === BlockType.Modified && maxLines > 1) {
-        let firstComparableIndex = -1;
-
-        for (let idx = 0; idx < maxLines; idx++) {
-          const oldLine = block.oldLines[idx];
-          const newLine = block.newLines[idx];
-          const oldIsImaginary = isImaginary(oldLine);
-          const newIsImaginary = isImaginary(newLine);
-
-          if (!oldIsImaginary && !newIsImaginary) {
-            firstComparableIndex = idx;
-            break;
-          }
-        }
-
-        if (firstComparableIndex > 0) {
-          if (hasOnlyLeadingGhostRows(block.oldLines, firstComparableIndex)) {
-            oldDisplayIndices = rotateLeadingGhostRowsToBottom(oldDisplayIndices, firstComparableIndex);
-          }
-
-          if (hasOnlyLeadingGhostRows(block.newLines, firstComparableIndex)) {
-            newDisplayIndices = rotateLeadingGhostRowsToBottom(newDisplayIndices, firstComparableIndex);
-          }
-        }
+        oldDisplayIndices = reorderGhostRowsToBottom(block.oldLines, maxLines);
+        newDisplayIndices = reorderGhostRowsToBottom(block.newLines, maxLines);
       }
 
       for (let i = 0; i < maxLines; i++) {
