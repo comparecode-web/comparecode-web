@@ -1007,7 +1007,7 @@ export class ComparisonService {
     if (settings.precision === PrecisionLevel.Character) {
       inlineChanges = this.normalizeCharacterChanges(Diff.diffChars(oldStr, newStr), 3);
     } else {
-      inlineChanges = Diff.diffWordsWithSpace(oldStr, newStr);
+      inlineChanges = this.generateWordPrecisionChanges(oldStr, newStr);
     }
 
     const oldFragments: Array<TextFragment> = [ ];
@@ -1032,14 +1032,154 @@ export class ComparisonService {
       }
     }
 
-    const balancedOldFragments = this.rebalanceDuplicateBoundaryHighlights(oldFragments);
-    const balancedNewFragments = this.rebalanceDuplicateBoundaryHighlights(newFragments);
+    let balancedOldFragments = this.rebalanceDuplicateBoundaryHighlights(oldFragments);
+    let balancedNewFragments = this.rebalanceDuplicateBoundaryHighlights(newFragments);
+
+    if (settings.precision === PrecisionLevel.Word) {
+      balancedOldFragments = this.mergeWhitespaceBetweenChangedFragments(balancedOldFragments, DiffChangeType.Deleted);
+      balancedNewFragments = this.mergeWhitespaceBetweenChangedFragments(balancedNewFragments, DiffChangeType.Inserted);
+      balancedOldFragments = this.normalizeTrailingWhitespaceAtChangeBoundary(balancedOldFragments);
+      balancedNewFragments = this.normalizeTrailingWhitespaceAtChangeBoundary(balancedNewFragments);
+    }
 
     return {
       oldLine: { lineNumber: oldLineNum, kind: DiffChangeType.Deleted, isInModifiedBlock: true, fragments: balancedOldFragments },
       newLine: { lineNumber: newLineNum, kind: DiffChangeType.Inserted, isInModifiedBlock: true, fragments: balancedNewFragments },
       isWhitespaceOnly
     };
+  }
+
+  private static generateWordPrecisionChanges(oldStr: string, newStr: string): Array<Diff.Change> {
+    const oldTokens = this.tokenizeByWhitespace(oldStr);
+    const newTokens = this.tokenizeByWhitespace(newStr);
+    const tokenChanges = Diff.diffArrays(oldTokens, newTokens);
+    const normalizedChanges: Array<Diff.Change> = [ ];
+
+    for (let i = 0; i < tokenChanges.length; i++) {
+      const tokenChange = tokenChanges[i];
+      const value = tokenChange.value.join("");
+
+      if (value.length === 0) {
+        continue;
+      }
+
+      if (tokenChange.added) {
+        normalizedChanges.push({ value, added: true, removed: false, count: value.length });
+      } else if (tokenChange.removed) {
+        normalizedChanges.push({ value, added: false, removed: true, count: value.length });
+      } else {
+        normalizedChanges.push({ value, added: false, removed: false, count: value.length });
+      }
+    }
+
+    return normalizedChanges;
+  }
+
+  private static tokenizeByWhitespace(text: string): Array<string> {
+    const tokens = text.match(/\s+|\S+/g);
+    return tokens ?? [ ];
+  }
+
+  private static mergeWhitespaceBetweenChangedFragments(
+    fragments: Array<TextFragment>,
+    changedKind: DiffChangeType
+  ): Array<TextFragment> {
+    if (fragments.length < 3) {
+      return fragments;
+    }
+
+    const normalized = fragments.map((fragment) => ({ ...fragment }));
+
+    for (let i = 1; i < normalized.length - 1; i++) {
+      const previous = normalized[i - 1];
+      const current = normalized[i];
+      const next = normalized[i + 1];
+
+      if (current.kind !== DiffChangeType.Unchanged) {
+        continue;
+      }
+
+      if (current.text.trim() !== "") {
+        continue;
+      }
+
+      if (
+        previous.kind === changedKind &&
+        next.kind === changedKind &&
+        this.hasWordLikeContent(previous.text) &&
+        this.hasWordLikeContent(next.text)
+      ) {
+        current.kind = changedKind;
+        current.isWhitespaceChange = true;
+      }
+    }
+
+    return this.mergeAdjacentFragments(normalized);
+  }
+
+  private static hasWordLikeContent(text: string): boolean {
+    return /[A-Za-z0-9_]/.test(text);
+  }
+
+  private static mergeAdjacentFragments(fragments: Array<TextFragment>): Array<TextFragment> {
+    if (fragments.length < 2) {
+      return fragments;
+    }
+
+    const merged: Array<TextFragment> = [ ];
+
+    for (let i = 0; i < fragments.length; i++) {
+      const current = fragments[i];
+      const last = merged.length > 0 ? merged[merged.length - 1] : null;
+
+      if (last && last.kind === current.kind && last.isWhitespaceChange === current.isWhitespaceChange) {
+        last.text += current.text;
+      } else {
+        merged.push({ ...current });
+      }
+    }
+
+    return merged;
+  }
+
+  private static normalizeTrailingWhitespaceAtChangeBoundary(fragments: Array<TextFragment>): Array<TextFragment> {
+    if (fragments.length < 2) {
+      return fragments;
+    }
+
+    const normalized = fragments.map((fragment) => ({ ...fragment }));
+
+    for (let i = 0; i < normalized.length - 1; i++) {
+      const current = normalized[i];
+      const next = normalized[i + 1];
+      const currentIsChanged = current.kind === DiffChangeType.Inserted || current.kind === DiffChangeType.Deleted;
+
+      if (!currentIsChanged || next.kind !== DiffChangeType.Unchanged) {
+        continue;
+      }
+
+      if (next.text.length === 0 || /^\s/.test(next.text)) {
+        continue;
+      }
+
+      const trailingWhitespaceMatch = current.text.match(/\s+$/);
+      if (!trailingWhitespaceMatch) {
+        continue;
+      }
+
+      const trailingWhitespace = trailingWhitespaceMatch[0];
+      current.text = current.text.slice(0, current.text.length - trailingWhitespace.length);
+      next.text = trailingWhitespace + next.text;
+      current.isWhitespaceChange = current.text.trim() === "";
+      next.isWhitespaceChange = next.text.trim() === "";
+
+      if (current.text.length === 0) {
+        normalized.splice(i, 1);
+        i--;
+      }
+    }
+
+    return this.mergeAdjacentFragments(normalized);
   }
 
   private static rebalanceDuplicateBoundaryHighlights(fragments: Array<TextFragment>): Array<TextFragment> {
