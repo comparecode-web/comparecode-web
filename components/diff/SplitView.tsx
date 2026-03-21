@@ -55,18 +55,34 @@ export function SplitView() {
         newDisplayIndices = reorderGhostRowsToBottom(block.newLines, maxLines);
       }
 
+      const lineRows: Array<{ oldIndex: number; newIndex: number }> = [ ];
+
       for (let i = 0; i < maxLines; i++) {
         const oldIndex = oldDisplayIndices[i] ?? -1;
         const newIndex = newDisplayIndices[i] ?? -1;
+
+        const oldLine = oldIndex >= 0 ? block.oldLines[oldIndex] : undefined;
+        const newLine = newIndex >= 0 ? block.newLines[newIndex] : undefined;
+
+        // If both sides are ghost rows, this visual row carries no information.
+        if (isImaginary(oldLine) && isImaginary(newLine)) {
+          continue;
+        }
+
+        lineRows.push({ oldIndex, newIndex });
+      }
+
+      for (let i = 0; i < lineRows.length; i++) {
+        const lineRow = lineRows[i];
 
         result.push({
           id: `${block.id}-line-${i}`,
           type: "line",
           block,
-          oldIndex,
-          newIndex,
+          oldIndex: lineRow.oldIndex,
+          newIndex: lineRow.newIndex,
           isFirst: i === 0,
-          isLast: i === maxLines - 1 && !block.isSelected,
+          isLast: i === lineRows.length - 1 && !block.isSelected,
           isSelectable
         });
       }
