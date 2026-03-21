@@ -460,13 +460,12 @@ export class ComparisonService {
       const matchOldStart = middleOldStart + match.oldStart;
       const matchNewStart = middleNewStart + match.newStart;
 
-      if (oldCursor < matchOldStart) {
-        this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldCursor, matchOldStart), DiffChangeType.Deleted);
-      }
-
-      if (newCursor < matchNewStart) {
-        this.appendMergedFragment(newFlatFragments, newJoined.slice(newCursor, matchNewStart), DiffChangeType.Inserted);
-      }
+      this.appendCrossLineGapDiff(
+        oldFlatFragments,
+        newFlatFragments,
+        oldJoined.slice(oldCursor, matchOldStart),
+        newJoined.slice(newCursor, matchNewStart)
+      );
 
       const unchangedText = oldJoined.slice(matchOldStart, matchOldStart + match.length);
       this.appendMergedFragment(oldFlatFragments, unchangedText, DiffChangeType.Unchanged);
@@ -476,13 +475,12 @@ export class ComparisonService {
       newCursor = matchNewStart + match.length;
     }
 
-    if (oldCursor < middleOldEnd) {
-      this.appendMergedFragment(oldFlatFragments, oldJoined.slice(oldCursor, middleOldEnd), DiffChangeType.Deleted);
-    }
-
-    if (newCursor < middleNewEnd) {
-      this.appendMergedFragment(newFlatFragments, newJoined.slice(newCursor, middleNewEnd), DiffChangeType.Inserted);
-    }
+    this.appendCrossLineGapDiff(
+      oldFlatFragments,
+      newFlatFragments,
+      oldJoined.slice(oldCursor, middleOldEnd),
+      newJoined.slice(newCursor, middleNewEnd)
+    );
 
     if (suffixLength > 0) {
       const suffixStart = oldTrimEnd - suffixLength;
@@ -531,6 +529,42 @@ export class ComparisonService {
     );
 
     return { oldLinesResult, newLinesResult, isWhitespaceOnlyBlock };
+  }
+
+  private static appendCrossLineGapDiff(
+    oldTarget: Array<TextFragment>,
+    newTarget: Array<TextFragment>,
+    oldGap: string,
+    newGap: string
+  ) {
+    if (oldGap.length === 0 && newGap.length === 0) {
+      return;
+    }
+
+    if (oldGap.length === 0) {
+      this.appendMergedFragment(newTarget, newGap, DiffChangeType.Inserted);
+      return;
+    }
+
+    if (newGap.length === 0) {
+      this.appendMergedFragment(oldTarget, oldGap, DiffChangeType.Deleted);
+      return;
+    }
+
+    const changes = this.normalizeCrossLineCharacterChanges(Diff.diffChars(oldGap, newGap), 3);
+
+    for (let i = 0; i < changes.length; i++) {
+      const change = changes[i];
+
+      if (change.added) {
+        this.appendMergedFragment(newTarget, change.value, DiffChangeType.Inserted);
+      } else if (change.removed) {
+        this.appendMergedFragment(oldTarget, change.value, DiffChangeType.Deleted);
+      } else {
+        this.appendMergedFragment(oldTarget, change.value, DiffChangeType.Unchanged);
+        this.appendMergedFragment(newTarget, change.value, DiffChangeType.Unchanged);
+      }
+    }
   }
 
   private static appendMergedFragment(
@@ -640,6 +674,63 @@ export class ComparisonService {
     }
 
     return normalized;
+  }
+
+  private static normalizeCrossLineCharacterChanges(
+    changes: Array<Diff.Change>,
+    minInternalUnchangedLength: number
+  ): Array<Diff.Change> {
+    if (changes.length === 0 || minInternalUnchangedLength <= 1) {
+      return changes;
+    }
+
+    const normalized: Array<Diff.Change> = [ ];
+
+    for (let i = 0; i < changes.length; i++) {
+      const change = changes[i];
+      const isUnchanged = !change.added && !change.removed;
+
+      if (!isUnchanged) {
+        normalized.push(change);
+        continue;
+      }
+
+      const isWhitespace = change.value.trim() === "";
+      const isShort = change.value.length < minInternalUnchangedLength;
+      const prev = i > 0 ? changes[i - 1] : null;
+      const next = i + 1 < changes.length ? changes[i + 1] : null;
+      const isInternal = prev !== null && next !== null;
+      const prevIsChanged = prev !== null && (prev.added || prev.removed);
+      const nextIsChanged = next !== null && (next.added || next.removed);
+
+      if (
+        !isWhitespace &&
+        isShort &&
+        isInternal &&
+        prevIsChanged &&
+        nextIsChanged &&
+        !this.isMeaningfulShortCrossLineAnchor(change.value)
+      ) {
+        normalized.push({ value: change.value, added: false, removed: true, count: change.value.length });
+        normalized.push({ value: change.value, added: true, removed: false, count: change.value.length });
+      } else {
+        normalized.push(change);
+      }
+    }
+
+    return normalized;
+  }
+
+  private static isMeaningfulShortCrossLineAnchor(value: string): boolean {
+    if (value.indexOf("\n") !== -1 || value.indexOf("\r") !== -1) {
+      return true;
+    }
+
+    if (/^[0-9]+$/.test(value)) {
+      return true;
+    }
+
+    return /^[\"'<>/=]+$/.test(value);
   }
 
   private static findStableSubstringMatches(
