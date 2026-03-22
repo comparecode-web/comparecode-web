@@ -17,7 +17,7 @@ export function BlockHeaderControls() {
   };
 
   return (
-    <div className="flex items-center justify-center gap-6 mx-2 bg-gradient-to-r from-diff-removed-bg via-bg-primary to-diff-added-bg relative h-10 z-20 select-none px-4 border-t-2 border-l-2 border-r-2 border-border-default rounded-t-xl">
+    <div className="flex items-center justify-center gap-6 mx-2 bg-bg-primary relative h-10 z-20 select-none px-4 border-t-2 border-l-2 border-r-2 border-border-default rounded-t-xl">
       <button onClick={handlePrev} className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-semibold text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors">
         <MdKeyboardArrowUp className="text-lg" />
         <span>Jump previous</span>

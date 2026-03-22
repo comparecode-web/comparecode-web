@@ -30,14 +30,14 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
 
   const absoluteCenteredCloseButton = (
     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-30">
-      <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay transition-colors bg-bg-primary border border-border-default shadow-sm" title="Close block">
+      <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors" title="Close block">
         <MdClose className="text-xl" />
       </button>
     </div>
   );
 
   const inlineCloseButton = (
-    <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay transition-colors shrink-0 bg-bg-primary border border-border-default shadow-sm" title="Close block">
+    <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors shrink-0" title="Close block">
       <MdClose className="text-xl" />
     </button>
   );
@@ -58,7 +58,7 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
 
   if (layout === "unified") {
     return (
-      <div className="flex items-center mx-2 bg-gradient-to-r from-diff-removed-bg via-bg-primary to-diff-added-bg relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl">
+      <div className="flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl">
         <div className="sticky left-0 flex items-center w-full px-4 h-full">
           <div className="flex-1 flex justify-end pr-8">
             {mergeLeftToRightButton}
@@ -73,7 +73,7 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
   }
 
   return (
-    <div className={clsx("flex items-center mx-2 bg-gradient-to-r from-diff-removed-bg via-bg-primary to-diff-added-bg relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl", layout === "split-wrap" ? "justify-between" : layout === "split-left" ? "justify-end" : "justify-start")}>
+    <div className={clsx("flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl", layout === "split-wrap" ? "justify-between" : layout === "split-left" ? "justify-end" : "justify-start")}>
       {layout === "split-wrap" && (
         <div className="sticky left-0 flex items-center w-full h-full px-4">
           <div className="flex-1 flex justify-end pr-8">

@@ -9,7 +9,7 @@ export function getRowContainerClass(isSelectable: boolean, isSelected: boolean)
   return cn(
     "flex flex-col relative border-l-2 border-r-2 transition-colors",
     isSelectable ? "cursor-pointer" : "border-transparent",
-    isSelected && isSelectable ? "bg-gradient-to-r from-diff-removed-bg via-bg-primary to-diff-added-bg border-border-default mx-2" : "border-transparent w-full"
+    isSelected && isSelectable ? "bg-bg-primary border-border-default mx-2" : "border-transparent w-full"
   );
 }
 
