@@ -28,64 +28,75 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
     selectBlock(null);
   };
 
+  const absoluteCenteredCloseButton = (
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-30">
+      <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors" title="Close block">
+        <MdClose className="text-xl" />
+      </button>
+    </div>
+  );
+
+  const inlineCloseButton = (
+    <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors shrink-0" title="Close block">
+      <MdClose className="text-xl" />
+    </button>
+  );
+
+  const mergeLeftToRightButton = (
+    <button onClick={handleMergeLeftToRight} className="flex items-center gap-2 rounded bg-danger px-4 py-1.5 text-sm font-semibold text-white hover:bg-danger-hover transition-colors shadow-sm">
+      <span>Merge</span>
+      <MdEast />
+    </button>
+  );
+
+  const mergeRightToLeftButton = (
+    <button onClick={handleMergeRightToLeft} className="flex items-center gap-2 rounded bg-success px-4 py-1.5 text-sm font-semibold text-white hover:bg-success-hover transition-colors shadow-sm">
+      <MdWest />
+      <span>Merge</span>
+    </button>
+  );
+
   if (layout === "unified") {
     return (
-      <div className="flex items-center justify-center w-full min-w-full border-t border-accent-primary bg-bg-selected relative h-12 z-20 select-none">
-        <div className="sticky left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 px-4 h-full w-max">
-          <button onClick={handleMergeLeftToRight} className="flex items-center gap-2 rounded bg-danger px-4 py-1.5 text-sm font-semibold text-white hover:bg-danger-hover transition-colors">
-            <span>Merge</span>
-            <MdEast />
-          </button>
-          <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay transition-colors mx-2">
-            <MdClose className="text-xl" />
-          </button>
-          <button onClick={handleMergeRightToLeft} className="flex items-center gap-2 rounded bg-success px-4 py-1.5 text-sm font-semibold text-white hover:bg-success-hover transition-colors">
-            <MdWest />
-            <span>Merge</span>
-          </button>
+      <div className="flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl">
+        <div className="sticky left-0 flex items-center w-full px-4 h-full">
+          <div className="flex-1 flex justify-end pr-8">
+            {mergeLeftToRightButton}
+          </div>
+          {absoluteCenteredCloseButton}
+          <div className="flex-1 flex justify-start pl-8">
+            {mergeRightToLeftButton}
+          </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />
       </div>
     );
   }
 
   return (
-    <div className={clsx("flex items-center w-full min-w-full border-t border-accent-primary bg-bg-selected relative h-12 z-20 select-none", layout === "split-wrap" ? "justify-between px-2 sm:px-4" : layout === "split-left" ? "justify-end" : "justify-start")}>
+    <div className={clsx("flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl", layout === "split-wrap" ? "justify-between" : layout === "split-left" ? "justify-end" : "justify-start")}>
       {layout === "split-wrap" && (
-        <>
-          <div className="flex items-center gap-4 flex-1 justify-end pr-4 border-r border-transparent">
-            <button onClick={handleMergeLeftToRight} className="flex items-center gap-2 rounded bg-danger px-4 py-1.5 text-sm font-semibold text-white hover:bg-danger-hover transition-colors">
-              <span>Merge</span><MdEast />
-            </button>
+        <div className="sticky left-0 flex items-center w-full h-full px-4">
+          <div className="flex-1 flex justify-end pr-8">
+            {mergeLeftToRightButton}
           </div>
-          <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay transition-colors shrink-0">
-            <MdClose className="text-xl" />
-          </button>
-          <div className="flex items-center gap-4 flex-1 justify-start pl-4">
-            <button onClick={handleMergeRightToLeft} className="flex items-center gap-2 rounded bg-success px-4 py-1.5 text-sm font-semibold text-white hover:bg-success-hover transition-colors">
-              <MdWest /><span>Merge</span>
-            </button>
+          {absoluteCenteredCloseButton}
+          <div className="flex-1 flex justify-start pl-8">
+            {mergeRightToLeftButton}
           </div>
-        </>
+        </div>
       )}
       {layout === "split-left" && (
-        <div className="sticky right-0 flex items-center justify-end gap-4 px-4 h-full">
-          <button onClick={handleMergeLeftToRight} className="flex items-center gap-2 rounded bg-danger px-4 py-1.5 text-sm font-semibold text-white hover:bg-danger-hover transition-colors">
-            <span>Merge</span><MdEast />
-          </button>
-          <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay transition-colors">
-            <MdClose className="text-xl" />
-          </button>
+        <div className="sticky right-0 flex items-center justify-end gap-4 px-4 h-full pr-8">
+          {mergeLeftToRightButton}
+          {inlineCloseButton}
         </div>
       )}
       {layout === "split-right" && (
-        <div className="sticky left-0 flex items-center justify-start px-4 h-full">
-          <button onClick={handleMergeRightToLeft} className="flex items-center gap-2 rounded bg-success px-4 py-1.5 text-sm font-semibold text-white hover:bg-success-hover transition-colors">
-            <MdWest /><span>Merge</span>
-          </button>
+        <div className="sticky left-0 flex items-center justify-start gap-4 px-4 h-full pl-8">
+          {inlineCloseButton}
+          {mergeRightToLeftButton}
         </div>
       )}
-      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />
     </div>
   );
 }

@@ -3,19 +3,23 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { ChangeBlock, DiffChangeType } from "@/types/diff";
 import { MergeDirection } from "@/types/ui";
 import { AppSettings } from "@/types/settings";
-import { getBlockColorClass, getFragmentColorClass } from "@/utils/diffHelpers";
+import { getBlockColorClass } from "@/utils/diffHelpers";
 import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
+import { BlockHeaderControls } from "./BlockHeaderControls";
+import { DiffFragmentList } from "./DiffFragmentList";
 
 export interface SplitRowData {
   id: string;
-  type: "line" | "controls";
+  type: "line" | "controls" | "header-controls";
   block: ChangeBlock;
   oldIndex: number;
   newIndex: number;
   isFirst: boolean;
   isLast: boolean;
   isSelectable: boolean;
+  isFirstLine?: boolean;
+  isLastLine?: boolean;
 }
 
 interface SplitRowProps {
@@ -36,6 +40,19 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
   const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled, renderMode === "wrap" ? "w-full" : "");
   const containerClass = getRowContainerClass(row.isSelectable, row.block.isSelected || false);
+
+  if (row.type === "header-controls") {
+    return (
+      <div
+        data-index={virtualRow.index}
+        ref={measureRef}
+        className="absolute top-0 left-0 w-full"
+        style={{ transform: `translateY(${virtualRow.start}px)` }}
+      >
+        <BlockHeaderControls />
+      </div>
+    );
+  }
 
   if (row.type === "controls") {
     const layoutMode = renderMode === "wrap" ? "split-wrap" : renderMode === "left" ? "split-left" : "split-right";
@@ -80,24 +97,25 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
       onClick={row.isSelectable ? () => selectBlock(row.block.id) : undefined}
     >
       <div className={containerClass}>
-        {isHovered && <div className="absolute inset-0 bg-hover-overlay pointer-events-none z-10" />}
-        {row.isFirst && row.block.isSelected && row.isSelectable && <div className="absolute top-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />}
+        {isHovered && (
+          <div className={cn(
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            row.isFirstLine && "rounded-t-md",
+            row.isLastLine && "rounded-b-md"
+          )} />
+        )}
         <div className="flex min-h-[24px] w-full relative z-0">
           {(renderMode === "wrap" || renderMode === "left") && (
             <div
               onMouseDown={() => setSelectionSide("left")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", oldBackgroundClass, selectionSide === "right" && "select-none")}
+              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", selectionSide === "right" && "select-none")}
             >
               <div className="flex min-h-[24px] w-full">
-                <div className={cn("shrink-0 select-none px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)]", oldLine.kind === DiffChangeType.Imaginary ? "bg-diff-empty-bg" : "bg-bg-secondary")}>
+                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
                   {oldLine.lineNumber}
                 </div>
-                <div className={cn("px-2 py-0.5 font-mono", wordWrapClass)}>
-                  {oldLine.fragments.map((frag, fIdx) => (
-                    <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
-                      {frag.text}
-                    </span>
-                  ))}
+                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                  <DiffFragmentList fragments={oldLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
             </div>
@@ -106,18 +124,14 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
           {(renderMode === "wrap" || renderMode === "right") && (
             <div
               onMouseDown={() => setSelectionSide("right")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", newBackgroundClass, selectionSide === "left" && "select-none")}
+              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", selectionSide === "left" && "select-none")}
             >
               <div className="flex min-h-[24px] w-full">
-                <div className={cn("shrink-0 select-none px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)]", newLine.kind === DiffChangeType.Imaginary ? "bg-diff-empty-bg" : "bg-bg-secondary")}>
+                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
                   {newLine.lineNumber}
                 </div>
-                <div className={cn("px-2 py-0.5 font-mono", wordWrapClass)}>
-                  {newLine.fragments.map((frag, fIdx) => (
-                    <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
-                      {frag.text}
-                    </span>
-                  ))}
+                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                  <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
             </div>
@@ -127,4 +141,5 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
     </div>
   );
 });
+
 SplitRow.displayName = "SplitRow";

@@ -18,11 +18,10 @@ export function ComparisonToolbar() {
   const stats = useMemo(() => {
     return calculateStats(comparisonResult?.blocks, settings.ignoreWhitespace);
   }, [comparisonResult, settings.ignoreWhitespace]);
-
+  
   const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0, [leftText]);
-
   const rightLineCount = useMemo(() => rightText ? rightText.split(/\r?\n/).length : 0, [rightText]);
-
+  
   const handleCopy = (text: string, side: "left" | "right") => {
     if (!text) return;
     navigator.clipboard.writeText(text).catch(() => {});
@@ -38,7 +37,10 @@ export function ComparisonToolbar() {
       <div className="flex flex-1 items-center justify-between min-w-0">
         <div className="flex items-center gap-1 sm:gap-2 min-w-0">
           <MdDescription className="text-xl text-text-secondary shrink-0" />
-          <span className="font-bold text-danger text-sm">{stats.removals}<span className="hidden min-[400px]:inline"> -</span></span>
+          <span className="font-bold text-danger text-sm">
+            <span className="inline sm:hidden">{stats.removals}<span className="hidden min-[400px]:inline"> -</span></span>
+            <span className="hidden sm:inline">{stats.removals} removals</span>
+          </span>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-4">
@@ -67,7 +69,10 @@ export function ComparisonToolbar() {
       <div className="flex flex-1 items-center justify-between min-w-0">
         <div className="flex items-center gap-1 sm:gap-2 min-w-0">
           <MdDescription className="text-xl text-text-secondary shrink-0" />
-          <span className="font-bold text-success text-sm">{stats.additions}<span className="hidden min-[400px]:inline"> +</span></span>
+          <span className="font-bold text-success text-sm">
+            <span className="inline sm:hidden">{stats.additions}<span className="hidden min-[400px]:inline"> +</span></span>
+            <span className="hidden sm:inline">{stats.additions} additions</span>
+          </span>
         </div>
         <div className="flex items-center gap-1 sm:gap-4">
           <span className="text-xs sm:text-sm text-text-secondary hidden md:block">{rightLineCount} lines</span>

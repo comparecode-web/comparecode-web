@@ -56,7 +56,7 @@ export function HistoryView() {
               variant="danger"
               size="sm"
               onClick={handleDeleteAll}
-              leftIcon={<MdDelete className="text-lg" />}
+              leftIcon={<MdDelete className="text-xl" />}
               title="Clear all history"
               className="hidden sm:inline-flex"
             >
@@ -133,12 +133,11 @@ export function HistoryView() {
                           className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
                           title="Delete this item"
                         >
-                          <MdDelete className="text-xl sm:text-2xl" />
+                           <MdDelete className="text-xl sm:text-2xl" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Code preview - stacked on mobile, side-by-side on desktop */}
                     <div className="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-2 sm:gap-4 overflow-hidden sm:mx-4">
                       <div className="flex flex-1 flex-col overflow-hidden">
                         <span className="mb-1 text-[11px] font-semibold text-danger">
@@ -146,7 +145,7 @@ export function HistoryView() {
                         </span>
                         <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
                           {displayOrigLines.map((line, idx) => (
-                            <span key={`orig-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs text-text-secondary min-h-[14px] sm:min-h-[16px]">
+                             <span key={`orig-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs text-text-secondary min-h-[14px] sm:min-h-[16px]">
                               {line === "" ? "\u00A0" : line}
                             </span>
                           ))}
@@ -161,7 +160,7 @@ export function HistoryView() {
                           {getLineCount(item.modifiedText)} lines
                         </span>
                         <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
-                          {displayModLines.map((line, idx) => (
+                           {displayModLines.map((line, idx) => (
                             <span key={`mod-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs font-semibold text-text-primary min-h-[14px] sm:min-h-[16px]">
                               {line === "" ? "\u00A0" : line}
                             </span>

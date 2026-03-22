@@ -20,4 +20,5 @@ export interface AppSettings {
   viewMode: ViewMode;
   fontSize: number;
   theme: string;
+  isContinuousMergeEnabled: boolean;
 }
