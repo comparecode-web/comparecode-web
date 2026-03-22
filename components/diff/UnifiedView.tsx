@@ -25,7 +25,19 @@ export function UnifiedView() {
       const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
       const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
 
-      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast">> = [ ];
+      if (block.isSelected && isSelectable) {
+        result.push({
+          id: `${block.id}-header-controls`,
+          type: "header-controls",
+          block,
+          lineIndex: -1,
+          isSelectable,
+          isFirst: true,
+          isLast: false
+        });
+      }
+
+      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast" | "isFirstLine" | "isLastLine">> = [ ];
 
       if (block.kind === BlockType.Modified) {
         block.oldLines.forEach((line, idx) => {
@@ -101,7 +113,9 @@ export function UnifiedView() {
         result.push({
           ...r,
           isFirst: i === 0,
-          isLast: i === len - 1 && !block.isSelected
+          isLast: i === len - 1 && !block.isSelected,
+          isFirstLine: i === 0,
+          isLastLine: i === len - 1
         });
       });
 
@@ -134,9 +148,17 @@ export function UnifiedView() {
     return max;
   }, [comparisonResult, settings.isWordWrapEnabled, rows]);
 
+  const estimateSize = (index: number) => {
+    const row = rows[index];
+    if (row.type === "header-controls") return 40;
+    if (row.type === "controls") return 56;
+    return 24;
+  };
+
   const unifiedVirtualizer = useDiffVirtualizer(
     rows.length,
-    () => unifiedScrollRef.current
+    () => unifiedScrollRef.current,
+    estimateSize
   );
 
   if (!comparisonResult) {
@@ -151,7 +173,7 @@ export function UnifiedView() {
 
   return (
     <div className="flex-1 overflow-auto custom-scrollbar" ref={unifiedScrollRef} style={customStyles}>
-      <div className={cn("relative pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+      <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
         {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
           return (

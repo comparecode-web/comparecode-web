@@ -3,9 +3,10 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { ChangeBlock, TextFragment } from "@/types/diff";
 import { MergeDirection } from "@/types/ui";
 import { AppSettings } from "@/types/settings";
-import { getFragmentColorClass } from "@/utils/diffHelpers";
 import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
+import { BlockHeaderControls } from "./BlockHeaderControls";
+import { DiffFragmentList } from "./DiffFragmentList";
 
 export interface UnifiedLineData {
   line1: number | string | null;
@@ -17,13 +18,15 @@ export interface UnifiedLineData {
 
 export interface UnifiedRowData {
   id: string;
-  type: "line" | "controls";
+  type: "line" | "controls" | "header-controls";
   block: ChangeBlock;
   lineIndex: number;
   unifiedLine?: UnifiedLineData;
   isFirst: boolean;
   isLast: boolean;
   isSelectable: boolean;
+  isFirstLine?: boolean;
+  isLastLine?: boolean;
 }
 
 interface UnifiedRowProps {
@@ -41,6 +44,19 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
   const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled);
   const containerClass = getRowContainerClass(row.isSelectable, row.block.isSelected || false);
+
+  if (row.type === "header-controls") {
+    return (
+      <div
+        data-index={virtualRow.index}
+        ref={measureRef}
+        className="absolute top-0 left-0 w-full"
+        style={{ transform: `translateY(${virtualRow.start}px)` }}
+      >
+        <BlockHeaderControls />
+      </div>
+    );
+  }
 
   if (row.type === "controls") {
     return (
@@ -74,25 +90,28 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
       onClick={row.isSelectable ? () => selectBlock(row.block.id) : undefined}
     >
       <div className={containerClass}>
-        {isHovered && <div className="absolute inset-0 bg-hover-overlay pointer-events-none z-10" />}
-        {row.isFirst && row.block.isSelected && row.isSelectable && <div className="absolute top-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />}
+        {isHovered && (
+          <div className={cn(
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            row.isFirstLine && "rounded-t-md",
+            row.isLastLine && "rounded-b-md"
+          )} />
+        )}
         <div className="flex w-full flex-col relative z-0">
-          <div className={cn("flex min-h-[24px] w-full", l.bgClass)}>
-            <div className="shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)]">
+          <div className="flex min-h-[24px] w-full bg-transparent">
+            <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
               {l.line1}
             </div>
-            <div className="shrink-0 select-none bg-bg-secondary px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)]" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
+            <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
               {l.line2}
             </div>
-            <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-bg-secondary" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
-              {l.sign}
-            </div>
-            <div className={cn("px-2 py-0.5 font-mono", wordWrapClass)}>
-              {l.fragments.map((frag: TextFragment, fIdx: number) => (
-                <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
-                  {frag.text}
-                </span>
-              ))}
+            <div className={cn("flex flex-1 min-w-0 mr-2", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+              <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-transparent" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
+                {l.sign}
+              </div>
+              <div className={cn("flex-1 px-2 py-0.5 font-mono", wordWrapClass)}>
+                <DiffFragmentList fragments={l.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
+              </div>
             </div>
           </div>
         </div>
@@ -100,4 +119,5 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
     </div>
   );
 });
+
 UnifiedRow.displayName = "UnifiedRow";

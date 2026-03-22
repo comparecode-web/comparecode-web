@@ -48,6 +48,19 @@ export function SplitView() {
 
       if (maxLines === 0) return;
 
+      if (block.isSelected && isSelectable) {
+        result.push({
+          id: `${block.id}-header-controls`,
+          type: "header-controls",
+          block,
+          oldIndex: -1,
+          newIndex: -1,
+          isFirst: true,
+          isLast: false,
+          isSelectable
+        });
+      }
+
       let oldDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
       let newDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
 
@@ -74,7 +87,6 @@ export function SplitView() {
 
       for (let i = 0; i < lineRows.length; i++) {
         const lineRow = lineRows[i];
-
         result.push({
           id: `${block.id}-line-${i}`,
           type: "line",
@@ -83,7 +95,9 @@ export function SplitView() {
           newIndex: lineRow.newIndex,
           isFirst: i === 0,
           isLast: i === lineRows.length - 1 && !block.isSelected,
-          isSelectable
+          isSelectable,
+          isFirstLine: i === 0,
+          isLastLine: i === lineRows.length - 1
         });
       }
 
@@ -120,19 +134,29 @@ export function SplitView() {
     return max;
   }, [comparisonResult, settings.isWordWrapEnabled]);
 
+  const estimateSize = (index: number) => {
+    const row = rows[index];
+    if (row.type === "header-controls") return 40;
+    if (row.type === "controls") return 56;
+    return 24;
+  };
+
   const wrapVirtualizer = useDiffVirtualizer(
     settings.isWordWrapEnabled ? rows.length : 0,
-    () => wrapScrollRef.current
+    () => wrapScrollRef.current,
+    estimateSize
   );
 
   const leftVirtualizer = useDiffVirtualizer(
     !settings.isWordWrapEnabled ? rows.length : 0,
-    () => leftScrollRef.current
+    () => leftScrollRef.current,
+    estimateSize
   );
 
   const rightVirtualizer = useDiffVirtualizer(
     !settings.isWordWrapEnabled ? rows.length : 0,
-    () => rightScrollRef.current
+    () => rightScrollRef.current,
+    estimateSize
   );
 
   if (!comparisonResult) {
@@ -141,13 +165,12 @@ export function SplitView() {
 
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 80px)` } : {};
-
   const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   if (settings.isWordWrapEnabled) {
     return (
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-8" ref={wrapScrollRef} style={customStyles}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-0 sm:pr-8" ref={wrapScrollRef} style={customStyles}>
         <div className="w-full relative" style={{ height: `${wrapVirtualizer.getTotalSize()}px` }}>
           {wrapVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
@@ -210,7 +233,7 @@ export function SplitView() {
         onScroll={handleRightScroll}
         onMouseDown={() => setSelectionSide("right")}
       >
-        <div className={cn("relative pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+        <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
           {rightVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
             return (

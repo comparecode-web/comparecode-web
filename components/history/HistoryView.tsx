@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MdHistory, MdDelete, MdHistoryToggleOff, MdArrowForward, MdBookmark, MdBookmarkBorder } from "react-icons/md";
+import { MdHistory, MdDelete, MdHistoryToggleOff, MdArrowForward, MdArrowDownward, MdBookmark, MdBookmarkBorder } from "react-icons/md";
 import { useHistoryStore } from "@/store/useHistoryStore";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useAppStore } from "@/store/useAppStore";
@@ -45,33 +45,43 @@ export function HistoryView() {
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary">
-      <div className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-6">
-        <div className="flex items-center gap-3">
-          <MdHistory className="text-2xl text-text-secondary" />
-          <h2 className="text-xl font-bold text-text-primary">History</h2>
+      <div className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
+          <h2 className="text-lg sm:text-xl font-bold text-text-primary">History</h2>
         </div>
         {items.length > 0 && (
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={handleDeleteAll}
-            leftIcon={<MdDelete className="text-lg" />}
-            title="Clear all history"
-          >
-            Delete All
-          </Button>
+          <>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDeleteAll}
+              leftIcon={<MdDelete className="text-xl" />}
+              title="Clear all history"
+              className="hidden sm:inline-flex"
+            >
+              Delete All
+            </Button>
+            <button
+              onClick={handleDeleteAll}
+              className="sm:hidden p-1.5 text-danger hover:bg-hover-overlay rounded transition-colors"
+              title="Clear all history"
+            >
+              <MdDelete className="text-xl" />
+            </button>
+          </>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 custom-scrollbar">
         {items.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center">
-            <MdHistoryToggleOff className="mb-4 text-6xl text-text-secondary" />
-            <h3 className="text-lg font-semibold text-text-secondary">No history yet</h3>
-            <p className="mt-1 text-sm text-text-secondary">Comparisons will appear here automatically.</p>
+            <MdHistoryToggleOff className="mb-4 text-5xl sm:text-6xl text-text-secondary" />
+            <h3 className="text-base sm:text-lg font-semibold text-text-secondary">No history yet</h3>
+            <p className="mt-1 text-xs sm:text-sm text-text-secondary">Comparisons will appear here automatically.</p>
           </div>
         ) : (
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 sm:gap-3">
             {items.map((item) => {
               const origLines = generatePreviewLines(item.originalText);
               const modLines = generatePreviewLines(item.modifiedText);
@@ -92,7 +102,7 @@ export function HistoryView() {
                   key={item.id}
                   onClick={() => handleRestore(item.originalText, item.modifiedText)}
                   className={cn(
-                    "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-4 shadow-sm transition-all duration-[var(--duration-medium)] hover:border-accent-primary hover:shadow-md",
+                    "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-[var(--duration-medium)] hover:border-accent-primary hover:shadow-md",
                     item.isBookmarked ? "border-accent-primary" : "border-border-default"
                   )}
                 >
@@ -100,60 +110,63 @@ export function HistoryView() {
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-accent-primary/10 pointer-events-none" />
                   )}
 
-                  <div className="relative flex items-center justify-between">
-                    <span className="min-w-[70px] truncate text-xs font-bold text-accent-primary">
-                      {getRelativeTime(item.createdAt)}
-                    </span>
+                  <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+                    <div className="flex items-center justify-between sm:contents">
+                      <span className="min-w-[70px] truncate text-xs font-bold text-accent-primary">
+                        {getRelativeTime(item.createdAt)}
+                      </span>
 
-                    <div className="mx-4 flex flex-1 items-center gap-4 overflow-hidden">
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          onClick={(e) => handleToggleBookmark(e, item.id, item.isBookmarked)}
+                          className="rounded p-1.5 sm:p-2 text-accent-primary transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
+                          title="Bookmark this item"
+                        >
+                          {item.isBookmarked ? (
+                            <MdBookmark className="text-xl sm:text-2xl" />
+                          ) : (
+                            <MdBookmarkBorder className="text-xl sm:text-2xl" />
+                          )}
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteItem(e, item.id)}
+                          className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
+                          title="Delete this item"
+                        >
+                           <MdDelete className="text-xl sm:text-2xl" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-2 sm:gap-4 overflow-hidden sm:mx-4">
                       <div className="flex flex-1 flex-col overflow-hidden">
                         <span className="mb-1 text-[11px] font-semibold text-danger">
                           {getLineCount(item.originalText)} lines
                         </span>
-                        <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-3 py-2">
+                        <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
                           {displayOrigLines.map((line, idx) => (
-                            <span key={`orig-${idx}`} className="block truncate font-mono text-xs text-text-secondary min-h-[16px]">
+                             <span key={`orig-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs text-text-secondary min-h-[14px] sm:min-h-[16px]">
                               {line === "" ? "\u00A0" : line}
                             </span>
                           ))}
                         </div>
                       </div>
 
-                      <MdArrowForward className="text-lg shrink-0 text-text-secondary" />
+                      <MdArrowForward className="text-lg shrink-0 text-text-secondary hidden sm:block" />
+                      <MdArrowDownward className="text-lg shrink-0 text-text-secondary self-center sm:hidden" />
 
                       <div className="flex flex-1 flex-col overflow-hidden">
                         <span className="mb-1 text-[11px] font-semibold text-success">
                           {getLineCount(item.modifiedText)} lines
                         </span>
-                        <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-3 py-2">
-                          {displayModLines.map((line, idx) => (
-                            <span key={`mod-${idx}`} className="block truncate font-mono text-xs font-semibold text-text-primary min-h-[16px]">
+                        <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
+                           {displayModLines.map((line, idx) => (
+                            <span key={`mod-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs font-semibold text-text-primary min-h-[14px] sm:min-h-[16px]">
                               {line === "" ? "\u00A0" : line}
                             </span>
                           ))}
                         </div>
                       </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-1">
-                      <button
-                        onClick={(e) => handleToggleBookmark(e, item.id, item.isBookmarked)}
-                        className="rounded p-2 text-accent-primary transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
-                        title="Bookmark this item"
-                      >
-                        {item.isBookmarked ? (
-                          <MdBookmark className="text-2xl" />
-                        ) : (
-                          <MdBookmarkBorder className="text-2xl" />
-                        )}
-                      </button>
-                      <button
-                        onClick={(e) => handleDeleteItem(e, item.id)}
-                        className="rounded p-2 text-danger transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
-                        title="Delete this item"
-                      >
-                        <MdDelete className="text-2xl" />
-                      </button>
                     </div>
                   </div>
                 </div>
