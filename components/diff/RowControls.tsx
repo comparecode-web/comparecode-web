@@ -50,7 +50,7 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
   }
 
   return (
-    <div className={clsx("flex items-center w-full min-w-full border-t border-accent-primary bg-bg-selected relative h-12 z-20 select-none", layout === "split-wrap" ? "justify-between px-4" : layout === "split-left" ? "justify-end" : "justify-start")}>
+    <div className={clsx("flex items-center w-full min-w-full border-t border-accent-primary bg-bg-selected relative h-12 z-20 select-none", layout === "split-wrap" ? "justify-between px-2 sm:px-4" : layout === "split-left" ? "justify-end" : "justify-start")}>
       {layout === "split-wrap" && (
         <>
           <div className="flex items-center gap-4 flex-1 justify-end pr-4 border-r border-transparent">
