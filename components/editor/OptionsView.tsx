@@ -114,6 +114,22 @@ export function OptionsView() {
         </div>
       </div>
 
+      <div className="flex flex-col gap-3">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
+        <label
+          className="flex items-center gap-2 cursor-pointer mt-1"
+          title="If enabled, merging will automatically jump to the next merge block."
+        >
+          <input
+            type="checkbox"
+            checked={settings.isContinuousMergeEnabled}
+            onChange={(e) => updateSettings({ isContinuousMergeEnabled: e.target.checked })}
+            className="w-4 h-4 custom-checkbox rounded"
+          />
+          <span className="text-sm font-medium text-text-primary">Continuous merge</span>
+        </label>
+      </div>
+
       <div className="flex flex-col gap-3 mt-4 border-t border-border-default pt-6">
         <button
           onClick={handleLoadTestData}

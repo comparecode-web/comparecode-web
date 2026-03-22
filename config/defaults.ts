@@ -6,5 +6,6 @@ export const defaultSettings: AppSettings = {
   precision: PrecisionLevel.Word,
   viewMode: ViewMode.Split,
   fontSize: 13.0,
-  theme: "light"
+  theme: "light",
+  isContinuousMergeEnabled: true
 };

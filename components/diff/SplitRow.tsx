@@ -96,7 +96,13 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
       onClick={row.isSelectable ? () => selectBlock(row.block.id) : undefined}
     >
       <div className={containerClass}>
-        {isHovered && <div className="absolute inset-0 bg-hover-overlay pointer-events-none z-10" />}
+        {isHovered && (
+          <div className={cn(
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            row.isFirstLine && "rounded-t-md",
+            row.isLastLine && "rounded-b-md"
+          )} />
+        )}
         <div className="flex min-h-[24px] w-full relative z-0">
           {(renderMode === "wrap" || renderMode === "left") && (
             <div
@@ -142,4 +148,5 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
     </div>
   );
 });
+
 SplitRow.displayName = "SplitRow";

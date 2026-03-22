@@ -90,7 +90,13 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
       onClick={row.isSelectable ? () => selectBlock(row.block.id) : undefined}
     >
       <div className={containerClass}>
-        {isHovered && <div className="absolute inset-0 bg-hover-overlay pointer-events-none z-10" />}
+        {isHovered && (
+          <div className={cn(
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            row.isFirstLine && "rounded-t-md",
+            row.isLastLine && "rounded-b-md"
+          )} />
+        )}
         <div className="flex w-full flex-col relative z-0">
           <div className="flex min-h-[24px] w-full bg-transparent">
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
@@ -117,4 +123,5 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
     </div>
   );
 });
+
 UnifiedRow.displayName = "UnifiedRow";
