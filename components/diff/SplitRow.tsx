@@ -3,7 +3,7 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { ChangeBlock, DiffChangeType } from "@/types/diff";
 import { MergeDirection } from "@/types/ui";
 import { AppSettings } from "@/types/settings";
-import { getBlockColorClass, getFragmentColorClass } from "@/utils/diffHelpers";
+import { getBlockColorClass, getFragmentColorClass, getFragmentRoundingClass } from "@/utils/diffHelpers";
 import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
 import { BlockHeaderControls } from "./BlockHeaderControls";
@@ -114,8 +114,8 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
                   {oldLine.lineNumber}
                 </div>
                 <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
-                  {oldLine.fragments.map((frag, fIdx) => (
-                    <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
+                  {oldLine.fragments.map((frag, fIdx, arr) => (
+                    <span key={fIdx} className={cn(getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace), getFragmentRoundingClass(arr, fIdx, settings.ignoreWhitespace))}>
                       {frag.text}
                     </span>
                   ))}
@@ -134,8 +134,8 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
                   {newLine.lineNumber}
                 </div>
                 <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
-                  {newLine.fragments.map((frag, fIdx) => (
-                    <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
+                  {newLine.fragments.map((frag, fIdx, arr) => (
+                    <span key={fIdx} className={cn(getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace), getFragmentRoundingClass(arr, fIdx, settings.ignoreWhitespace))}>
                       {frag.text}
                     </span>
                   ))}

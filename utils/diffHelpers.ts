@@ -1,4 +1,4 @@
-import { BlockType, ChangeBlock, DiffChangeType } from "@/types/diff";
+import { BlockType, ChangeBlock, DiffChangeType, TextFragment } from "@/types/diff";
 
 export function getBlockColorClass(kind: BlockType, side: "old" | "new", isWhitespaceChange: boolean, ignoreWhitespace: boolean): string {
   if (ignoreWhitespace && isWhitespaceChange) {
@@ -34,6 +34,49 @@ export function getFragmentColorClass(kind: DiffChangeType, isWhitespaceChange: 
   }
 
   return "bg-transparent text-text-primary";
+}
+
+export function getFragmentRoundingClass(fragments: Array<TextFragment>, index: number, ignoreWhitespace: boolean): string {
+  const current = fragments[index];
+
+  if (current.kind === DiffChangeType.Unchanged || (ignoreWhitespace && current.isWhitespaceChange)) {
+    return "";
+  }
+
+  let isLeftRounded = false;
+  let isRightRounded = false;
+
+  if (index === 0) {
+    isLeftRounded = true;
+  } else {
+    const prev = fragments[index - 1];
+    if (prev.kind === DiffChangeType.Unchanged || (ignoreWhitespace && prev.isWhitespaceChange)) {
+      isLeftRounded = true;
+    }
+  }
+
+  if (index === fragments.length - 1) {
+    isRightRounded = true;
+  } else {
+    const next = fragments[index + 1];
+    if (next.kind === DiffChangeType.Unchanged || (ignoreWhitespace && next.isWhitespaceChange)) {
+      isRightRounded = true;
+    }
+  }
+
+  if (isLeftRounded && isRightRounded) {
+    return "rounded";
+  }
+
+  if (isLeftRounded) {
+    return "rounded-l";
+  }
+
+  if (isRightRounded) {
+    return "rounded-r";
+  }
+
+  return "";
 }
 
 export function calculateStats(blocks: Array<ChangeBlock> | undefined, ignoreWhitespace: boolean) {

@@ -3,7 +3,7 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { ChangeBlock, TextFragment } from "@/types/diff";
 import { MergeDirection } from "@/types/ui";
 import { AppSettings } from "@/types/settings";
-import { getFragmentColorClass } from "@/utils/diffHelpers";
+import { getFragmentColorClass, getFragmentRoundingClass } from "@/utils/diffHelpers";
 import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
 import { BlockHeaderControls } from "./BlockHeaderControls";
@@ -110,8 +110,8 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
                 {l.sign}
               </div>
               <div className={cn("flex-1 px-2 py-0.5 font-mono", wordWrapClass)}>
-                {l.fragments.map((frag: TextFragment, fIdx: number) => (
-                  <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
+                {l.fragments.map((frag: TextFragment, fIdx: number, arr: Array<TextFragment>) => (
+                  <span key={fIdx} className={cn(getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace), getFragmentRoundingClass(arr, fIdx, settings.ignoreWhitespace))}>
                     {frag.text}
                   </span>
                 ))}
