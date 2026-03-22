@@ -58,7 +58,7 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
 
   if (layout === "unified") {
     return (
-      <div className="flex items-center w-full min-w-full bg-bg-selected relative h-12 z-20 select-none shadow-inner border-t border-accent-primary">
+      <div className="flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl">
         <div className="sticky left-0 flex items-center w-full px-4 h-full">
           <div className="flex-1 flex justify-end pr-8">
             {mergeLeftToRightButton}
@@ -68,13 +68,12 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
             {mergeRightToLeftButton}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />
       </div>
     );
   }
 
   return (
-    <div className={clsx("flex items-center w-full min-w-full bg-bg-selected relative h-12 z-20 select-none shadow-inner border-t border-accent-primary", layout === "split-wrap" ? "justify-between" : layout === "split-left" ? "justify-end" : "justify-start")}>
+    <div className={clsx("flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl", layout === "split-wrap" ? "justify-between" : layout === "split-left" ? "justify-end" : "justify-start")}>
       {layout === "split-wrap" && (
         <div className="sticky left-0 flex items-center w-full h-full px-4">
           <div className="flex-1 flex justify-end pr-8">
@@ -98,7 +97,6 @@ export function RowControls({ block, settings, layout, selectBlock, mergeBlock }
           {mergeRightToLeftButton}
         </div>
       )}
-      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />
     </div>
   );
 }
