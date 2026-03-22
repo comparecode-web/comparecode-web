@@ -37,7 +37,7 @@ export function UnifiedView() {
         });
       }
 
-      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast">> = [ ];
+      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast" | "isFirstLine" | "isLastLine">> = [ ];
 
       if (block.kind === BlockType.Modified) {
         block.oldLines.forEach((line, idx) => {
@@ -113,7 +113,9 @@ export function UnifiedView() {
         result.push({
           ...r,
           isFirst: i === 0,
-          isLast: i === len - 1 && !block.isSelected
+          isLast: i === len - 1 && !block.isSelected,
+          isFirstLine: i === 0,
+          isLastLine: i === len - 1
         });
       });
 

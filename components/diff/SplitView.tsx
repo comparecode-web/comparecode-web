@@ -95,7 +95,9 @@ export function SplitView() {
           newIndex: lineRow.newIndex,
           isFirst: i === 0,
           isLast: i === lineRows.length - 1 && !block.isSelected,
-          isSelectable
+          isSelectable,
+          isFirstLine: i === 0,
+          isLastLine: i === lineRows.length - 1
         });
       }
 

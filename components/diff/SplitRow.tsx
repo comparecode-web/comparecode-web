@@ -17,6 +17,8 @@ export interface SplitRowData {
   isFirst: boolean;
   isLast: boolean;
   isSelectable: boolean;
+  isFirstLine?: boolean;
+  isLastLine?: boolean;
 }
 
 interface SplitRowProps {
@@ -99,13 +101,13 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
           {(renderMode === "wrap" || renderMode === "left") && (
             <div
               onMouseDown={() => setSelectionSide("left")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", oldBackgroundClass, selectionSide === "right" && "select-none")}
+              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", selectionSide === "right" && "select-none")}
             >
               <div className="flex min-h-[24px] w-full">
-                <div className={cn("shrink-0 select-none px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)]", oldLine.kind === DiffChangeType.Imaginary ? "bg-diff-empty-bg" : "bg-bg-secondary")}>
+                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
                   {oldLine.lineNumber}
                 </div>
-                <div className={cn("px-2 py-0.5 font-mono", wordWrapClass)}>
+                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                   {oldLine.fragments.map((frag, fIdx) => (
                     <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
                       {frag.text}
@@ -119,13 +121,13 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
           {(renderMode === "wrap" || renderMode === "right") && (
             <div
               onMouseDown={() => setSelectionSide("right")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", newBackgroundClass, selectionSide === "left" && "select-none")}
+              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", selectionSide === "left" && "select-none")}
             >
               <div className="flex min-h-[24px] w-full">
-                <div className={cn("shrink-0 select-none px-2 text-right text-text-secondary border-r border-border-default py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)]", newLine.kind === DiffChangeType.Imaginary ? "bg-diff-empty-bg" : "bg-bg-secondary")}>
+                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
                   {newLine.lineNumber}
                 </div>
-                <div className={cn("px-2 py-0.5 font-mono", wordWrapClass)}>
+                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                   {newLine.fragments.map((frag, fIdx) => (
                     <span key={fIdx} className={getFragmentColorClass(frag.kind, frag.isWhitespaceChange, settings.ignoreWhitespace)}>
                       {frag.text}
