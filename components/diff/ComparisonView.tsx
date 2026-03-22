@@ -73,7 +73,7 @@ export function ComparisonView() {
           )}
 
           {hasResult && (
-            <div className="absolute right-2 top-0 h-full z-30 pointer-events-none">
+            <div className="absolute right-2 top-0 h-full z-30 pointer-events-none hidden sm:block">
               <div className="pointer-events-auto h-full">
                 <DiffMinimap
                   blocks={comparisonResult.blocks}

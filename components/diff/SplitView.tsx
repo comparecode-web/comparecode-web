@@ -147,7 +147,7 @@ export function SplitView() {
 
   if (settings.isWordWrapEnabled) {
     return (
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-8" ref={wrapScrollRef} style={customStyles}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-0 sm:pr-8" ref={wrapScrollRef} style={customStyles}>
         <div className="w-full relative" style={{ height: `${wrapVirtualizer.getTotalSize()}px` }}>
           {wrapVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
@@ -210,7 +210,7 @@ export function SplitView() {
         onScroll={handleRightScroll}
         onMouseDown={() => setSelectionSide("right")}
       >
-        <div className={cn("relative pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+        <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
           {rightVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
             return (

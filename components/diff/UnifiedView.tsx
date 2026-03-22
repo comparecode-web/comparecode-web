@@ -151,7 +151,7 @@ export function UnifiedView() {
 
   return (
     <div className="flex-1 overflow-auto custom-scrollbar" ref={unifiedScrollRef} style={customStyles}>
-      <div className={cn("relative pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+      <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
         {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
           return (
