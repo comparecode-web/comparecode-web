@@ -25,6 +25,18 @@ export function UnifiedView() {
       const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
       const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
 
+      if (block.isSelected && isSelectable) {
+        result.push({
+          id: `${block.id}-header-controls`,
+          type: "header-controls",
+          block,
+          lineIndex: -1,
+          isSelectable,
+          isFirst: true,
+          isLast: false
+        });
+      }
+
       const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast">> = [ ];
 
       if (block.kind === BlockType.Modified) {
@@ -134,9 +146,17 @@ export function UnifiedView() {
     return max;
   }, [comparisonResult, settings.isWordWrapEnabled, rows]);
 
+  const estimateSize = (index: number) => {
+    const row = rows[index];
+    if (row.type === "header-controls") return 40;
+    if (row.type === "controls") return 56;
+    return 24;
+  };
+
   const unifiedVirtualizer = useDiffVirtualizer(
     rows.length,
-    () => unifiedScrollRef.current
+    () => unifiedScrollRef.current,
+    estimateSize
   );
 
   if (!comparisonResult) {

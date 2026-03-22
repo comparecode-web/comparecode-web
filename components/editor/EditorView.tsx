@@ -18,7 +18,6 @@ export function EditorView() {
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-bg-primary relative">
-      {/* Options panel - sidebar on desktop, overlay on mobile */}
       <div
         className={cn(
           "flex flex-col bg-bg-secondary transition-[width] duration-[var(--duration-medium)] overflow-hidden h-full shrink-0 z-10",
@@ -29,7 +28,7 @@ export function EditorView() {
         )}
       >
         <div className="flex w-64 flex-col h-full shrink-0">
-          <div className="flex items-center justify-between border-b border-border-default p-4 shrink-0 bg-bg-secondary">
+          <div className="flex items-center justify-between border-b border-border-default px-4 h-[var(--header-height)] shrink-0 bg-bg-secondary">
             <div className="flex items-center gap-2">
               <MdTune className="text-xl text-text-secondary" />
               <h2 className="text-base font-bold text-text-primary">Options</h2>

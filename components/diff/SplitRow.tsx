@@ -6,10 +6,11 @@ import { AppSettings } from "@/types/settings";
 import { getBlockColorClass, getFragmentColorClass } from "@/utils/diffHelpers";
 import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
+import { BlockHeaderControls } from "./BlockHeaderControls";
 
 export interface SplitRowData {
   id: string;
-  type: "line" | "controls";
+  type: "line" | "controls" | "header-controls";
   block: ChangeBlock;
   oldIndex: number;
   newIndex: number;
@@ -36,6 +37,19 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
   const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled, renderMode === "wrap" ? "w-full" : "");
   const containerClass = getRowContainerClass(row.isSelectable, row.block.isSelected || false);
+
+  if (row.type === "header-controls") {
+    return (
+      <div
+        data-index={virtualRow.index}
+        ref={measureRef}
+        className="absolute top-0 left-0 w-full"
+        style={{ transform: `translateY(${virtualRow.start}px)` }}
+      >
+        <BlockHeaderControls />
+      </div>
+    );
+  }
 
   if (row.type === "controls") {
     const layoutMode = renderMode === "wrap" ? "split-wrap" : renderMode === "left" ? "split-left" : "split-right";
@@ -81,7 +95,6 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
     >
       <div className={containerClass}>
         {isHovered && <div className="absolute inset-0 bg-hover-overlay pointer-events-none z-10" />}
-        {row.isFirst && row.block.isSelected && row.isSelectable && <div className="absolute top-0 left-0 w-full h-[2px] bg-accent-primary z-20 pointer-events-none" />}
         <div className="flex min-h-[24px] w-full relative z-0">
           {(renderMode === "wrap" || renderMode === "left") && (
             <div
