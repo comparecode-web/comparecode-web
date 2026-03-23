@@ -33,7 +33,7 @@ export function ComparisonToolbar() {
   };
 
   return (
-    <div className="flex items-center justify-between border-b border-border-default bg-bg-secondary px-2 sm:px-4 h-[var(--header-height)] shrink-0 z-20 select-none">
+    <div className="flex items-center justify-between border-b border-border-default bg-bg-secondary px-2 sm:px-4 h-(--header-height) shrink-0 z-20 select-none">
       <div className="flex flex-1 items-center justify-between min-w-0">
         <StatDisplay type="removals" count={stats.removals} />
         <div className="flex items-center gap-1 sm:gap-4">
@@ -42,7 +42,7 @@ export function ComparisonToolbar() {
         </div>
       </div>
 
-      <button onClick={() => executeSwap(settings)} className="mx-3 sm:mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-1.5 rounded transition-colors duration-[var(--duration-short)] shrink-0" title="Swap Sides">
+      <button onClick={() => executeSwap(settings)} className="mx-3 sm:mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-1.5 rounded transition-colors duration-(--duration-short) shrink-0" title="Swap Sides">
         <MdSwapHoriz />
       </button>
 
@@ -98,7 +98,7 @@ function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
     <button
       onClick={() => onCopy(text, side)}
       disabled={isDisabled}
-      className="flex items-center gap-1.5 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-[var(--duration-short)]"
+      className="flex items-center gap-1.5 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-(--duration-short)"
       title={title}
     >
       {isCopied ? <MdCheck className="text-xl" /> : <MdContentCopy className="text-xl" />}

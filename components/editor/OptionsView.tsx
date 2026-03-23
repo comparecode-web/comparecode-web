@@ -94,7 +94,7 @@ function AppearanceSection() {
           <select
             value={settings.fontFamily}
             onChange={(e) => updateSettings({ fontFamily: e.target.value })}
-            className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-1.5 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-[var(--duration-short)]"
+            className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-1.5 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)"
           >
             {AVAILABLE_FONTS.map((font) => (
               <option key={font.id} value={font.value}>

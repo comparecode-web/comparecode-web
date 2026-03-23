@@ -31,7 +31,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBook
     <div
       onClick={() => onRestore(item.originalText, item.modifiedText)}
       className={cn(
-        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-[var(--duration-medium)] hover:border-accent-primary hover:shadow-md",
+        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
         item.isBookmarked ? "border-accent-primary" : "border-border-default"
       )}
     >
@@ -48,7 +48,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBook
           <div className="flex shrink-0 items-center gap-1">
             <button
               onClick={(e) => onToggleBookmark(e, item.id, item.isBookmarked)}
-              className="rounded p-1.5 sm:p-2 text-accent-primary transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
+              className="rounded p-1.5 sm:p-2 text-accent-primary transition-colors duration-(--duration-short) hover:bg-hover-overlay"
               title="Bookmark this item"
             >
               {item.isBookmarked ? (
@@ -59,7 +59,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBook
             </button>
             <button
               onClick={(e) => onDelete(e, item.id)}
-              className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
+              className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-(--duration-short) hover:bg-hover-overlay"
               title="Delete this item"
             >
               <MdDelete className="text-xl sm:text-2xl" />

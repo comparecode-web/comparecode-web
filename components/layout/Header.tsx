@@ -16,7 +16,7 @@ export function Header() {
   ];
 
   return (
-    <header className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6 relative z-50">
+    <header className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6 relative z-50">
       <div className="flex items-center gap-3 sm:gap-8 h-full">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdDifference className="text-xl sm:text-2xl text-accent-primary" />
@@ -30,18 +30,18 @@ export function Header() {
                 key={view}
                 onClick={() => navigate(view)}
                 className={cn(
-                  "relative flex items-center gap-2 px-3 py-1.5 text-sm font-semibold transition-colors duration-[var(--duration-medium)] rounded-md z-10 outline-none overflow-hidden",
+                  "relative flex items-center gap-2 px-3 py-1.5 text-sm font-semibold transition-colors duration-(--duration-medium) rounded-md z-10 outline-none overflow-hidden",
                   isActive ? "text-white" : "text-text-secondary hover:text-text-primary hover:bg-hover-overlay"
                 )}
                 title={label}
               >
                 <div
                   className={cn(
-                    "absolute inset-0 bg-accent-primary rounded-md -z-10 transition-all duration-[var(--duration-medium)] ease-out",
+                    "absolute inset-0 bg-accent-primary rounded-md -z-10 transition-all duration-(--duration-medium) ease-out",
                     isActive ? "opacity-100 scale-100" : "opacity-0 scale-75"
                   )}
                 />
-                <Icon className={cn("text-lg transition-colors duration-[var(--duration-medium)]", isActive ? "text-white" : "text-text-secondary")} />
+                <Icon className={cn("text-lg transition-colors duration-(--duration-medium)", isActive ? "text-white" : "text-text-secondary")} />
                 <span className="hidden sm:inline">{label}</span>
               </button>
             );
@@ -54,7 +54,7 @@ export function Header() {
           href="https://github.com/comparecode-web/comparecode-web"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-2 sm:px-4 py-1.5 text-sm font-semibold text-text-secondary hover:text-accent-primary hover:bg-hover-overlay rounded transition-all duration-[var(--duration-medium)]"
+          className="flex items-center gap-2 px-2 sm:px-4 py-1.5 text-sm font-semibold text-text-secondary hover:text-accent-primary hover:bg-hover-overlay rounded transition-all duration-(--duration-medium)"
           title="GitHub"
         >
           <FaGithub className="text-xl" />
