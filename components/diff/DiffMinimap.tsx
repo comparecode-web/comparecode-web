@@ -16,15 +16,15 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
     return calculateMinimapSegments(blocks, ignoreWhitespace);
   }, [blocks, ignoreWhitespace]);
 
-  const getLeftColor = (kind: BlockType) => {
-    if (kind === BlockType.Removed || kind === BlockType.Modified) return "bg-minimap-removed";
-    if (kind === BlockType.Added) return "bg-minimap-empty";
+  const getLeftColor = (kind: BlockType, isSelected: boolean) => {
+    if (kind === BlockType.Removed || kind === BlockType.Modified) return isSelected ? "bg-minimap-removed-selected" : "bg-minimap-removed";
+    if (kind === BlockType.Added) return isSelected ? "bg-minimap-empty-selected" : "bg-minimap-empty";
     return "bg-transparent";
   };
 
-  const getRightColor = (kind: BlockType) => {
-    if (kind === BlockType.Added || kind === BlockType.Modified) return "bg-minimap-added";
-    if (kind === BlockType.Removed) return "bg-minimap-empty";
+  const getRightColor = (kind: BlockType, isSelected: boolean) => {
+    if (kind === BlockType.Added || kind === BlockType.Modified) return isSelected ? "bg-minimap-added-selected" : "bg-minimap-added";
+    if (kind === BlockType.Removed) return isSelected ? "bg-minimap-empty-selected" : "bg-minimap-empty";
     return "bg-transparent";
   };
 
@@ -37,11 +37,16 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
             e.stopPropagation();
             onSegmentClick(seg.id, seg.offsetPct);
           }}
-          className="absolute w-full flex opacity-80 hover:opacity-100 transition-opacity cursor-pointer z-40 rounded-sm overflow-hidden"
+          className={clsx(
+            "absolute w-full flex transition duration-[var(--duration-short)] cursor-pointer rounded-sm overflow-hidden",
+            seg.isSelected 
+              ? "opacity-100 z-50" 
+              : "opacity-70 hover:opacity-100 z-40"
+          )}
           style={{ top: `${seg.offsetPct}%`, height: `${seg.heightPct}%` }}
         >
-          <div className={clsx("flex-1", getLeftColor(seg.kind))} />
-          <div className={clsx("flex-1", getRightColor(seg.kind))} />
+          <div className={clsx("flex-1 transition-colors duration-[var(--duration-short)]", getLeftColor(seg.kind, seg.isSelected || false))} />
+          <div className={clsx("flex-1 transition-colors duration-[var(--duration-short)]", getRightColor(seg.kind, seg.isSelected || false))} />
         </div>
       ))}
     </div>

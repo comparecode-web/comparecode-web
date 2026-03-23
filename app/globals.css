@@ -22,9 +22,13 @@
   --color-diff-removed-fg: var(--diff-removed-fg);
   --color-diff-empty-bg: var(--diff-empty-bg);
   --color-hover-overlay: var(--hover-overlay);
+  
   --color-minimap-added: var(--minimap-added);
+  --color-minimap-added-selected: var(--minimap-added-selected);
   --color-minimap-removed: var(--minimap-removed);
+  --color-minimap-removed-selected: var(--minimap-removed-selected);
   --color-minimap-empty: var(--minimap-empty);
+  --color-minimap-empty-selected: var(--minimap-empty-selected);
 
   --spacing-header: var(--header-height);
   --spacing-input-panel: var(--input-panel-height);
@@ -64,9 +68,13 @@
   --diff-removed-fg: #fdb8c0;
   --diff-empty-bg: #f0f0f0;
   --hover-overlay: rgba(0, 0, 0, 0.05);
+  
   --minimap-added: #8fe3c7;
+  --minimap-added-selected: #62d3aa;
   --minimap-removed: #f5a4a4;
+  --minimap-removed-selected: #f07c7c;
   --minimap-empty: #e5e7eb;
+  --minimap-empty-selected: #d1d5db;
 
   --header-height: 3rem;
   --input-panel-height: 45vh;
@@ -106,9 +114,13 @@
   --diff-removed-fg: #a1292d;
   --diff-empty-bg: #21262d;
   --hover-overlay: rgba(255, 255, 255, 0.05);
+  
   --minimap-added: #1f6b35;
+  --minimap-added-selected: #2ea04e;
   --minimap-removed: #a1292d;
+  --minimap-removed-selected: #d13b42;
   --minimap-empty: #374151;
+  --minimap-empty-selected: #4b5563;
 
   --header-height: 3rem;
   --input-panel-height: 45vh;
