@@ -20,7 +20,7 @@ export function ComparisonToolbar() {
     return calculateStats(comparisonResult?.blocks, settings.ignoreWhitespace);
   }, [comparisonResult, settings.ignoreWhitespace]);
 
-  const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0,[leftText]);
+  const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0, [leftText]);
   const rightLineCount = useMemo(() => rightText ? rightText.split(/\r?\n/).length : 0, [rightText]);
 
   const handleCopy = (text: string, side: "left" | "right") => {
@@ -42,7 +42,7 @@ export function ComparisonToolbar() {
         </div>
       </div>
 
-      <button onClick={() => executeSwap(settings)} className="mx-3 sm:mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-1.5 rounded transition-colors duration-(--duration-short) shrink-0" title="Swap Sides">
+      <button onClick={() => executeSwap(settings)} className="mx-3 sm:mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-2 rounded transition-colors duration-(--duration-short) shrink-0" title="Swap Sides">
         <MdSwapHoriz />
       </button>
 
@@ -98,11 +98,11 @@ function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
     <button
       onClick={() => onCopy(text, side)}
       disabled={isDisabled}
-      className="flex items-center gap-1.5 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-(--duration-short)"
+      className="flex items-center gap-1 text-accent-primary hover:bg-hover-overlay px-3 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-(--duration-short)"
       title={title}
     >
       {isCopied ? <MdCheck className="text-xl" /> : <MdContentCopy className="text-xl" />}
-      <span className="text-xs font-bold hidden sm:inline">{isCopied ? "Copied" : "Copy"}</span>
+      <span className="text-sm font-semibold hidden sm:inline">{isCopied ? "Copied" : "Copy"}</span>
     </button>
   );
 }
