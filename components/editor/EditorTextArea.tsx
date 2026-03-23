@@ -6,10 +6,11 @@ interface EditorTextAreaProps {
   onChange: (value: string) => void;
   placeholder: string;
   fontSize: number;
+  fontFamily: string;
   isWordWrapEnabled: boolean;
 }
 
-export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontSize, isWordWrapEnabled }: EditorTextAreaProps) => {
+export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontSize, fontFamily, isWordWrapEnabled }: EditorTextAreaProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialSyncDone = useRef(false);
 
@@ -24,7 +25,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
     }, 100);
     
     return () => clearTimeout(timer);
-  },[value, onChange]);
+  }, [value, onChange]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -35,9 +36,10 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 resize-none rounded-md border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary font-mono outline-none custom-scrollbar"
+        className="flex-1 resize-none rounded-md border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary outline-none custom-scrollbar"
         style={{
           fontSize: `${fontSize}px`,
+          fontFamily: fontFamily,
           whiteSpace: isWordWrapEnabled ? "pre-wrap" : "pre"
         }}
         placeholder={placeholder}

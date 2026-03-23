@@ -9,6 +9,8 @@ import { UI_CONSTANTS } from "@/config/constants";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Slider } from "@/components/ui/Slider";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { AVAILABLE_FONTS } from "@/config/fonts";
+import { MdExpandMore, MdRestartAlt } from "react-icons/md";
 
 export function OptionsView() {
   return (
@@ -23,11 +25,20 @@ export function OptionsView() {
 }
 
 function ComparisonSection() {
-  const { settings, updateSettings } = useSettingsStore();
+  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
+        <button
+          onClick={() => resetSectionToDefaults(["ignoreWhitespace", "precision"])}
+          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          title="Restore section defaults"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
+      </div>
       <Checkbox
         checked={settings.ignoreWhitespace}
         onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
@@ -47,11 +58,20 @@ function ComparisonSection() {
 }
 
 function AppearanceSection() {
-  const { settings, updateSettings } = useSettingsStore();
+  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
+        <button
+          onClick={() => resetSectionToDefaults(["isWordWrapEnabled", "fontSize", "fontFamily"])}
+          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          title="Restore section defaults"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
+      </div>
       <Checkbox
         checked={settings.isWordWrapEnabled}
         onChange={(e) => updateSettings({ isWordWrapEnabled: e.target.checked })}
@@ -68,16 +88,42 @@ function AppearanceSection() {
         displayValue={`${settings.fontSize}px`}
         containerClassName="mt-2"
       />
+      <div className="flex flex-col gap-1 mt-1">
+        <span className="text-sm font-medium text-text-primary">Font Family</span>
+        <div className="relative flex items-center w-full">
+          <select
+            value={settings.fontFamily}
+            onChange={(e) => updateSettings({ fontFamily: e.target.value })}
+            className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-1.5 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-[var(--duration-short)]"
+          >
+            {AVAILABLE_FONTS.map((font) => (
+              <option key={font.id} value={font.value}>
+                {font.name}
+              </option>
+            ))}
+          </select>
+          <MdExpandMore className="absolute right-2 text-xl text-text-secondary pointer-events-none" />
+        </div>
+      </div>
     </div>
   );
 }
 
 function LayoutSection() {
-  const { settings, updateSettings } = useSettingsStore();
+  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
+        <button
+          onClick={() => resetSectionToDefaults(["viewMode"])}
+          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          title="Restore section defaults"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
+      </div>
       <SegmentedControl<ViewMode>
         options={[
           { label: "Split", value: ViewMode.Split },
@@ -92,11 +138,20 @@ function LayoutSection() {
 }
 
 function MergeSection() {
-  const { settings, updateSettings } = useSettingsStore();
+  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
+        <button
+          onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled"])}
+          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          title="Restore section defaults"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
+      </div>
       <Checkbox
         checked={settings.isContinuousMergeEnabled}
         onChange={(e) => updateSettings({ isContinuousMergeEnabled: e.target.checked })}
@@ -129,9 +184,10 @@ function ActionSection() {
       </button>
       <button
         onClick={resetToDefaults}
-        className="w-full py-2 bg-danger-bg text-danger hover:brightness-95 rounded text-sm font-semibold transition-all border border-danger/20 mt-2"
+        className="w-full flex items-center justify-center gap-2 py-2 bg-danger-bg text-danger hover:brightness-95 rounded text-sm font-semibold transition-all border border-danger/20 mt-2"
       >
-        Reset to defaults
+        <MdRestartAlt className="text-lg" />
+        <span>Reset to defaults</span>
       </button>
     </div>
   );

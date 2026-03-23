@@ -6,6 +6,7 @@ export const defaultSettings: AppSettings = {
   precision: PrecisionLevel.Word,
   viewMode: ViewMode.Split,
   fontSize: 13.0,
+  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   theme: "light",
   isContinuousMergeEnabled: true
 };

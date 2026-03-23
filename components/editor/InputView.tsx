@@ -53,6 +53,7 @@ export function InputView() {
           onChange={setLeftText}
           placeholder="Paste original text..."
           fontSize={settings.fontSize}
+          fontFamily={settings.fontFamily}
           isWordWrapEnabled={settings.isWordWrapEnabled}
         />
         <EditorTextArea
@@ -61,6 +62,7 @@ export function InputView() {
           onChange={setRightText}
           placeholder="Paste modified text..."
           fontSize={settings.fontSize}
+          fontFamily={settings.fontFamily}
           isWordWrapEnabled={settings.isWordWrapEnabled}
         />
       </div>

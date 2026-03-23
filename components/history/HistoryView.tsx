@@ -15,7 +15,7 @@ export function HistoryView() {
   const loadFromHistory = useEditorStore((state) => state.loadFromHistory);
   const navigate = useAppStore((state) => state.navigate);
   const settings = useSettingsStore((state) => state.settings);
-  
+
   const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
 
   useEffect(() => {
@@ -88,6 +88,7 @@ export function HistoryView() {
               <HistoryItemCard
                 key={item.id}
                 item={item}
+                fontFamily={settings.fontFamily}
                 onRestore={handleRestore}
                 onToggleBookmark={handleToggleBookmark}
                 onDelete={handleDeleteItem}

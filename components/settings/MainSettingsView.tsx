@@ -1,11 +1,11 @@
 "use client";
 
-import { MdSettings, MdExpandMore } from "react-icons/md";
+import { MdSettings, MdExpandMore, MdRestartAlt } from "react-icons/md";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { AVAILABLE_THEMES } from "@/config/themes";
 
 export function MainSettingsView() {
-  const { settings, updateSettings } = useSettingsStore();
+  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary">
@@ -19,7 +19,16 @@ export function MainSettingsView() {
       <div className="flex-1 overflow-y-auto p-3 sm:p-6 custom-scrollbar">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 sm:gap-6">
           <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-[var(--duration-medium)] hover:border-accent-primary hover:shadow-md">
-            <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
+              <button
+                onClick={() => resetSectionToDefaults(["theme"])}
+                className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+                title="Restore section defaults"
+              >
+                <MdRestartAlt className="text-lg" />
+              </button>
+            </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
               <span className="text-sm sm:text-base font-medium text-text-primary">Theme</span>
               <div className="relative flex items-center w-full sm:w-48">

@@ -112,7 +112,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
               <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-transparent" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
                 {l.sign}
               </div>
-              <div className={cn("flex-1 px-2 py-0.5 font-mono min-h-6", wordWrapClass)}>
+              <div className={cn("flex-1 px-2 py-0.5 min-h-6", wordWrapClass)}>
                 <DiffFragmentList fragments={l.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
               </div>
             </div>

@@ -75,8 +75,8 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
     );
   }
 
-  const oldLine = row.block.oldLines[row.oldIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [] };
-  const newLine = row.block.newLines[row.newIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [] };
+  const oldLine = row.block.oldLines[row.oldIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
+  const newLine = row.block.newLines[row.newIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
 
   const oldBackgroundClass = oldLine.kind === DiffChangeType.Imaginary
     ? "bg-diff-empty-bg"
@@ -116,7 +116,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
                 {oldLine.lineNumber}
               </div>
               <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-[var(--duration-medium)]", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
-                <div className={cn("px-2 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
+                <div className={cn("px-2 py-0.5 min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={oldLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
@@ -132,7 +132,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
                 {newLine.lineNumber}
               </div>
               <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-[var(--duration-medium)]", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
-                <div className={cn("px-2 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
+                <div className={cn("px-2 py-0.5 min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
