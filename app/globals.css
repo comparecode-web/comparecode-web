@@ -16,7 +16,6 @@
   --color-border-default: var(--border-default);
   --color-accent-primary: var(--accent-primary);
   --color-accent-hover: var(--accent-hover);
-
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
   --color-danger-bg: var(--danger-bg);
@@ -79,6 +78,24 @@ body {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-down-fade {
+  animation: slideDownFade var(--duration-medium) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade var(--duration-medium) cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (max-width: 639px) {

@@ -12,7 +12,7 @@ export function Header() {
   const navItems = [
     { view: "editor" as const, label: "Editor", icon: MdCode },
     { view: "history" as const, label: "History", icon: MdHistory },
-    { view: "settings" as const, label: "Settings", icon: MdSettings },
+    { view: "settings" as const, label: "Settings", icon: MdSettings }
   ];
 
   return (
@@ -22,30 +22,30 @@ export function Header() {
           <MdDifference className="text-xl sm:text-2xl text-accent-primary" />
           <h1 className="text-sm sm:text-lg font-bold text-text-primary">CompareCode</h1>
         </div>
-        <nav className="flex items-center gap-1 sm:gap-2 h-full">
-          {navItems.map(({ view, label, icon: Icon }) => (
-            <button
-              key={view}
-              onClick={() => navigate(view)}
-              className={cn(
-                "relative flex h-full items-center px-2 sm:px-4 text-sm font-semibold transition-colors duration-[var(--duration-medium)]",
-                "after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:origin-center after:bg-accent-primary after:transition-transform after:duration-[var(--duration-short)]",
-                currentView === view
-                  ? "text-accent-primary after:scale-x-100"
-                  : "text-text-secondary hover:text-accent-primary after:scale-x-0 hover:after:scale-x-100"
-              )}
-              title={label}
-            >
-              {currentView === view ? (
-                <span>{label}</span>
-              ) : (
-                <>
-                  <Icon className="text-lg sm:hidden" />
-                  <span className="hidden sm:inline">{label}</span>
-                </>
-              )}
-            </button>
-          ))}
+        <nav className="flex items-center h-full gap-1 sm:gap-2">
+          {navItems.map(({ view, label, icon: Icon }) => {
+            const isActive = currentView === view;
+            return (
+              <button
+                key={view}
+                onClick={() => navigate(view)}
+                className={cn(
+                  "relative flex items-center gap-2 px-3 py-1.5 text-sm font-semibold transition-colors duration-[var(--duration-medium)] rounded-md z-10 outline-none overflow-hidden",
+                  isActive ? "text-white" : "text-text-secondary hover:text-text-primary hover:bg-hover-overlay"
+                )}
+                title={label}
+              >
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-accent-primary rounded-md -z-10 transition-all duration-[var(--duration-medium)] ease-out",
+                    isActive ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                  )}
+                />
+                <Icon className={cn("text-lg transition-colors duration-[var(--duration-medium)]", isActive ? "text-white" : "text-text-secondary")} />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            );
+          })}
         </nav>
       </div>
 

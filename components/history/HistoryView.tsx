@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useHistoryStore } from "@/store/useHistoryStore";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useAppStore } from "@/store/useAppStore";
@@ -14,6 +15,8 @@ export function HistoryView() {
   const loadFromHistory = useEditorStore((state) => state.loadFromHistory);
   const navigate = useAppStore((state) => state.navigate);
   const settings = useSettingsStore((state) => state.settings);
+  
+  const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
 
   useEffect(() => {
     loadHistory();
@@ -44,7 +47,7 @@ export function HistoryView() {
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary">
-      <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
+      <div className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
           <h2 className="text-lg sm:text-xl font-bold text-text-primary">History</h2>
@@ -80,7 +83,7 @@ export function HistoryView() {
             <p className="mt-1 text-xs sm:text-sm text-text-secondary">Comparisons will appear here automatically.</p>
           </div>
         ) : (
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 sm:gap-3">
+          <div ref={listRef} className="mx-auto flex w-full max-w-5xl flex-col gap-2 sm:gap-3">
             {items.map((item) => (
               <HistoryItemCard
                 key={item.id}
