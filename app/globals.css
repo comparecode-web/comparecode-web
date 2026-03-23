@@ -2,6 +2,10 @@
 @import "../styles/themes/light.css";
 @import "../styles/themes/dark.css";
 @import "../styles/themes/dracula.css";
+@import "../styles/themes/monokai.css";
+@import "../styles/themes/solarized-light.css";
+@import "../styles/themes/solarized-dark.css";
+@import "../styles/themes/nord.css";
 
 @theme {
   --color-bg-primary: var(--bg-primary);
@@ -18,7 +22,6 @@
   --color-danger-bg: var(--danger-bg);
   --color-success: var(--success);
   --color-success-hover: var(--success-hover);
-
   --color-diff-added-bg: var(--diff-added-bg);
   --color-diff-added-fg: var(--diff-added-fg);
   --color-diff-removed-bg: var(--diff-removed-bg);
