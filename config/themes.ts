@@ -4,6 +4,7 @@ export interface ThemeOption {
 }
 
 export const AVAILABLE_THEMES: Array<ThemeOption> = [
-  { id: "light", name: "Light Mode" },
-  { id: "dark", name: "Dark Mode" }
+  { id: "light", name: "Light" },
+  { id: "dark", name: "Dark" },
+  { id: "dracula", name: "Dracula" }
 ];

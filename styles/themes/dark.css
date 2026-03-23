@@ -1,0 +1,29 @@
+[data-theme="dark"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-selected: #1f2937;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --border-default: #30363d;
+  --accent-primary: #3b82f6;
+  --accent-hover: #60a5fa;
+  --danger: #b91c1c;
+  --danger-hover: #991b1b;
+  --danger-bg: #450a0a;
+  --success: #22c55e;
+  --success-hover: #16a34a;
+
+  --diff-added-bg: #0d2115;
+  --diff-added-fg: #1f6b35;
+  --diff-removed-bg: #2d0e12;
+  --diff-removed-fg: #a1292d;
+  --diff-empty-bg: #21262d;
+  --hover-overlay: rgba(255, 255, 255, 0.05);
+
+  --minimap-added: #1f6b35;
+  --minimap-added-selected: #2ea04e;
+  --minimap-removed: #a1292d;
+  --minimap-removed-selected: #d13b42;
+  --minimap-empty: #374151;
+  --minimap-empty-selected: #4b5563;
+}
