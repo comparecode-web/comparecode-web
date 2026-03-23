@@ -26,6 +26,7 @@
   --color-diff-empty-bg: var(--diff-empty-bg);
   --color-hover-overlay: var(--hover-overlay);
 
+  --color-minimap-bg: var(--minimap-bg);
   --color-minimap-added: var(--minimap-added);
   --color-minimap-added-selected: var(--minimap-added-selected);
   --color-minimap-removed: var(--minimap-removed);

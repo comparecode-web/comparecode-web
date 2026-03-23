@@ -29,7 +29,7 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
   };
 
   return (
-    <div className="h-full w-4 shrink-0 bg-transparent relative cursor-default ml-1 mr-0">
+    <div className="h-full w-4 shrink-0 bg-minimap-bg relative cursor-default ml-1 mr-0 rounded-sm overflow-hidden">
       {segments.map((seg) => (
         <div
           key={seg.id}

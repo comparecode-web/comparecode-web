@@ -20,6 +20,7 @@
   --diff-empty-bg: #21262d;
   --hover-overlay: rgba(255, 255, 255, 0.05);
 
+  --minimap-bg: #010409;
   --minimap-added: #1f6b35;
   --minimap-added-selected: #2ea04e;
   --minimap-removed: #a1292d;
