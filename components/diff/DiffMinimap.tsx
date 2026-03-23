@@ -38,15 +38,15 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
             onSegmentClick(seg.id, seg.offsetPct);
           }}
           className={clsx(
-            "absolute w-full flex transition duration-[var(--duration-short)] cursor-pointer rounded-sm overflow-hidden",
+            "absolute w-full flex transition duration-(--duration-short) cursor-pointer rounded-sm overflow-hidden",
             seg.isSelected
               ? "opacity-100 z-50"
               : "opacity-70 hover:opacity-100 z-40"
           )}
           style={{ top: `${seg.offsetPct}%`, height: `${seg.heightPct}%` }}
         >
-          <div className={clsx("flex-1 transition-colors duration-[var(--duration-short)]", getLeftColor(seg.kind, seg.isSelected || false))} />
-          <div className={clsx("flex-1 transition-colors duration-[var(--duration-short)]", getRightColor(seg.kind, seg.isSelected || false))} />
+          <div className={clsx("flex-1 transition-colors duration-(--duration-short)", getLeftColor(seg.kind, seg.isSelected || false))} />
+          <div className={clsx("flex-1 transition-colors duration-(--duration-short)", getRightColor(seg.kind, seg.isSelected || false))} />
         </div>
       ))}
     </div>

@@ -13,7 +13,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         <input
           type="checkbox"
           ref={ref}
-          className={cn("w-4 h-4 custom-checkbox rounded", className)}
+          className={cn("w-4 h-4 custom-checkbox rounded cursor-pointer", className)}
           {...props}
         />
         {label && <span className="text-sm font-medium text-text-primary">{label}</span>}

@@ -53,7 +53,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <div className={cn("overflow-hidden transition-all duration-[var(--duration-medium)] ease-in-out", row.block.isSelected ? "h-[44px] opacity-100" : "h-0 opacity-0")}>
+        <div className={cn("overflow-hidden transition-all duration-(--duration-medium) ease-in-out", row.block.isSelected ? "h-11 opacity-100" : "h-0 opacity-0")}>
           <BlockHeaderControls />
         </div>
       </div>
@@ -68,7 +68,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <div className={cn("overflow-hidden transition-all duration-[var(--duration-medium)] ease-in-out", row.block.isSelected ? "h-[52px] opacity-100" : "h-0 opacity-0")}>
+        <div className={cn("overflow-hidden transition-all duration-(--duration-medium) ease-in-out", row.block.isSelected ? "h-13 opacity-100" : "h-0 opacity-0")}>
           <RowControls
             block={row.block}
             settings={settings}
@@ -95,7 +95,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
       <div className={containerClass}>
         {isHovered && (
           <div className={cn(
-            "absolute inset-0 bg-hover-overlay pointer-events-none z-10 transition-opacity duration-[var(--duration-short)]",
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10 transition-opacity duration-(--duration-short)",
             row.isFirstLine && "rounded-t-md",
             row.isLastLine && "rounded-b-md"
           )} />
@@ -108,11 +108,11 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
               {l.line2}
             </div>
-            <div className={cn("flex flex-1 min-w-0 mx-1 min-h-6 transition-colors duration-[var(--duration-medium)]", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+            <div className={cn("flex flex-1 min-w-0 mx-1 min-h-6 transition-colors duration-(--duration-medium)", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
               <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-transparent" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
                 {l.sign}
               </div>
-              <div className={cn("flex-1 px-2 py-0.5 font-mono min-h-6", wordWrapClass)}>
+              <div className={cn("flex-1 px-2 py-0.5 min-h-6", wordWrapClass)}>
                 <DiffFragmentList fragments={l.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
               </div>
             </div>

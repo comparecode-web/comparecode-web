@@ -6,12 +6,13 @@ import { DiffHistoryItem } from "@/types/history";
 
 interface HistoryItemCardProps {
   item: DiffHistoryItem;
+  fontFamily: string;
   onRestore: (original: string, modified: string) => void;
   onToggleBookmark: (e: React.MouseEvent, id: string, currentStatus: boolean) => void;
   onDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export const HistoryItemCard = memo(({ item, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
+export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
   const origLines = generatePreviewLines(item.originalText);
   const modLines = generatePreviewLines(item.modifiedText);
   const maxDisplayLines = Math.max(origLines.length, modLines.length);
@@ -35,10 +36,10 @@ export const HistoryItemCard = memo(({ item, onRestore, onToggleBookmark, onDele
       )}
     >
       {item.isBookmarked && (
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-accent-primary/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-accent-primary/25 pointer-events-none" />
       )}
 
-      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 z-10">
         <div className="flex items-center justify-between sm:contents">
           <span className="min-w-17.5 truncate text-xs font-bold text-accent-primary">
             {getRelativeTime(item.createdAt)}
@@ -71,9 +72,9 @@ export const HistoryItemCard = memo(({ item, onRestore, onToggleBookmark, onDele
             <span className="mb-1 text-[11px] font-semibold text-danger">
               {getLineCount(item.originalText)} lines
             </span>
-            <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
+            <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
               {displayOrigLines.map((line, idx) => (
-                <span key={`orig-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs text-text-secondary min-h-3.5 sm:min-h-4">
+                <span key={`orig-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
                   {line === "" ? "\u00A0" : line}
                 </span>
               ))}
@@ -87,9 +88,9 @@ export const HistoryItemCard = memo(({ item, onRestore, onToggleBookmark, onDele
             <span className="mb-1 text-[11px] font-semibold text-success">
               {getLineCount(item.modifiedText)} lines
             </span>
-            <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
+            <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
               {displayModLines.map((line, idx) => (
-                <span key={`mod-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
+                <span key={`mod-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
                   {line === "" ? "\u00A0" : line}
                 </span>
               ))}

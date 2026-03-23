@@ -63,7 +63,7 @@ export function ComparisonView() {
       <ComparisonToolbar />
 
       {!hideBody && (
-        <div id="diff-container" className="flex flex-1 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px` }}>
+        <div id="diff-container" className="flex flex-1 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
           {!hasResult ? (
             <div className="flex h-full w-full items-center justify-center">
               <p className="text-text-secondary">No comparison generated yet.</p>

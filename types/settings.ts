@@ -19,6 +19,7 @@ export interface AppSettings {
   precision: PrecisionLevel;
   viewMode: ViewMode;
   fontSize: number;
+  fontFamily: string;
   theme: string;
   isContinuousMergeEnabled: boolean;
 }

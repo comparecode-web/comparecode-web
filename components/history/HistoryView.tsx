@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useHistoryStore } from "@/store/useHistoryStore";
@@ -15,8 +15,9 @@ export function HistoryView() {
   const loadFromHistory = useEditorStore((state) => state.loadFromHistory);
   const navigate = useAppStore((state) => state.navigate);
   const settings = useSettingsStore((state) => state.settings);
-  
   const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
+
+  const bookmarkedCount = useMemo(() => items.filter((i) => i.isBookmarked).length, [items]);
 
   useEffect(() => {
     loadHistory();
@@ -47,32 +48,42 @@ export function HistoryView() {
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary">
-      <div className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
+      <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6 relative">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
           <h2 className="text-lg sm:text-xl font-bold text-text-primary">History</h2>
         </div>
+
         {items.length > 0 && (
-          <>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleDeleteAll}
-              leftIcon={<MdDelete className="text-xl" />}
-              title="Clear all history"
-              className="hidden sm:inline-flex"
-            >
-              Delete All
-            </Button>
-            <button
-              onClick={handleDeleteAll}
-              className="sm:hidden p-1.5 text-danger hover:bg-hover-overlay rounded transition-colors"
-              title="Clear all history"
-            >
-              <MdDelete className="text-xl" />
-            </button>
-          </>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden items-center gap-3 sm:gap-6 text-sm font-bold min-[400px]:flex">
+            <span className="text-text-secondary">Items: {items.length}</span>
+            <span className="text-accent-primary">Bookmarked: {bookmarkedCount}</span>
+          </div>
         )}
+
+        <div className="flex items-center">
+          {items.length > 0 && (
+            <>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteAll}
+                leftIcon={<MdDelete className="text-xl" />}
+                title="Clear all history"
+                className="hidden sm:inline-flex"
+              >
+                Delete All
+              </Button>
+              <button
+                onClick={handleDeleteAll}
+                className="sm:hidden p-1.5 text-danger hover:bg-hover-overlay rounded transition-colors"
+                title="Clear all history"
+              >
+                <MdDelete className="text-xl" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 sm:p-4 custom-scrollbar">
@@ -88,6 +99,7 @@ export function HistoryView() {
               <HistoryItemCard
                 key={item.id}
                 item={item}
+                fontFamily={settings.fontFamily}
                 onRestore={handleRestore}
                 onToggleBookmark={handleToggleBookmark}
                 onDelete={handleDeleteItem}
