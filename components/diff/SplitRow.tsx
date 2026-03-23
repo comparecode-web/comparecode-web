@@ -121,7 +121,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
 
           <div
             onMouseDown={() => setSelectionSide("right")}
-            className={cn("flex flex-1 w-1/2 overflow-hidden border-l border-border-default", selectionSide === "left" && "select-none")}
+            className={cn("flex flex-1 w-1/2 overflow-hidden", selectionSide === "left" && "select-none")}
           >
             <div className="flex min-h-6 w-full">
               <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">

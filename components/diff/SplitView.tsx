@@ -75,7 +75,7 @@ export function SplitView() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full relative pr-0 sm:pr-10" style={customStyles}>
+    <div className="flex flex-col h-full w-full relative pr-0 sm:pr-6" style={customStyles}>
       <div
         className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-2"
         ref={scrollRef}

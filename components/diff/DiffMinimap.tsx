@@ -29,7 +29,7 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
   };
 
   return (
-    <div className="h-full w-4 shrink-0 bg-transparent relative cursor-default mx-1">
+    <div className="h-full w-4 shrink-0 bg-transparent relative cursor-default ml-1 mr-0">
       {segments.map((seg) => (
         <div
           key={seg.id}
@@ -39,8 +39,8 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
           }}
           className={clsx(
             "absolute w-full flex transition duration-[var(--duration-short)] cursor-pointer rounded-sm overflow-hidden",
-            seg.isSelected 
-              ? "opacity-100 z-50" 
+            seg.isSelected
+              ? "opacity-100 z-50"
               : "opacity-70 hover:opacity-100 z-40"
           )}
           style={{ top: `${seg.offsetPct}%`, height: `${seg.heightPct}%` }}

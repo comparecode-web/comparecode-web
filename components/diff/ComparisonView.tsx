@@ -38,16 +38,18 @@ export function ComparisonView() {
     selectBlock(blockId);
 
     const container = document.getElementById("diff-container");
+
     if (container) {
       const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
+
       scrollAreas.forEach((scrollArea) => {
         const topOffset = scrollArea.clientHeight * 0.1;
         let targetScroll = (offsetPct / 100) * scrollArea.scrollHeight - topOffset;
-        
+
         if (targetScroll < 0) {
           targetScroll = 0;
         }
-        
+
         scrollArea.scrollTop = targetScroll;
       });
     }
@@ -73,8 +75,8 @@ export function ComparisonView() {
           )}
 
           {hasResult && (
-            <div className="absolute right-2 top-0 h-full z-30 pointer-events-none hidden sm:block">
-              <div className="pointer-events-auto h-full">
+            <div className="absolute right-1 top-0 h-full z-30 pointer-events-none hidden sm:block">
+              <div className="pointer-events-auto h-full py-2">
                 <DiffMinimap
                   blocks={comparisonResult.blocks}
                   ignoreWhitespace={settings.ignoreWhitespace}

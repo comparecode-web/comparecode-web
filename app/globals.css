@@ -22,7 +22,7 @@
   --color-diff-removed-fg: var(--diff-removed-fg);
   --color-diff-empty-bg: var(--diff-empty-bg);
   --color-hover-overlay: var(--hover-overlay);
-  
+
   --color-minimap-added: var(--minimap-added);
   --color-minimap-added-selected: var(--minimap-added-selected);
   --color-minimap-removed: var(--minimap-removed);
@@ -68,7 +68,7 @@
   --diff-removed-fg: #fdb8c0;
   --diff-empty-bg: #f0f0f0;
   --hover-overlay: rgba(0, 0, 0, 0.05);
-  
+
   --minimap-added: #8fe3c7;
   --minimap-added-selected: #62d3aa;
   --minimap-removed: #f5a4a4;
@@ -114,7 +114,7 @@
   --diff-removed-fg: #a1292d;
   --diff-empty-bg: #21262d;
   --hover-overlay: rgba(255, 255, 255, 0.05);
-  
+
   --minimap-added: #1f6b35;
   --minimap-added-selected: #2ea04e;
   --minimap-removed: #a1292d;
@@ -128,6 +128,7 @@
   --row-min-height: 1.5rem;
   --btn-height: 2rem;
   --btn-px: 1rem;
+
   --duration-short: 150ms;
   --duration-medium: 300ms;
   --duration-long: 500ms;
@@ -163,8 +164,8 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
+  height: 10px;
+  width: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -182,7 +183,7 @@ body {
 
 .hide-vertical-scrollbar::-webkit-scrollbar {
   width: 0px;
-  height: 8px;
+  height: 10px;
 }
 
 .hide-vertical-scrollbar::-webkit-scrollbar-track {
