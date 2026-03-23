@@ -5,6 +5,8 @@ import { MergeDirection } from "@/types/ui";
 import { ComparisonService } from "@/services/comparisonService";
 import { MergeService } from "@/services/mergeService";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/utils/scrollHelpers";
+import { UI_CONSTANTS } from "@/config/constants";
 
 interface EditorState {
   leftText: string;
@@ -78,7 +80,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const settings = useSettingsStore.getState().settings;
     const selectableBlocks = updatedBlocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
     const currentIndex = blockId ? selectableBlocks.findIndex(b => b.id === blockId) + 1 : 0;
-
     set({
       comparisonResult: { blocks: updatedBlocks },
       totalSelectableBlocks: selectableBlocks.length,
@@ -101,7 +102,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     get().compare(settings);
 
     const appSettings = useSettingsStore.getState().settings;
-
     if (appSettings.isContinuousMergeEnabled) {
       const newResult = get().comparisonResult;
       if (newResult) {
@@ -118,7 +118,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
           setTimeout(() => {
             get().scrollToBlock(nextBlockId);
-          }, 50);
+          }, UI_CONSTANTS.CONTINUOUS_MERGE_DELAY_MS);
         }
       }
     }
@@ -137,14 +137,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     const settings = useSettingsStore.getState().settings;
     const selectableBlocks = currentResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
-
     if (selectableBlocks.length === 0) {
       return;
     }
 
     const selectedBlock = currentResult.blocks.find(b => b.isSelected);
     let nextIndex = 0;
-
     if (selectedBlock) {
       const currentIndex = selectableBlocks.findIndex(b => b.id === selectedBlock.id);
       if (currentIndex >= 0 && currentIndex < selectableBlocks.length - 1) {
@@ -165,14 +163,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     const settings = useSettingsStore.getState().settings;
     const selectableBlocks = currentResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
-
     if (selectableBlocks.length === 0) {
       return;
     }
 
     const selectedBlock = currentResult.blocks.find(b => b.isSelected);
     let prevIndex = selectableBlocks.length - 1;
-
     if (selectedBlock) {
       const currentIndex = selectableBlocks.findIndex(b => b.id === selectedBlock.id);
       if (currentIndex > 0) {
@@ -187,66 +183,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   scrollToBlock: (blockId: string) => {
     const currentResult = get().comparisonResult;
-    if (!currentResult) {
-      return;
-    }
-
-    let totalHeight = 0;
-    for (let i = 0; i < currentResult.blocks.length; i++) {
-      totalHeight += Math.max(currentResult.blocks[i].oldLines.length, currentResult.blocks[i].newLines.length);
-    }
-
-    if (totalHeight === 0) {
-      totalHeight = 1;
-    }
-
-    let currentIndex = 0;
-    let targetOffsetPct = 0;
-
-    for (let i = 0; i < currentResult.blocks.length; i++) {
-      const block = currentResult.blocks[i];
-      const height = Math.max(block.oldLines.length, block.newLines.length);
-
-      if (block.id === blockId) {
-        targetOffsetPct = (currentIndex / totalHeight) * 100;
-        break;
-      }
-      currentIndex += height;
-    }
-
-    const container = document.getElementById("diff-container");
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-      scrollAreas.forEach((scrollArea) => {
-        const topOffset = scrollArea.clientHeight * 0.1;
-        let targetScroll = (targetOffsetPct / 100) * scrollArea.scrollHeight - topOffset;
-
-        if (targetScroll < 0) {
-          targetScroll = 0;
-        }
-
-        scrollArea.scrollTop = targetScroll;
-      });
-    }
+    scrollToBlockInDOM(currentResult, blockId);
   },
 
   scrollToTop: () => {
-    const container = document.getElementById("diff-container");
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-      scrollAreas.forEach((scrollArea) => {
-        scrollArea.scrollTop = 0;
-      });
-    }
+    scrollToTopInDOM();
   },
 
   scrollToBottom: () => {
-    const container = document.getElementById("diff-container");
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-      scrollAreas.forEach((scrollArea) => {
-        scrollArea.scrollTop = scrollArea.scrollHeight;
-      });
-    }
+    scrollToBottomInDOM();
   }
 }));

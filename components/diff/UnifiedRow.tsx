@@ -69,7 +69,6 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         <RowControls
           block={row.block}
           settings={settings}
-          layout="unified"
           selectBlock={selectBlock}
           mergeBlock={mergeBlock}
         />
@@ -98,18 +97,18 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
           )} />
         )}
         <div className="flex w-full flex-col relative z-0">
-          <div className="flex min-h-[24px] w-full bg-transparent">
+          <div className="flex min-h-6 w-full bg-transparent">
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
               {l.line1}
             </div>
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
               {l.line2}
             </div>
-            <div className={cn("flex flex-1 min-w-0 mr-2", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+            <div className={cn("flex flex-1 min-w-0 mr-2 min-h-6", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
               <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-transparent" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
                 {l.sign}
               </div>
-              <div className={cn("flex-1 px-2 py-0.5 font-mono", wordWrapClass)}>
+              <div className={cn("flex-1 px-2 py-0.5 font-mono min-h-6", wordWrapClass)}>
                 <DiffFragmentList fragments={l.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
               </div>
             </div>

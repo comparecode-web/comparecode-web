@@ -4,118 +4,22 @@ import { useRef, useState, useMemo } from "react";
 import { VirtualItem } from "@tanstack/react-virtual";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { BlockType, DiffChangeType } from "@/types/diff";
-import { useSyncedScroll } from "@/hooks/useSyncedScroll";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
-import { SplitRow, SplitRowData } from "./SplitRow";
+import { SplitRow } from "./SplitRow";
 import { cn } from "@/utils/uiHelpers";
+import { useCalculateSplitRows } from "@/hooks/useCalculateSplitRows";
+import { UI_CONSTANTS } from "@/config/constants";
 
 export function SplitView() {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
 
-  const wrapScrollRef = useRef<HTMLDivElement>(null);
-  const { leftScrollRef, rightScrollRef, handleLeftScroll, handleRightScroll } = useSyncedScroll();
-
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const fakeScrollRef = useRef<HTMLDivElement>(null);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
   const [selectionSide, setSelectionSide] = useState<"left" | "right" | null>(null);
 
-  const rows = useMemo(() => {
-    const result: Array<SplitRowData> = [ ];
-    if (!comparisonResult) return result;
-
-    const isImaginary = (line: { kind: DiffChangeType } | undefined) => !line || line.kind === DiffChangeType.Imaginary;
-    const reorderGhostRowsToBottom = (lines: Array<{ kind: DiffChangeType }>, maxLines: number): Array<number> => {
-      const nonGhost: Array<number> = [ ];
-      const ghost: Array<number> = [ ];
-
-      for (let idx = 0; idx < maxLines; idx++) {
-        if (isImaginary(lines[idx])) {
-          ghost.push(idx);
-        } else {
-          nonGhost.push(idx);
-        }
-      }
-
-      return nonGhost.concat(ghost);
-    };
-
-    comparisonResult.blocks.forEach((block) => {
-      const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
-      const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
-
-      const maxLines = Math.max(block.oldLines.length, block.newLines.length);
-
-      if (maxLines === 0) return;
-
-      if (block.isSelected && isSelectable) {
-        result.push({
-          id: `${block.id}-header-controls`,
-          type: "header-controls",
-          block,
-          oldIndex: -1,
-          newIndex: -1,
-          isFirst: true,
-          isLast: false,
-          isSelectable
-        });
-      }
-
-      let oldDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
-      let newDisplayIndices = Array.from({ length: maxLines }, (_, idx) => idx);
-
-      if (block.kind === BlockType.Modified && maxLines > 1) {
-        oldDisplayIndices = reorderGhostRowsToBottom(block.oldLines, maxLines);
-        newDisplayIndices = reorderGhostRowsToBottom(block.newLines, maxLines);
-      }
-
-      const lineRows: Array<{ oldIndex: number; newIndex: number }> = [ ];
-
-      for (let i = 0; i < maxLines; i++) {
-        const oldIndex = oldDisplayIndices[i] ?? -1;
-        const newIndex = newDisplayIndices[i] ?? -1;
-
-        const oldLine = oldIndex >= 0 ? block.oldLines[oldIndex] : undefined;
-        const newLine = newIndex >= 0 ? block.newLines[newIndex] : undefined;
-
-        if (isImaginary(oldLine) && isImaginary(newLine)) {
-          continue;
-        }
-
-        lineRows.push({ oldIndex, newIndex });
-      }
-
-      for (let i = 0; i < lineRows.length; i++) {
-        const lineRow = lineRows[i];
-        result.push({
-          id: `${block.id}-line-${i}`,
-          type: "line",
-          block,
-          oldIndex: lineRow.oldIndex,
-          newIndex: lineRow.newIndex,
-          isFirst: i === 0,
-          isLast: i === lineRows.length - 1 && !block.isSelected,
-          isSelectable,
-          isFirstLine: i === 0,
-          isLastLine: i === lineRows.length - 1
-        });
-      }
-
-      if (block.isSelected && isSelectable) {
-        result.push({
-          id: `${block.id}-controls`,
-          type: "controls",
-          block,
-          oldIndex: -1,
-          newIndex: -1,
-          isFirst: false,
-          isLast: true,
-          isSelectable
-        });
-      }
-    });
-    return result;
-  }, [comparisonResult, settings.ignoreWhitespace]);
+  const rows = useCalculateSplitRows(comparisonResult, settings);
 
   const maxLineChars = useMemo(() => {
     let max = 0;
@@ -136,26 +40,14 @@ export function SplitView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return 40;
-    if (row.type === "controls") return 56;
-    return 24;
+    if (row.type === "header-controls") return UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT;
+    if (row.type === "controls") return UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT;
+    return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 
-  const wrapVirtualizer = useDiffVirtualizer(
-    settings.isWordWrapEnabled ? rows.length : 0,
-    () => wrapScrollRef.current,
-    estimateSize
-  );
-
-  const leftVirtualizer = useDiffVirtualizer(
-    !settings.isWordWrapEnabled ? rows.length : 0,
-    () => leftScrollRef.current,
-    estimateSize
-  );
-
-  const rightVirtualizer = useDiffVirtualizer(
-    !settings.isWordWrapEnabled ? rows.length : 0,
-    () => rightScrollRef.current,
+  const virtualizer = useDiffVirtualizer(
+    rows.length,
+    () => scrollRef.current,
     estimateSize
   );
 
@@ -163,49 +55,37 @@ export function SplitView() {
     return null;
   }
 
-  const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
-  const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 80px)` } : {};
-  const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const lineNumChars = Math.max(
+    UI_CONSTANTS.LINE_NUM_MIN_CHARS,
+    Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length
+  );
+  
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
-  if (settings.isWordWrapEnabled) {
-    return (
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-0 sm:pr-8" ref={wrapScrollRef} style={customStyles}>
-        <div className="w-full relative" style={{ height: `${wrapVirtualizer.getTotalSize()}px` }}>
-          {wrapVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
-            const row = rows[virtualRow.index];
-            return (
-              <SplitRow
-                key={virtualRow.key}
-                row={row}
-                virtualRow={virtualRow}
-                settings={settings}
-                hoveredBlockId={hoveredBlockId}
-                setHoveredBlockId={setHoveredBlockId}
-                selectBlock={selectBlock}
-                mergeBlock={mergeBlock}
-                selectionSide={selectionSide}
-                setSelectionSide={setSelectionSide}
-                renderMode="wrap"
-                measureRef={wrapVirtualizer.measureElement}
-              />
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+  const handleScrollX = (e: React.UIEvent<HTMLDivElement>) => {
+    if (scrollRef.current) {
+      scrollRef.current.style.setProperty('--scroll-x', `${e.currentTarget.scrollLeft}px`);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!settings.isWordWrapEnabled && Math.abs(e.deltaX) > 0 && fakeScrollRef.current) {
+      fakeScrollRef.current.scrollLeft += e.deltaX;
+    }
+  };
 
   return (
-    <div className="flex h-full w-full" style={customStyles}>
+    <div className="flex flex-col h-full w-full relative pr-0 sm:pr-10" style={customStyles}>
       <div
-        className={cn("flex-1 overflow-auto hide-vertical-scrollbar border-r border-border-default", selectionSide === "right" && "select-none")}
-        ref={leftScrollRef}
-        onScroll={handleLeftScroll}
-        onMouseDown={() => setSelectionSide("left")}
+        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar"
+        ref={scrollRef}
+        onWheel={handleWheel}
       >
-        <div className={cn("relative", containerWidthClass)} style={{ height: `${leftVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
-          {leftVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
+        <div
+          className="relative w-full"
+          style={{ height: `${virtualizer.getTotalSize()}px` }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
             return (
               <SplitRow
@@ -219,42 +99,22 @@ export function SplitView() {
                 mergeBlock={mergeBlock}
                 selectionSide={selectionSide}
                 setSelectionSide={setSelectionSide}
-                renderMode="left"
-                measureRef={leftVirtualizer.measureElement}
+                measureRef={virtualizer.measureElement}
               />
             );
           })}
         </div>
       </div>
 
-      <div
-        className={cn("flex-1 overflow-auto custom-scrollbar", selectionSide === "left" && "select-none")}
-        ref={rightScrollRef}
-        onScroll={handleRightScroll}
-        onMouseDown={() => setSelectionSide("right")}
-      >
-        <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
-          {rightVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
-            const row = rows[virtualRow.index];
-            return (
-              <SplitRow
-                key={virtualRow.key}
-                row={row}
-                virtualRow={virtualRow}
-                settings={settings}
-                hoveredBlockId={hoveredBlockId}
-                setHoveredBlockId={setHoveredBlockId}
-                selectBlock={selectBlock}
-                mergeBlock={mergeBlock}
-                selectionSide={selectionSide}
-                setSelectionSide={setSelectionSide}
-                renderMode="right"
-                measureRef={rightVirtualizer.measureElement}
-              />
-            );
-          })}
+      {!settings.isWordWrapEnabled && maxLineChars > 0 && (
+        <div
+          className="h-3 sm:h-4 overflow-x-auto overflow-y-hidden custom-scrollbar shrink-0 border-t border-border-default bg-bg-primary z-20"
+          ref={fakeScrollRef}
+          onScroll={handleScrollX}
+        >
+          <div style={{ width: `calc(50% + ${maxLineChars}ch + 4rem)` }} className="h-1"></div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
