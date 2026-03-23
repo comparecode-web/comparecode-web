@@ -32,13 +32,12 @@ interface SplitRowProps {
   mergeBlock: (block: ChangeBlock, dir: MergeDirection, settings: AppSettings) => void;
   selectionSide: "left" | "right" | null;
   setSelectionSide: (side: "left" | "right" | null) => void;
-  renderMode: "wrap" | "left" | "right";
   measureRef: (node: HTMLElement | null) => void;
 }
 
-export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHoveredBlockId, selectBlock, mergeBlock, selectionSide, setSelectionSide, renderMode, measureRef }: SplitRowProps) => {
+export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHoveredBlockId, selectBlock, mergeBlock, selectionSide, setSelectionSide, measureRef }: SplitRowProps) => {
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
-  const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled, renderMode === "wrap" ? "w-full" : "");
+  const textContentClass = getWordWrapClass(settings.isWordWrapEnabled, settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full");
   const containerClass = getRowContainerClass(row.isSelectable, row.block.isSelected || false);
 
   if (row.type === "header-controls") {
@@ -55,8 +54,6 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
   }
 
   if (row.type === "controls") {
-    const layoutMode = renderMode === "wrap" ? "split-wrap" : renderMode === "left" ? "split-left" : "split-right";
-
     return (
       <div
         data-index={virtualRow.index}
@@ -67,7 +64,6 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
         <RowControls
           block={row.block}
           settings={settings}
-          layout={layoutMode}
           selectBlock={selectBlock}
           mergeBlock={mergeBlock}
         />
@@ -85,6 +81,8 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
   const newBackgroundClass = newLine.kind === DiffChangeType.Imaginary
     ? "bg-diff-empty-bg"
     : getBlockColorClass(row.block.kind, "new", row.block.isWhitespaceChange, settings.ignoreWhitespace);
+
+  const transformStyle = !settings.isWordWrapEnabled ? { transform: 'translateX(calc(-1 * var(--scroll-x, 0px)))' } : undefined;
 
   return (
     <div
@@ -105,37 +103,37 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
           )} />
         )}
         <div className="flex min-h-6 w-full relative z-0">
-          {(renderMode === "wrap" || renderMode === "left") && (
-            <div
-              onMouseDown={() => setSelectionSide("left")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", selectionSide === "right" && "select-none")}
-            >
-              <div className="flex min-h-6 w-full">
-                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
-                  {oldLine.lineNumber}
-                </div>
-                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2 min-h-6", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+          <div
+            onMouseDown={() => setSelectionSide("left")}
+            className={cn("flex flex-1 w-1/2 overflow-hidden", selectionSide === "right" && "select-none")}
+          >
+            <div className="flex min-h-6 w-full">
+              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10 border-r border-border-default/50">
+                {oldLine.lineNumber}
+              </div>
+              <div className={cn("flex-1 overflow-hidden relative", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                <div className={cn("px-2 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={oldLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
-          {(renderMode === "wrap" || renderMode === "right") && (
-            <div
-              onMouseDown={() => setSelectionSide("right")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", selectionSide === "left" && "select-none")}
-            >
-              <div className="flex min-h-6 w-full">
-                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
-                  {newLine.lineNumber}
-                </div>
-                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2 min-h-6", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+          <div
+            onMouseDown={() => setSelectionSide("right")}
+            className={cn("flex flex-1 w-1/2 overflow-hidden border-l border-border-default", selectionSide === "left" && "select-none")}
+          >
+            <div className="flex min-h-6 w-full">
+              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10 border-r border-border-default/50">
+                {newLine.lineNumber}
+              </div>
+              <div className={cn("flex-1 overflow-hidden relative", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                <div className={cn("pl-2 pr-4 sm:pr-6 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

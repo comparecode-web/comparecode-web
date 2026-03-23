@@ -69,7 +69,6 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         <RowControls
           block={row.block}
           settings={settings}
-          layout="unified"
           selectBlock={selectBlock}
           mergeBlock={mergeBlock}
         />
