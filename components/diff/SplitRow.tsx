@@ -108,7 +108,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
             className={cn("flex flex-1 w-1/2 overflow-hidden", selectionSide === "right" && "select-none")}
           >
             <div className="flex min-h-6 w-full">
-              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10 border-r border-border-default/50">
+              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">
                 {oldLine.lineNumber}
               </div>
               <div className={cn("flex-1 overflow-hidden relative", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
@@ -124,11 +124,11 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
             className={cn("flex flex-1 w-1/2 overflow-hidden border-l border-border-default", selectionSide === "left" && "select-none")}
           >
             <div className="flex min-h-6 w-full">
-              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10 border-r border-border-default/50">
+              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">
                 {newLine.lineNumber}
               </div>
               <div className={cn("flex-1 overflow-hidden relative", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
-                <div className={cn("pl-2 pr-4 sm:pr-6 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
+                <div className={cn("px-2 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
