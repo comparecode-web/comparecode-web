@@ -45,7 +45,7 @@ export function HistoryView() {
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary">
-      <div className="flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
+      <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
           <h2 className="text-lg sm:text-xl font-bold text-text-primary">History</h2>
@@ -102,24 +102,24 @@ export function HistoryView() {
                   key={item.id}
                   onClick={() => handleRestore(item.originalText, item.modifiedText)}
                   className={cn(
-                    "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-[var(--duration-medium)] hover:border-accent-primary hover:shadow-md",
+                    "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
                     item.isBookmarked ? "border-accent-primary" : "border-border-default"
                   )}
                 >
                   {item.isBookmarked && (
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-accent-primary/10 pointer-events-none" />
+                    <div className="absolute inset-0 bg-linear-to-b from-transparent to-accent-primary/10 pointer-events-none" />
                   )}
 
                   <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                     <div className="flex items-center justify-between sm:contents">
-                      <span className="min-w-[70px] truncate text-xs font-bold text-accent-primary">
+                      <span className="min-w-17.5 truncate text-xs font-bold text-accent-primary">
                         {getRelativeTime(item.createdAt)}
                       </span>
 
                       <div className="flex shrink-0 items-center gap-1">
                         <button
                           onClick={(e) => handleToggleBookmark(e, item.id, item.isBookmarked)}
-                          className="rounded p-1.5 sm:p-2 text-accent-primary transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
+                          className="rounded p-1.5 sm:p-2 text-accent-primary transition-colors duration-(--duration-short) hover:bg-hover-overlay"
                           title="Bookmark this item"
                         >
                           {item.isBookmarked ? (
@@ -130,10 +130,10 @@ export function HistoryView() {
                         </button>
                         <button
                           onClick={(e) => handleDeleteItem(e, item.id)}
-                          className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-[var(--duration-short)] hover:bg-hover-overlay"
+                          className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-(--duration-short) hover:bg-hover-overlay"
                           title="Delete this item"
                         >
-                           <MdDelete className="text-xl sm:text-2xl" />
+                          <MdDelete className="text-xl sm:text-2xl" />
                         </button>
                       </div>
                     </div>
@@ -145,7 +145,7 @@ export function HistoryView() {
                         </span>
                         <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
                           {displayOrigLines.map((line, idx) => (
-                             <span key={`orig-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs text-text-secondary min-h-[14px] sm:min-h-[16px]">
+                             <span key={`orig-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs text-text-secondary min-h-3.5 sm:min-h-4">
                               {line === "" ? "\u00A0" : line}
                             </span>
                           ))}
@@ -161,7 +161,7 @@ export function HistoryView() {
                         </span>
                         <div className="flex flex-col gap-0.5 rounded bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
                            {displayModLines.map((line, idx) => (
-                            <span key={`mod-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs font-semibold text-text-primary min-h-[14px] sm:min-h-[16px]">
+                            <span key={`mod-${idx}`} className="block truncate font-mono text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
                               {line === "" ? "\u00A0" : line}
                             </span>
                           ))}
