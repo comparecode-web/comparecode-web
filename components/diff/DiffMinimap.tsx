@@ -16,20 +16,20 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
     return calculateMinimapSegments(blocks, ignoreWhitespace);
   }, [blocks, ignoreWhitespace]);
 
-  const getLeftColor = (kind: BlockType) => {
-    if (kind === BlockType.Removed || kind === BlockType.Modified) return "bg-minimap-removed";
-    if (kind === BlockType.Added) return "bg-minimap-empty";
+  const getLeftColor = (kind: BlockType, isSelected: boolean) => {
+    if (kind === BlockType.Removed || kind === BlockType.Modified) return isSelected ? "bg-minimap-removed-selected" : "bg-minimap-removed";
+    if (kind === BlockType.Added) return isSelected ? "bg-minimap-empty-selected" : "bg-minimap-empty";
     return "bg-transparent";
   };
 
-  const getRightColor = (kind: BlockType) => {
-    if (kind === BlockType.Added || kind === BlockType.Modified) return "bg-minimap-added";
-    if (kind === BlockType.Removed) return "bg-minimap-empty";
+  const getRightColor = (kind: BlockType, isSelected: boolean) => {
+    if (kind === BlockType.Added || kind === BlockType.Modified) return isSelected ? "bg-minimap-added-selected" : "bg-minimap-added";
+    if (kind === BlockType.Removed) return isSelected ? "bg-minimap-empty-selected" : "bg-minimap-empty";
     return "bg-transparent";
   };
 
   return (
-    <div className="h-full w-6 shrink-0 bg-bg-secondary border-l border-r border-border-default relative cursor-default">
+    <div className="h-full w-4 shrink-0 bg-minimap-bg relative cursor-default ml-1 mr-0 rounded-sm overflow-hidden">
       {segments.map((seg) => (
         <div
           key={seg.id}
@@ -37,11 +37,16 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
             e.stopPropagation();
             onSegmentClick(seg.id, seg.offsetPct);
           }}
-          className="absolute w-full flex opacity-80 hover:opacity-100 transition-opacity cursor-pointer z-40"
+          className={clsx(
+            "absolute w-full flex transition duration-[var(--duration-short)] cursor-pointer rounded-sm overflow-hidden",
+            seg.isSelected
+              ? "opacity-100 z-50"
+              : "opacity-70 hover:opacity-100 z-40"
+          )}
           style={{ top: `${seg.offsetPct}%`, height: `${seg.heightPct}%` }}
         >
-          <div className={clsx("flex-1 border-r border-border-default", getLeftColor(seg.kind))} />
-          <div className={clsx("flex-1", getRightColor(seg.kind))} />
+          <div className={clsx("flex-1 transition-colors duration-[var(--duration-short)]", getLeftColor(seg.kind, seg.isSelected || false))} />
+          <div className={clsx("flex-1 transition-colors duration-[var(--duration-short)]", getRightColor(seg.kind, seg.isSelected || false))} />
         </div>
       ))}
     </div>

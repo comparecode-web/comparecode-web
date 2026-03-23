@@ -137,7 +137,8 @@ export function calculateMinimapSegments(blocks: Array<ChangeBlock>, ignoreWhite
           id: block.id,
           offsetPct,
           heightPct,
-          kind: block.kind
+          kind: block.kind,
+          isSelected: block.isSelected || false
         });
       }
     }

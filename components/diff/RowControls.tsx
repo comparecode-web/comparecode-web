@@ -27,23 +27,23 @@ export function RowControls({ block, settings, selectBlock, mergeBlock }: RowCon
   };
 
   return (
-    <div className="flex items-center mx-2 bg-bg-primary relative h-12 z-20 select-none border-b-2 border-l-2 border-r-2 border-border-default rounded-b-xl">
+    <div className="flex items-center mx-1 mb-1 bg-bg-primary relative h-12 z-20 select-none border-b border-l border-r border-border-default rounded-b-xl shadow-sm">
       <div className="sticky left-0 flex items-center w-full px-4 h-full">
         <div className="flex-1 flex justify-end pr-8">
-          <button onClick={handleMergeLeftToRight} className="flex items-center gap-2 rounded bg-danger px-4 py-1.5 text-sm font-semibold text-white hover:bg-danger-hover transition-colors shadow-sm">
+          <button onClick={handleMergeLeftToRight} className="flex items-center justify-center gap-2 rounded bg-danger px-[var(--btn-px)] h-[var(--btn-height)] text-sm font-semibold text-white hover:bg-danger-hover transition-colors shadow-sm">
             <span>Merge</span>
             <MdEast />
           </button>
         </div>
-        
+
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-30">
-          <button onClick={handleClose} className="rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors" title="Close block">
+          <button onClick={handleClose} className="flex items-center justify-center rounded h-[var(--btn-height)] w-[var(--btn-height)] text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors" title="Close block">
             <MdClose className="text-xl" />
           </button>
         </div>
-        
+
         <div className="flex-1 flex justify-start pl-8">
-          <button onClick={handleMergeRightToLeft} className="flex items-center gap-2 rounded bg-success px-4 py-1.5 text-sm font-semibold text-white hover:bg-success-hover transition-colors shadow-sm">
+          <button onClick={handleMergeRightToLeft} className="flex items-center justify-center gap-2 rounded bg-success px-[var(--btn-px)] h-[var(--btn-height)] text-sm font-semibold text-white hover:bg-success-hover transition-colors shadow-sm">
             <MdWest />
             <span>Merge</span>
           </button>

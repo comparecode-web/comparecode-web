@@ -104,7 +104,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
               {l.line2}
             </div>
-            <div className={cn("flex flex-1 min-w-0 mr-2 min-h-6", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+            <div className={cn("flex flex-1 min-w-0 mx-1 min-h-6", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
               <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-transparent" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
                 {l.sign}
               </div>
