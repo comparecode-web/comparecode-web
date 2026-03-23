@@ -13,8 +13,10 @@ export function InputView() {
   const settings = useSettingsStore((state) => state.settings);
   const { executeCompare } = useCompareActions();
 
+  const isCompareDisabled = !leftText?.trim() && !rightText?.trim();
+
   const handleCompare = () => {
-    if (leftText || rightText) {
+    if (!isCompareDisabled) {
       executeCompare(settings, true);
     }
   };
@@ -66,8 +68,8 @@ export function InputView() {
       <div className="flex justify-center mt-2 sm:mt-4 shrink-0">
         <button
           onClick={handleCompare}
-          disabled={!leftText && !rightText}
-          className="flex items-center gap-2 bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:bg-accent-primary disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-md font-semibold transition-colors shadow-sm text-sm sm:text-base"
+          disabled={isCompareDisabled}
+          className="flex items-center gap-2 bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-md font-semibold transition-colors shadow-sm text-sm sm:text-base"
         >
           <MdSearch className="text-xl" />
           <span className="hidden sm:inline">Check it!</span>

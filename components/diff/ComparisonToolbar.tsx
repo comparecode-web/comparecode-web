@@ -20,7 +20,7 @@ export function ComparisonToolbar() {
     return calculateStats(comparisonResult?.blocks, settings.ignoreWhitespace);
   }, [comparisonResult, settings.ignoreWhitespace]);
 
-  const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0, [leftText]);
+  const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0,[leftText]);
   const rightLineCount = useMemo(() => rightText ? rightText.split(/\r?\n/).length : 0, [rightText]);
 
   const handleCopy = (text: string, side: "left" | "right") => {
@@ -92,11 +92,13 @@ function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
   const isCopied = copiedSide === side;
   const title = side === "left" ? "Copy Original Text" : "Copy Modified Text";
 
+  const isDisabled = isCopied || !text?.trim();
+
   return (
     <button
       onClick={() => onCopy(text, side)}
-      disabled={isCopied || !text}
-      className="flex items-center gap-1.5 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-success disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-[var(--duration-short)]"
+      disabled={isDisabled}
+      className="flex items-center gap-1.5 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-[var(--duration-short)]"
       title={title}
     >
       {isCopied ? <MdCheck className="text-xl" /> : <MdContentCopy className="text-xl" />}
