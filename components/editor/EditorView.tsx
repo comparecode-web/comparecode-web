@@ -92,7 +92,7 @@ export function EditorView() {
             "flex flex-col shrink-0 transition-[height,opacity] duration-[var(--duration-medium)] ease-in-out overflow-hidden bg-bg-primary z-10",
             isInputExpanded
               ? (hasResult
-                ? "max-sm:h-[calc(100dvh-var(--header-height))] sm:h-[450px] border-t border-border-default shadow-sm opacity-100"
+                ? "max-sm:h-[calc(100dvh-var(--header-height))] sm:h-[var(--input-panel-height)] border-t border-border-default shadow-sm opacity-100"
                 : "flex-1 opacity-100")
               : "h-0 opacity-0"
           )}

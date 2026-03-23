@@ -98,7 +98,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
           )} />
         )}
         <div className="flex w-full flex-col relative z-0">
-          <div className="flex min-h-6 w-full bg-transparent">
+          <div className="flex min-h-[var(--row-min-height)] w-full bg-transparent">
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
               {l.line1}
             </div>

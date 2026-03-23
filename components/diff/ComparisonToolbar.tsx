@@ -7,6 +7,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCompareActions } from "@/hooks/useCompareActions";
 import { calculateStats } from "@/utils/diffHelpers";
 import { Button } from "@/components/ui/Button";
+import { UI_CONSTANTS } from "@/config/constants";
 
 export function ComparisonToolbar() {
   const { comparisonResult, leftText, rightText } = useEditorStore();
@@ -18,17 +19,17 @@ export function ComparisonToolbar() {
   const stats = useMemo(() => {
     return calculateStats(comparisonResult?.blocks, settings.ignoreWhitespace);
   }, [comparisonResult, settings.ignoreWhitespace]);
-  
+
   const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0, [leftText]);
   const rightLineCount = useMemo(() => rightText ? rightText.split(/\r?\n/).length : 0, [rightText]);
-  
+
   const handleCopy = (text: string, side: "left" | "right") => {
     if (!text) return;
     navigator.clipboard.writeText(text).catch(() => {});
     setCopiedSide(side);
     setTimeout(() => {
       setCopiedSide((prev) => (prev === side ? null : prev));
-    }, 2000);
+    }, UI_CONSTANTS.COPY_FEEDBACK_TIMEOUT_MS);
   };
 
   return (

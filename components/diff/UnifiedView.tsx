@@ -8,6 +8,7 @@ import { UnifiedRow } from "./UnifiedRow";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { cn } from "@/utils/uiHelpers";
 import { useCalculateUnifiedRows } from "@/hooks/useCalculateUnifiedRows";
+import { UI_CONSTANTS } from "@/config/constants";
 
 export function UnifiedView() {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
@@ -15,7 +16,6 @@ export function UnifiedView() {
 
   const unifiedScrollRef = useRef<HTMLDivElement>(null);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
-
   const rows = useCalculateUnifiedRows(comparisonResult, settings);
 
   const maxLineChars = useMemo(() => {
@@ -33,9 +33,9 @@ export function UnifiedView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return 40;
-    if (row.type === "controls") return 56;
-    return 24;
+    if (row.type === "header-controls") return UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT;
+    if (row.type === "controls") return UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT;
+    return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 
   const unifiedVirtualizer = useDiffVirtualizer(
@@ -50,7 +50,7 @@ export function UnifiedView() {
 
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 100px)` } : {};
-  const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   return (

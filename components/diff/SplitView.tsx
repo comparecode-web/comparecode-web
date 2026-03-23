@@ -9,6 +9,7 @@ import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { SplitRow } from "./SplitRow";
 import { cn } from "@/utils/uiHelpers";
 import { useCalculateSplitRows } from "@/hooks/useCalculateSplitRows";
+import { UI_CONSTANTS } from "@/config/constants";
 
 export function SplitView() {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
@@ -18,7 +19,6 @@ export function SplitView() {
   const { leftScrollRef, rightScrollRef, handleLeftScroll, handleRightScroll } = useSyncedScroll();
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
   const [selectionSide, setSelectionSide] = useState<"left" | "right" | null>(null);
-
   const rows = useCalculateSplitRows(comparisonResult, settings);
 
   const maxLineChars = useMemo(() => {
@@ -40,9 +40,9 @@ export function SplitView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return 40;
-    if (row.type === "controls") return 56;
-    return 24;
+    if (row.type === "header-controls") return UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT;
+    if (row.type === "controls") return UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT;
+    return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 
   const wrapVirtualizer = useDiffVirtualizer(
@@ -69,7 +69,7 @@ export function SplitView() {
 
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 80px)` } : {};
-  const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   if (settings.isWordWrapEnabled) {
@@ -139,7 +139,7 @@ export function SplitView() {
       >
         <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${rightVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
           {rightVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
-            const row = rows[virtualRow.index];
+             const row = rows[virtualRow.index];
             return (
               <SplitRow
                 key={virtualRow.key}
