@@ -5,6 +5,7 @@ import { MergeDirection } from "@/types/ui";
 import { ComparisonService } from "@/services/comparisonService";
 import { MergeService } from "@/services/mergeService";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/utils/scrollHelpers";
 
 interface EditorState {
   leftText: string;
@@ -67,6 +68,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   selectBlock: (blockId: string | null) => {
     const currentResult = get().comparisonResult;
+
     if (!currentResult) {
       return;
     }
@@ -75,8 +77,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ...b,
       isSelected: b.id === blockId
     }));
+
     const settings = useSettingsStore.getState().settings;
     const selectableBlocks = updatedBlocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+
     const currentIndex = blockId ? selectableBlocks.findIndex(b => b.id === blockId) + 1 : 0;
 
     set({
@@ -88,6 +92,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   mergeBlock: (block: ChangeBlock, direction: MergeDirection, settings: CompareSettings) => {
     const { leftText, rightText, currentBlockIndex } = get();
+
     let newLeft = leftText;
     let newRight = rightText;
 
@@ -104,8 +109,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     if (appSettings.isContinuousMergeEnabled) {
       const newResult = get().comparisonResult;
+
       if (newResult) {
         const newSelectableBlocks = newResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+
         let targetIndex = currentBlockIndex - 1;
 
         if (targetIndex >= newSelectableBlocks.length) {
@@ -114,6 +121,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
         if (targetIndex >= 0) {
           const nextBlockId = newSelectableBlocks[targetIndex].id;
+
           get().selectBlock(nextBlockId);
 
           setTimeout(() => {
@@ -131,6 +139,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   jumpToNextBlock: () => {
     const currentResult = get().comparisonResult;
+
     if (!currentResult) {
       return;
     }
@@ -147,6 +156,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     if (selectedBlock) {
       const currentIndex = selectableBlocks.findIndex(b => b.id === selectedBlock.id);
+
       if (currentIndex >= 0 && currentIndex < selectableBlocks.length - 1) {
         nextIndex = currentIndex + 1;
       }
@@ -159,6 +169,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   jumpToPreviousBlock: () => {
     const currentResult = get().comparisonResult;
+
     if (!currentResult) {
       return;
     }
@@ -175,6 +186,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     if (selectedBlock) {
       const currentIndex = selectableBlocks.findIndex(b => b.id === selectedBlock.id);
+
       if (currentIndex > 0) {
         prevIndex = currentIndex - 1;
       }
@@ -187,66 +199,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   scrollToBlock: (blockId: string) => {
     const currentResult = get().comparisonResult;
-    if (!currentResult) {
-      return;
-    }
-
-    let totalHeight = 0;
-    for (let i = 0; i < currentResult.blocks.length; i++) {
-      totalHeight += Math.max(currentResult.blocks[i].oldLines.length, currentResult.blocks[i].newLines.length);
-    }
-
-    if (totalHeight === 0) {
-      totalHeight = 1;
-    }
-
-    let currentIndex = 0;
-    let targetOffsetPct = 0;
-
-    for (let i = 0; i < currentResult.blocks.length; i++) {
-      const block = currentResult.blocks[i];
-      const height = Math.max(block.oldLines.length, block.newLines.length);
-
-      if (block.id === blockId) {
-        targetOffsetPct = (currentIndex / totalHeight) * 100;
-        break;
-      }
-      currentIndex += height;
-    }
-
-    const container = document.getElementById("diff-container");
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-      scrollAreas.forEach((scrollArea) => {
-        const topOffset = scrollArea.clientHeight * 0.1;
-        let targetScroll = (targetOffsetPct / 100) * scrollArea.scrollHeight - topOffset;
-
-        if (targetScroll < 0) {
-          targetScroll = 0;
-        }
-
-        scrollArea.scrollTop = targetScroll;
-      });
-    }
+    scrollToBlockInDOM(currentResult, blockId);
   },
 
   scrollToTop: () => {
-    const container = document.getElementById("diff-container");
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-      scrollAreas.forEach((scrollArea) => {
-        scrollArea.scrollTop = 0;
-      });
-    }
+    scrollToTopInDOM();
   },
 
   scrollToBottom: () => {
-    const container = document.getElementById("diff-container");
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-      scrollAreas.forEach((scrollArea) => {
-        scrollArea.scrollTop = scrollArea.scrollHeight;
-      });
-    }
+    scrollToBottomInDOM();
   }
 }));

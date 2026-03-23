@@ -1,33 +1,30 @@
 import { AppSettings } from "@/types/settings";
 import { defaultSettings } from "@/config/defaults";
 import { STORAGE_KEYS } from "@/config/constants";
+import { StorageFactory } from "./storage/StorageFactory";
 
 export class SettingsService {
   public static loadSettings(): AppSettings {
-    if (typeof window === "undefined") {
-      return defaultSettings;
-    }
+    const adapter = StorageFactory.getAdapter();
+    const json = adapter.getItem(STORAGE_KEYS.SETTINGS);
 
-    try {
-      const json = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      if (json) {
+    if (json) {
+      try {
         const parsed = JSON.parse(json) as AppSettings;
         return { ...defaultSettings, ...parsed };
+      } catch {
       }
-    } catch {
     }
 
     return defaultSettings;
   }
 
   public static saveSettings(settings: AppSettings): void {
-    if (typeof window === "undefined") {
-      return;
-    }
+    const adapter = StorageFactory.getAdapter();
 
     try {
       const json = JSON.stringify(settings);
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, json);
+      adapter.setItem(STORAGE_KEYS.SETTINGS, json);
     } catch {
     }
   }
