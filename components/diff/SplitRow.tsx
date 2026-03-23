@@ -32,13 +32,12 @@ interface SplitRowProps {
   mergeBlock: (block: ChangeBlock, dir: MergeDirection, settings: AppSettings) => void;
   selectionSide: "left" | "right" | null;
   setSelectionSide: (side: "left" | "right" | null) => void;
-  renderMode: "wrap" | "left" | "right";
   measureRef: (node: HTMLElement | null) => void;
 }
 
-export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHoveredBlockId, selectBlock, mergeBlock, selectionSide, setSelectionSide, renderMode, measureRef }: SplitRowProps) => {
+export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHoveredBlockId, selectBlock, mergeBlock, selectionSide, setSelectionSide, measureRef }: SplitRowProps) => {
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
-  const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled, renderMode === "wrap" ? "w-full" : "");
+  const textContentClass = getWordWrapClass(settings.isWordWrapEnabled, settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full");
   const containerClass = getRowContainerClass(row.isSelectable, row.block.isSelected || false);
 
   if (row.type === "header-controls") {
@@ -49,14 +48,14 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <BlockHeaderControls />
+        <div className={cn("overflow-hidden transition-all duration-(--duration-medium) ease-in-out", row.block.isSelected ? "h-11 opacity-100" : "h-0 opacity-0")}>
+          <BlockHeaderControls />
+        </div>
       </div>
     );
   }
 
   if (row.type === "controls") {
-    const layoutMode = renderMode === "wrap" ? "split-wrap" : renderMode === "left" ? "split-left" : "split-right";
-
     return (
       <div
         data-index={virtualRow.index}
@@ -64,13 +63,14 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <RowControls
-          block={row.block}
-          settings={settings}
-          layout={layoutMode}
-          selectBlock={selectBlock}
-          mergeBlock={mergeBlock}
-        />
+        <div className={cn("overflow-hidden transition-all duration-(--duration-medium) ease-in-out", row.block.isSelected ? "h-13 opacity-100" : "h-0 opacity-0")}>
+          <RowControls
+            block={row.block}
+            settings={settings}
+            selectBlock={selectBlock}
+            mergeBlock={mergeBlock}
+          />
+        </div>
       </div>
     );
   }
@@ -86,6 +86,8 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
     ? "bg-diff-empty-bg"
     : getBlockColorClass(row.block.kind, "new", row.block.isWhitespaceChange, settings.ignoreWhitespace);
 
+  const transformStyle = !settings.isWordWrapEnabled ? { transform: 'translateX(calc(-1 * var(--scroll-x, 0px)))' } : undefined;
+
   return (
     <div
       data-index={virtualRow.index}
@@ -99,43 +101,43 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
       <div className={containerClass}>
         {isHovered && (
           <div className={cn(
-            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10 transition-opacity duration-(--duration-short)",
             row.isFirstLine && "rounded-t-md",
             row.isLastLine && "rounded-b-md"
           )} />
         )}
-        <div className="flex min-h-[24px] w-full relative z-0">
-          {(renderMode === "wrap" || renderMode === "left") && (
-            <div
-              onMouseDown={() => setSelectionSide("left")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", selectionSide === "right" && "select-none")}
-            >
-              <div className="flex min-h-[24px] w-full">
-                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
-                  {oldLine.lineNumber}
-                </div>
-                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+        <div className="flex min-h-6 w-full relative z-0">
+          <div
+            onMouseDown={() => setSelectionSide("left")}
+            className={cn("flex flex-1 w-1/2 overflow-hidden", selectionSide === "right" && "select-none")}
+          >
+            <div className="flex min-h-6 w-full">
+              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">
+                {oldLine.lineNumber}
+              </div>
+              <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-(--duration-medium)", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                <div className={cn("px-2 py-0.5 min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={oldLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
-          {(renderMode === "wrap" || renderMode === "right") && (
-            <div
-              onMouseDown={() => setSelectionSide("right")}
-              className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", selectionSide === "left" && "select-none")}
-            >
-              <div className="flex min-h-[24px] w-full">
-                <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
-                  {newLine.lineNumber}
-                </div>
-                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+          <div
+            onMouseDown={() => setSelectionSide("right")}
+            className={cn("flex flex-1 w-1/2 overflow-hidden", selectionSide === "left" && "select-none")}
+          >
+            <div className="flex min-h-6 w-full">
+              <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">
+                {newLine.lineNumber}
+              </div>
+              <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-(--duration-medium)", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                <div className={cn("px-2 py-0.5 min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

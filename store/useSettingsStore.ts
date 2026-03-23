@@ -8,6 +8,7 @@ interface SettingsState {
   loadSettings: () => void;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
   resetToDefaults: () => void;
+  resetSectionToDefaults: (keys: Array<keyof AppSettings>) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -26,5 +27,15 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     SettingsService.resetToDefaults();
     const loaded = SettingsService.loadSettings();
     set({ settings: loaded });
+  },
+  resetSectionToDefaults: (keys: Array<keyof AppSettings>) => {
+    const current = get().settings;
+    const updated = { ...current };
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      Reflect.set(updated, key, defaultSettings[key]);
+    }
+    SettingsService.saveSettings(updated);
+    set({ settings: updated });
   }
 }));

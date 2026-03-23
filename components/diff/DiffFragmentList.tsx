@@ -10,7 +10,7 @@ interface DiffFragmentListProps {
 
 export const DiffFragmentList = memo(({ fragments, ignoreWhitespace }: DiffFragmentListProps) => {
   if (!fragments || fragments.length === 0) {
-    return null;
+    return <span className="select-none opacity-0 inline-block w-0">{"\u200B"}</span>;
   }
 
   return (
@@ -23,7 +23,11 @@ export const DiffFragmentList = memo(({ fragments, ignoreWhitespace }: DiffFragm
             getFragmentRoundingClass(arr, fIdx, ignoreWhitespace)
           )}
         >
-          {frag.text}
+          {frag.text === "" ? (
+            <span className="select-none opacity-0 inline-block w-0">{"\u200B"}</span>
+          ) : (
+            frag.text
+          )}
         </span>
       ))}
     </>

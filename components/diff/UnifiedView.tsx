@@ -4,11 +4,11 @@ import { useRef, useState, useMemo } from "react";
 import { VirtualItem } from "@tanstack/react-virtual";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { getBlockColorClass } from "@/utils/diffHelpers";
-import { BlockType, DiffChangeType } from "@/types/diff";
-import { UnifiedRow, UnifiedRowData } from "./UnifiedRow";
+import { UnifiedRow } from "./UnifiedRow";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { cn } from "@/utils/uiHelpers";
+import { useCalculateUnifiedRows } from "@/hooks/useCalculateUnifiedRows";
+import { UI_CONSTANTS } from "@/config/constants";
 
 export function UnifiedView() {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
@@ -17,123 +17,7 @@ export function UnifiedView() {
   const unifiedScrollRef = useRef<HTMLDivElement>(null);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
 
-  const rows = useMemo(() => {
-    const result: Array<UnifiedRowData> = [ ];
-    if (!comparisonResult) return result;
-
-    comparisonResult.blocks.forEach((block) => {
-      const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
-      const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
-
-      if (block.isSelected && isSelectable) {
-        result.push({
-          id: `${block.id}-header-controls`,
-          type: "header-controls",
-          block,
-          lineIndex: -1,
-          isSelectable,
-          isFirst: true,
-          isLast: false
-        });
-      }
-
-      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast" | "isFirstLine" | "isLastLine">> = [ ];
-
-      if (block.kind === BlockType.Modified) {
-        block.oldLines.forEach((line, idx) => {
-          if (line.kind !== DiffChangeType.Imaginary) {
-            blockRows.push({
-              id: `${block.id}-old-${idx}`,
-              type: "line",
-              block,
-              lineIndex: idx,
-              unifiedLine: {
-                line1: line.lineNumber,
-                line2: "",
-                sign: "-",
-                fragments: line.fragments,
-                bgClass: getBlockColorClass(BlockType.Removed, "old", block.isWhitespaceChange, settings.ignoreWhitespace)
-              },
-              isSelectable
-            });
-          }
-        });
-        block.newLines.forEach((line, idx) => {
-          if (line.kind !== DiffChangeType.Imaginary) {
-            blockRows.push({
-              id: `${block.id}-new-${idx}`,
-              type: "line",
-              block,
-              lineIndex: idx + block.oldLines.length,
-              unifiedLine: {
-                line1: "",
-                line2: line.lineNumber,
-                sign: "+",
-                fragments: line.fragments,
-                bgClass: getBlockColorClass(BlockType.Added, "new", block.isWhitespaceChange, settings.ignoreWhitespace)
-              },
-              isSelectable
-            });
-          }
-        });
-      } else {
-        const maxLines = Math.max(block.oldLines.length, block.newLines.length);
-
-        for (let idx = 0; idx < maxLines; idx++) {
-          const oldLine = block.oldLines[idx];
-          const newLine = block.newLines[idx];
-          const isRemoved = block.kind === BlockType.Removed;
-          const isAdded = block.kind === BlockType.Added;
-
-          let bgClass = "bg-transparent";
-
-          if (isRemoved) bgClass = getBlockColorClass(BlockType.Removed, "old", block.isWhitespaceChange, settings.ignoreWhitespace);
-          if (isAdded) bgClass = getBlockColorClass(BlockType.Added, "new", block.isWhitespaceChange, settings.ignoreWhitespace);
-
-          blockRows.push({
-            id: `${block.id}-line-${idx}`,
-            type: "line",
-            block,
-            lineIndex: idx,
-            unifiedLine: {
-              line1: oldLine?.lineNumber || "",
-              line2: newLine?.lineNumber || "",
-              sign: isRemoved ? "-" : isAdded ? "+" : " ",
-              fragments: isAdded ? (newLine?.fragments || [ ]) : (oldLine?.fragments || [ ]),
-              bgClass
-            },
-            isSelectable
-          });
-        }
-      }
-
-      const len = blockRows.length;
-
-      blockRows.forEach((r, i) => {
-        result.push({
-          ...r,
-          isFirst: i === 0,
-          isLast: i === len - 1 && !block.isSelected,
-          isFirstLine: i === 0,
-          isLastLine: i === len - 1
-        });
-      });
-
-      if (block.isSelected && isSelectable) {
-        result.push({
-          id: `${block.id}-controls`,
-          type: "controls",
-          block,
-          lineIndex: -1,
-          isSelectable,
-          isFirst: false,
-          isLast: true
-        });
-      }
-    });
-
-    return result;
-  }, [comparisonResult, settings.ignoreWhitespace]);
+  const rows = useCalculateUnifiedRows(comparisonResult, settings);
 
   const maxLineChars = useMemo(() => {
     let max = 0;
@@ -150,9 +34,9 @@ export function UnifiedView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return 40;
-    if (row.type === "controls") return 56;
-    return 24;
+    if (row.type === "header-controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0;
+    if (row.type === "controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT : 0;
+    return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 
   const unifiedVirtualizer = useDiffVirtualizer(
@@ -168,12 +52,12 @@ export function UnifiedView() {
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 100px)` } : {};
 
-  const lineNumChars = Math.max(3, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   return (
-    <div className="flex-1 overflow-auto custom-scrollbar" ref={unifiedScrollRef} style={customStyles}>
-      <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
+    <div className="flex-1 overflow-auto custom-scrollbar py-2" ref={unifiedScrollRef} style={customStyles}>
+      <div className={cn("relative pr-0 sm:pr-6", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
         {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
           return (

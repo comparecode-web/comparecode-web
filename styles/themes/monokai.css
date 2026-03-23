@@ -1,0 +1,28 @@
+[data-theme="monokai"] {
+  --bg-primary: #272822;
+  --bg-secondary: #1e1f1c;
+  --bg-selected: #49483e;
+  --text-primary: #f8f8f2;
+  --text-secondary: #75715e;
+  --border-default: #3e3d32;
+  --accent-primary: #fd971f;
+  --accent-hover: #e6db74;
+  --danger: #f92672;
+  --danger-hover: #ff5995;
+  --danger-bg: rgba(249, 38, 114, 0.15);
+  --success: #a6e22e;
+  --success-hover: #b6e354;
+  --diff-added-bg: rgba(166, 226, 46, 0.15);
+  --diff-added-fg: #8bb529;
+  --diff-removed-bg: rgba(249, 38, 114, 0.15);
+  --diff-removed-fg: #d3205f;
+  --diff-empty-bg: rgba(117, 113, 94, 0.15);
+  --hover-overlay: rgba(248, 248, 242, 0.1);
+  --minimap-bg: #1e1f1c;
+  --minimap-added: #a6e22e;
+  --minimap-added-selected: #b6e354;
+  --minimap-removed: #f92672;
+  --minimap-removed-selected: #ff5995;
+  --minimap-empty: #3e3d32;
+  --minimap-empty-selected: #75715e;
+}

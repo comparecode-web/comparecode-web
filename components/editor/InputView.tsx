@@ -5,6 +5,7 @@ import { useEditorStore } from "@/store/useEditorStore";
 import { useEditorUIStore } from "@/store/useEditorUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCompareActions } from "@/hooks/useCompareActions";
+import { EditorTextArea } from "./EditorTextArea";
 
 export function InputView() {
   const { leftText, rightText, setLeftText, setRightText } = useEditorStore();
@@ -12,8 +13,10 @@ export function InputView() {
   const settings = useSettingsStore((state) => state.settings);
   const { executeCompare } = useCompareActions();
 
+  const isCompareDisabled = !leftText?.trim() && !rightText?.trim();
+
   const handleCompare = () => {
-    if (leftText || rightText) {
+    if (!isCompareDisabled) {
       executeCompare(settings, true);
     }
   };
@@ -43,47 +46,32 @@ export function InputView() {
         </div>
       </div>
 
-      {/* Textareas - stacked vertically on mobile, side-by-side on desktop */}
       <div className="flex flex-col sm:flex-row flex-1 gap-2 sm:gap-4 min-h-0">
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex items-center gap-2 mb-1 sm:hidden">
-            <span className="font-bold text-text-primary text-xs">Original</span>
-          </div>
-          <textarea
-            value={leftText}
-            onChange={(e) => setLeftText(e.target.value)}
-            className="flex-1 resize-none rounded-md border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary font-mono outline-none custom-scrollbar"
-            style={{
-              fontSize: `${settings.fontSize}px`,
-              whiteSpace: settings.isWordWrapEnabled ? "pre-wrap" : "pre"
-            }}
-            placeholder="Paste original text..."
-            spellCheck={false}
-          />
-        </div>
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex items-center gap-2 mb-1 sm:hidden">
-            <span className="font-bold text-text-primary text-xs">Modified</span>
-          </div>
-          <textarea
-            value={rightText}
-            onChange={(e) => setRightText(e.target.value)}
-            className="flex-1 resize-none rounded-md border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary font-mono outline-none custom-scrollbar"
-            style={{
-              fontSize: `${settings.fontSize}px`,
-              whiteSpace: settings.isWordWrapEnabled ? "pre-wrap" : "pre"
-            }}
-            placeholder="Paste modified text..."
-            spellCheck={false}
-          />
-        </div>
+        <EditorTextArea
+          label="Original"
+          value={leftText}
+          onChange={setLeftText}
+          placeholder="Paste original text..."
+          fontSize={settings.fontSize}
+          fontFamily={settings.fontFamily}
+          isWordWrapEnabled={settings.isWordWrapEnabled}
+        />
+        <EditorTextArea
+          label="Modified"
+          value={rightText}
+          onChange={setRightText}
+          placeholder="Paste modified text..."
+          fontSize={settings.fontSize}
+          fontFamily={settings.fontFamily}
+          isWordWrapEnabled={settings.isWordWrapEnabled}
+        />
       </div>
 
       <div className="flex justify-center mt-2 sm:mt-4 shrink-0">
         <button
           onClick={handleCompare}
-          disabled={!leftText && !rightText}
-          className="flex items-center gap-2 bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:bg-accent-primary disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-md font-semibold transition-colors shadow-sm text-sm sm:text-base"
+          disabled={isCompareDisabled}
+          className="flex items-center gap-2 bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-md font-semibold transition-colors shadow-sm text-sm sm:text-base"
         >
           <MdSearch className="text-xl" />
           <span className="hidden sm:inline">Check it!</span>
