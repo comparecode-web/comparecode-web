@@ -104,17 +104,17 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
             row.isLastLine && "rounded-b-md"
           )} />
         )}
-        <div className="flex min-h-[var(--row-min-height)] w-full relative z-0">
+        <div className="flex min-h-6 w-full relative z-0">
           {(renderMode === "wrap" || renderMode === "left") && (
             <div
               onMouseDown={() => setSelectionSide("left")}
               className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2" : "w-full flex-col z-0", selectionSide === "right" && "select-none")}
             >
-              <div className="flex min-h-[var(--row-min-height)] w-full">
+              <div className="flex min-h-6 w-full">
                 <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
                   {oldLine.lineNumber}
                 </div>
-                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2 min-h-6", wordWrapClass, oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                   <DiffFragmentList fragments={oldLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
@@ -126,11 +126,11 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
               onMouseDown={() => setSelectionSide("right")}
               className={cn("flex flex-1", renderMode === "wrap" ? "w-1/2 border-l border-border-default" : "w-full flex-col z-0", selectionSide === "left" && "select-none")}
             >
-              <div className="flex min-h-[var(--row-min-height)] w-full">
+              <div className="flex min-h-6 w-full">
                 <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky left-0 z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent">
                   {newLine.lineNumber}
                 </div>
-                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+                <div className={cn("flex-1 px-2 py-0.5 font-mono mr-2 min-h-6", wordWrapClass, newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                   <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
               </div>
