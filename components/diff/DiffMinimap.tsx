@@ -29,7 +29,7 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
   };
 
   return (
-    <div className="h-full w-6 shrink-0 bg-bg-secondary border-l border-r border-border-default relative cursor-default">
+    <div className="h-full w-4 shrink-0 bg-transparent relative cursor-default mx-1">
       {segments.map((seg) => (
         <div
           key={seg.id}
@@ -37,10 +37,10 @@ export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMi
             e.stopPropagation();
             onSegmentClick(seg.id, seg.offsetPct);
           }}
-          className="absolute w-full flex opacity-80 hover:opacity-100 transition-opacity cursor-pointer z-40"
+          className="absolute w-full flex opacity-80 hover:opacity-100 transition-opacity cursor-pointer z-40 rounded-sm overflow-hidden"
           style={{ top: `${seg.offsetPct}%`, height: `${seg.heightPct}%` }}
         >
-          <div className={clsx("flex-1 border-r border-border-default", getLeftColor(seg.kind))} />
+          <div className={clsx("flex-1", getLeftColor(seg.kind))} />
           <div className={clsx("flex-1", getRightColor(seg.kind))} />
         </div>
       ))}

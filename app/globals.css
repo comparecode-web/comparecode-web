@@ -29,6 +29,8 @@
   --spacing-header: var(--header-height);
   --spacing-input-panel: var(--input-panel-height);
   --spacing-input-panel-min: var(--input-panel-min-height);
+  --spacing-btn-height: var(--btn-height);
+  --spacing-btn-px: var(--btn-px);
 
   --default-duration-short: var(--duration-short);
   --default-duration-medium: var(--duration-medium);
@@ -70,6 +72,8 @@
   --input-panel-height: 45vh;
   --input-panel-min-height: 25vh;
   --row-min-height: 1.5rem;
+  --btn-height: 2rem;
+  --btn-px: 1rem;
   --duration-short: 150ms;
   --duration-medium: 300ms;
   --duration-long: 500ms;
@@ -110,6 +114,8 @@
   --input-panel-height: 45vh;
   --input-panel-min-height: 25vh;
   --row-min-height: 1.5rem;
+  --btn-height: 2rem;
+  --btn-px: 1rem;
   --duration-short: 150ms;
   --duration-medium: 300ms;
   --duration-long: 500ms;
