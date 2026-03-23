@@ -4,11 +4,16 @@ export interface FontOption {
   value: string;
 }
 
-export const AVAILABLE_FONTS: Array<FontOption> =[
+export const AVAILABLE_FONTS: Array<FontOption> = [
   {
     id: "system",
     name: "System Default",
     value: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
+  },
+  {
+    id: "inter",
+    name: "Inter",
+    value: "'Inter', sans-serif"
   },
   {
     id: "fira-code",
