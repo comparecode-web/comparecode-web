@@ -29,9 +29,9 @@ export function EditorView() {
       >
         <div className="flex w-64 flex-col h-full shrink-0">
           <div className="flex items-center justify-between border-b border-border-default px-4 h-[var(--header-height)] shrink-0 bg-bg-secondary">
-            <div className="flex items-center gap-2">
-              <MdTune className="text-xl text-text-secondary" />
-              <h2 className="text-base font-bold text-text-primary">Options</h2>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <MdTune className="text-xl sm:text-2xl text-text-secondary" />
+              <h2 className="text-lg sm:text-xl font-bold text-text-primary">Options</h2>
             </div>
             <button
               onClick={() => setIsOptionsPanelOpen(false)}
