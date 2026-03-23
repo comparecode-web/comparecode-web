@@ -89,12 +89,12 @@ export function EditorView() {
 
         <div
           className={cn(
-            "flex flex-col shrink-0 transition-[height,opacity] duration-[var(--duration-medium)] ease-in-out overflow-hidden bg-bg-primary z-10",
+            "flex flex-col shrink-0 transition-[height,opacity,min-height] duration-[var(--duration-medium)] ease-in-out overflow-hidden bg-bg-primary z-10",
             isInputExpanded
               ? (hasResult
-                ? "max-sm:h-[calc(100dvh-var(--header-height))] sm:h-[var(--input-panel-height)] border-t border-border-default shadow-sm opacity-100"
+                ? "max-sm:h-[calc(100dvh-var(--header-height))] sm:h-[var(--input-panel-height)] sm:min-h-[var(--input-panel-min-height)] border-t border-border-default shadow-sm opacity-100"
                 : "flex-1 opacity-100")
-              : "h-0 opacity-0"
+              : "h-0 min-h-0 opacity-0"
           )}
         >
           <InputView />
