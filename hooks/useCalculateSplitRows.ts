@@ -5,13 +5,13 @@ import { SplitRowData } from "@/components/diff/SplitRow";
 
 export function useCalculateSplitRows(comparisonResult: ComparisonResult | null, settings: AppSettings) {
   return useMemo(() => {
-    const result: Array<SplitRowData> = [ ];
+    const result: Array<SplitRowData> = [];
     if (!comparisonResult) return result;
 
     const isImaginary = (line: { kind: DiffChangeType } | undefined) => !line || line.kind === DiffChangeType.Imaginary;
     const reorderGhostRowsToBottom = (lines: Array<{ kind: DiffChangeType }>, maxLines: number): Array<number> => {
-      const nonGhost: Array<number> = [ ];
-      const ghost: Array<number> = [ ];
+      const nonGhost: Array<number> = [];
+      const ghost: Array<number> = [];
 
       for (let idx = 0; idx < maxLines; idx++) {
         if (isImaginary(lines[idx])) {
@@ -27,12 +27,11 @@ export function useCalculateSplitRows(comparisonResult: ComparisonResult | null,
     comparisonResult.blocks.forEach((block) => {
       const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
       const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
-
       const maxLines = Math.max(block.oldLines.length, block.newLines.length);
 
       if (maxLines === 0) return;
 
-      if (block.isSelected && isSelectable) {
+      if (isSelectable) {
         result.push({
           id: `${block.id}-header-controls`,
           type: "header-controls",
@@ -53,7 +52,7 @@ export function useCalculateSplitRows(comparisonResult: ComparisonResult | null,
         newDisplayIndices = reorderGhostRowsToBottom(block.newLines, maxLines);
       }
 
-      const lineRows: Array<{ oldIndex: number; newIndex: number }> = [ ];
+      const lineRows: Array<{ oldIndex: number; newIndex: number }> = [];
 
       for (let i = 0; i < maxLines; i++) {
         const oldIndex = oldDisplayIndices[i] ?? -1;
@@ -85,7 +84,7 @@ export function useCalculateSplitRows(comparisonResult: ComparisonResult | null,
         });
       }
 
-      if (block.isSelected && isSelectable) {
+      if (isSelectable) {
         result.push({
           id: `${block.id}-controls`,
           type: "controls",

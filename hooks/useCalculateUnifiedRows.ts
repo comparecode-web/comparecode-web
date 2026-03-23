@@ -6,14 +6,14 @@ import { getBlockColorClass } from "@/utils/diffHelpers";
 
 export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | null, settings: AppSettings) {
   return useMemo(() => {
-    const result: Array<UnifiedRowData> = [ ];
+    const result: Array<UnifiedRowData> = [];
     if (!comparisonResult) return result;
 
     comparisonResult.blocks.forEach((block) => {
       const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
       const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
 
-      if (block.isSelected && isSelectable) {
+      if (isSelectable) {
         result.push({
           id: `${block.id}-header-controls`,
           type: "header-controls",
@@ -25,7 +25,7 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
         });
       }
 
-      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast" | "isFirstLine" | "isLastLine">> = [ ];
+      const blockRows: Array<Omit<UnifiedRowData, "isFirst" | "isLast" | "isFirstLine" | "isLastLine">> = [];
 
       if (block.kind === BlockType.Modified) {
         block.oldLines.forEach((line, idx) => {
@@ -75,6 +75,7 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
           let bgClass = "bg-transparent";
           if (isRemoved) bgClass = getBlockColorClass(BlockType.Removed, "old", block.isWhitespaceChange, settings.ignoreWhitespace);
           if (isAdded) bgClass = getBlockColorClass(BlockType.Added, "new", block.isWhitespaceChange, settings.ignoreWhitespace);
+
           blockRows.push({
             id: `${block.id}-line-${idx}`,
             type: "line",
@@ -84,7 +85,7 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
               line1: oldLine?.lineNumber || "",
               line2: newLine?.lineNumber || "",
               sign: isRemoved ? "-" : isAdded ? "+" : " ",
-              fragments: isAdded ? (newLine?.fragments || [ ]) : (oldLine?.fragments || [ ]),
+              fragments: isAdded ? (newLine?.fragments || []) : (oldLine?.fragments || []),
               bgClass
             },
             isSelectable
@@ -102,7 +103,8 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
           isLastLine: i === len - 1
         });
       });
-      if (block.isSelected && isSelectable) {
+
+      if (isSelectable) {
         result.push({
           id: `${block.id}-controls`,
           type: "controls",

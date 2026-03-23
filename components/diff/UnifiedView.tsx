@@ -34,8 +34,8 @@ export function UnifiedView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT;
-    if (row.type === "controls") return UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT;
+    if (row.type === "header-controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0;
+    if (row.type === "controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT : 0;
     return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 

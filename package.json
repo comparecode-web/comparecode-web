@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node -e \"const fs=require('fs'); if(!fs.existsSync('./node_modules')){console.error('ERROR: node_modules directory missing. Run npm install.'); process.exit(1);}\"",
+    "predev": "node -e \"const fs=require('fs');\nif(!fs.existsSync('./node_modules')){console.error('ERROR: node_modules directory missing. Run npm install.'); process.exit(1);}\"",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.8.2",
     "@tanstack/react-virtual": "^3.13.0",
     "clsx": "^2.1.1",
     "dexie": "^4.3.0",
