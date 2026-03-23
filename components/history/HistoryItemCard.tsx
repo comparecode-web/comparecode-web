@@ -74,7 +74,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBook
             </span>
             <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
               {displayOrigLines.map((line, idx) => (
-                <span key={`orig-${idx}`} className="block truncate text-[11px] sm:text-xs text-text-secondary min-h-3.5 sm:min-h-4">
+                <span key={`orig-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
                   {line === "" ? "\u00A0" : line}
                 </span>
               ))}

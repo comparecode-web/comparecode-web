@@ -7,7 +7,7 @@ export interface FontOption {
 export const AVAILABLE_FONTS: Array<FontOption> = [
   {
     id: "system",
-    name: "System Default",
+    name: "System (default)",
     value: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
   },
   {
