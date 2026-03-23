@@ -67,8 +67,8 @@
   --minimap-empty: #e5e7eb;
 
   --header-height: 3rem;
-  --input-panel-height: 40vh;
-  --input-panel-min-height: 20vh;
+  --input-panel-height: 45vh;
+  --input-panel-min-height: 25vh;
   --row-min-height: 1.5rem;
   --duration-short: 150ms;
   --duration-medium: 300ms;
@@ -107,8 +107,8 @@
   --minimap-empty: #374151;
 
   --header-height: 3rem;
-  --input-panel-height: 40vh;
-  --input-panel-min-height: 20vh;
+  --input-panel-height: 45vh;
+  --input-panel-min-height: 25vh;
   --row-min-height: 1.5rem;
   --duration-short: 150ms;
   --duration-medium: 300ms;

@@ -7,9 +7,9 @@ export function cn(...inputs: Array<ClassValue>) {
 
 export function getRowContainerClass(isSelectable: boolean, isSelected: boolean): string {
   return cn(
-    "flex flex-col relative border-l-2 border-r-2 transition-colors",
+    "flex flex-col relative border-l border-r transition-colors mx-1",
     isSelectable ? "cursor-pointer" : "border-transparent",
-    isSelected && isSelectable ? "bg-bg-primary border-border-default mx-2" : "border-transparent w-full"
+    isSelected && isSelectable ? "bg-bg-primary border-border-default" : "border-transparent"
   );
 }
 

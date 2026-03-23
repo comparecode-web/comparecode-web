@@ -59,7 +59,7 @@ export function SplitView() {
     UI_CONSTANTS.LINE_NUM_MIN_CHARS,
     Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length
   );
-  
+
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   const handleScrollX = (e: React.UIEvent<HTMLDivElement>) => {
@@ -77,7 +77,7 @@ export function SplitView() {
   return (
     <div className="flex flex-col h-full w-full relative pr-0 sm:pr-10" style={customStyles}>
       <div
-        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar"
+        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-2"
         ref={scrollRef}
         onWheel={handleWheel}
       >

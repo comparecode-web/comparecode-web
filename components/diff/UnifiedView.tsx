@@ -54,7 +54,7 @@ export function UnifiedView() {
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   return (
-    <div className="flex-1 overflow-auto custom-scrollbar" ref={unifiedScrollRef} style={customStyles}>
+    <div className="flex-1 overflow-auto custom-scrollbar py-2" ref={unifiedScrollRef} style={customStyles}>
       <div className={cn("relative pr-0 sm:pr-8", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
         {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
