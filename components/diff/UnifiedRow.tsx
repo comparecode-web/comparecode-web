@@ -53,7 +53,9 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <BlockHeaderControls />
+        <div className={cn("overflow-hidden transition-all duration-[var(--duration-medium)] ease-in-out", row.block.isSelected ? "h-[44px] opacity-100" : "h-0 opacity-0")}>
+          <BlockHeaderControls />
+        </div>
       </div>
     );
   }
@@ -66,12 +68,14 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <RowControls
-          block={row.block}
-          settings={settings}
-          selectBlock={selectBlock}
-          mergeBlock={mergeBlock}
-        />
+        <div className={cn("overflow-hidden transition-all duration-[var(--duration-medium)] ease-in-out", row.block.isSelected ? "h-[52px] opacity-100" : "h-0 opacity-0")}>
+          <RowControls
+            block={row.block}
+            settings={settings}
+            selectBlock={selectBlock}
+            mergeBlock={mergeBlock}
+          />
+        </div>
       </div>
     );
   }
@@ -91,7 +95,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
       <div className={containerClass}>
         {isHovered && (
           <div className={cn(
-            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10 transition-opacity duration-[var(--duration-short)]",
             row.isFirstLine && "rounded-t-md",
             row.isLastLine && "rounded-b-md"
           )} />
@@ -104,7 +108,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
             <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 sticky z-10 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent" style={{ left: 'calc(var(--line-num-width, 3ch) + 1rem)' }}>
               {l.line2}
             </div>
-            <div className={cn("flex flex-1 min-w-0 mx-1 min-h-6", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+            <div className={cn("flex flex-1 min-w-0 mx-1 min-h-6 transition-colors duration-[var(--duration-medium)]", l.bgClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
               <div className="w-6 shrink-0 select-none px-1 text-center font-bold text-text-secondary py-0.5 sticky z-10 bg-transparent" style={{ left: 'calc((var(--line-num-width, 3ch) + 1rem) * 2)' }}>
                 {l.sign}
               </div>

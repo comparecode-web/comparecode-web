@@ -48,7 +48,9 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <BlockHeaderControls />
+        <div className={cn("overflow-hidden transition-all duration-[var(--duration-medium)] ease-in-out", row.block.isSelected ? "h-[44px] opacity-100" : "h-0 opacity-0")}>
+          <BlockHeaderControls />
+        </div>
       </div>
     );
   }
@@ -61,18 +63,20 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <RowControls
-          block={row.block}
-          settings={settings}
-          selectBlock={selectBlock}
-          mergeBlock={mergeBlock}
-        />
+        <div className={cn("overflow-hidden transition-all duration-[var(--duration-medium)] ease-in-out", row.block.isSelected ? "h-[52px] opacity-100" : "h-0 opacity-0")}>
+          <RowControls
+            block={row.block}
+            settings={settings}
+            selectBlock={selectBlock}
+            mergeBlock={mergeBlock}
+          />
+        </div>
       </div>
     );
   }
 
-  const oldLine = row.block.oldLines[row.oldIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
-  const newLine = row.block.newLines[row.newIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [ ] };
+  const oldLine = row.block.oldLines[row.oldIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [] };
+  const newLine = row.block.newLines[row.newIndex] || { lineNumber: null, kind: DiffChangeType.Imaginary, fragments: [] };
 
   const oldBackgroundClass = oldLine.kind === DiffChangeType.Imaginary
     ? "bg-diff-empty-bg"
@@ -97,7 +101,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
       <div className={containerClass}>
         {isHovered && (
           <div className={cn(
-            "absolute inset-0 bg-hover-overlay pointer-events-none z-10",
+            "absolute inset-0 bg-hover-overlay pointer-events-none z-10 transition-opacity duration-[var(--duration-short)]",
             row.isFirstLine && "rounded-t-md",
             row.isLastLine && "rounded-b-md"
           )} />
@@ -111,7 +115,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
               <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">
                 {oldLine.lineNumber}
               </div>
-              <div className={cn("flex-1 overflow-hidden relative mx-1", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+              <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-[var(--duration-medium)]", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                 <div className={cn("px-2 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={oldLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>
@@ -127,7 +131,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHo
               <div className="shrink-0 select-none px-2 text-right text-text-secondary py-0.5 w-[calc(var(--line-num-width,3ch)+1rem)] bg-transparent z-10">
                 {newLine.lineNumber}
               </div>
-              <div className={cn("flex-1 overflow-hidden relative mx-1", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
+              <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-[var(--duration-medium)]", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                 <div className={cn("px-2 py-0.5 font-mono min-h-6", textContentClass)} style={transformStyle}>
                   <DiffFragmentList fragments={newLine.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
                 </div>

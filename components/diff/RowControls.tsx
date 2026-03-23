@@ -27,7 +27,7 @@ export function RowControls({ block, settings, selectBlock, mergeBlock }: RowCon
   };
 
   return (
-    <div className="flex items-center mx-1 bg-bg-primary relative h-[56px] z-20 select-none border-b border-l border-r border-border-default rounded-b-xl shadow-sm animate-slide-up-fade origin-bottom">
+    <div className="flex items-center mx-1 mb-1 bg-bg-primary relative h-[48px] z-20 select-none border-b border-l border-r border-border-default rounded-b-xl shadow-sm">
       <div className="sticky left-0 flex items-center w-full px-4 h-full">
         <div className="flex-1 flex justify-end pr-8">
           <button onClick={handleMergeLeftToRight} className="flex items-center justify-center gap-2 rounded bg-danger px-[var(--btn-px)] h-[var(--btn-height)] text-sm font-semibold text-white hover:bg-danger-hover transition-colors shadow-sm outline-none">
