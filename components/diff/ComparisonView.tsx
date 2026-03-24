@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useEditorUIStore } from "@/store/useEditorUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -13,7 +14,7 @@ import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
 
 export function ComparisonView() {
-  const { comparisonResult, leftText, rightText, selectBlock, scrollToBlock } = useEditorStore();
+  const { comparisonResult, leftText, rightText, selectBlock, scrollToBlock, scrollToTop, scrollToBottom } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
   const { executeCompare } = useCompareActions();
@@ -72,6 +73,25 @@ export function ComparisonView() {
                   onSegmentClick={handleSegmentClick}
                 />
               </div>
+            </div>
+          )}
+
+          {hasResult && settings.isJumpButtonsVisible && (
+            <div className="absolute bottom-4 right-4 sm:right-16 z-30 flex flex-col items-center gap-2">
+              <button
+                onClick={scrollToTop}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                title="Jump to top"
+              >
+                <MdKeyboardDoubleArrowUp className="text-2xl" />
+              </button>
+              <button
+                onClick={scrollToBottom}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                title="Jump to bottom"
+              >
+                <MdKeyboardDoubleArrowDown className="text-2xl" />
+              </button>
             </div>
           )}
         </div>

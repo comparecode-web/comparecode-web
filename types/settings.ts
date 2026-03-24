@@ -22,4 +22,5 @@ export interface AppSettings {
   fontFamily: string;
   theme: string;
   isContinuousMergeEnabled: boolean;
+  isJumpButtonsVisible: boolean;
 }

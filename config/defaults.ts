@@ -8,5 +8,6 @@ export const defaultSettings: AppSettings = {
   fontSize: 13.0,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   theme: "light",
-  isContinuousMergeEnabled: true
+  isContinuousMergeEnabled: true,
+  isJumpButtonsVisible: true
 };
