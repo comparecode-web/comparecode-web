@@ -42,7 +42,8 @@ export function UnifiedView() {
   const unifiedVirtualizer = useDiffVirtualizer(
     rows.length,
     () => unifiedScrollRef.current,
-    estimateSize
+    estimateSize,
+    (index) => rows[index]?.id ?? `${index}`
   );
 
   if (!comparisonResult) {

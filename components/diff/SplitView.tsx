@@ -6,7 +6,6 @@ import { useEditorStore } from "@/store/useEditorStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { SplitRow } from "./SplitRow";
-import { cn } from "@/utils/uiHelpers";
 import { useCalculateSplitRows } from "@/hooks/useCalculateSplitRows";
 import { UI_CONSTANTS } from "@/config/constants";
 
@@ -48,7 +47,8 @@ export function SplitView() {
   const virtualizer = useDiffVirtualizer(
     rows.length,
     () => scrollRef.current,
-    estimateSize
+    estimateSize,
+    (index) => rows[index]?.id ?? `${index}`
   );
 
   if (!comparisonResult) {
