@@ -6,7 +6,6 @@ import { ComparisonService } from "@/services/comparisonService";
 import { MergeService } from "@/services/mergeService";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/utils/scrollHelpers";
-import { UI_CONSTANTS } from "@/config/constants";
 
 interface EditorState {
   leftText: string;
@@ -115,10 +114,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         if (targetIndex >= 0) {
           const nextBlockId = newSelectableBlocks[targetIndex].id;
           get().selectBlock(nextBlockId);
-
-          setTimeout(() => {
-            get().scrollToBlock(nextBlockId);
-          }, UI_CONSTANTS.CONTINUOUS_MERGE_DELAY_MS);
         }
       }
     }
