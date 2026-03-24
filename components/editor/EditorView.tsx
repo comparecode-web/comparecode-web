@@ -14,7 +14,7 @@ export function EditorView() {
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-bg-primary relative">
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-bg-primary relative">
       <div
         className={cn(
           "flex flex-col bg-bg-secondary transition-[width] duration-(--duration-medium) overflow-hidden h-full shrink-0 z-10",
@@ -52,7 +52,7 @@ export function EditorView() {
         />
       )}
 
-      <div className="flex flex-1 flex-col overflow-hidden relative z-0">
+      <div className="flex flex-1 min-h-0 flex-col overflow-hidden relative z-0">
         {!isOptionsPanelOpen && (
           <button
             onClick={() => setIsOptionsPanelOpen(true)}

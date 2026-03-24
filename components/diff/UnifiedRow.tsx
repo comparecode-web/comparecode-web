@@ -49,6 +49,8 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
     return (
       <div
         data-index={virtualRow.index}
+        data-block-id={row.block.id}
+        data-row-type={row.type}
         ref={measureRef}
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
@@ -62,6 +64,8 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
     return (
       <div
         data-index={virtualRow.index}
+        data-block-id={row.block.id}
+        data-row-type={row.type}
         ref={measureRef}
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
@@ -83,6 +87,9 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
   return (
     <div
       data-index={virtualRow.index}
+      data-block-id={row.block.id}
+      data-row-type={row.type}
+      data-first-line={row.type === "line" && row.isFirstLine ? "true" : undefined}
       ref={measureRef}
       className="absolute top-0 left-0 w-full"
       style={{ transform: `translateY(${virtualRow.start}px)` }}

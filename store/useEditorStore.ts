@@ -147,6 +147,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     const nextBlockId = selectableBlocks[nextIndex].id;
     get().selectBlock(nextBlockId);
+
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          get().scrollToBlock(nextBlockId);
+        });
+      });
+      return;
+    }
+
     get().scrollToBlock(nextBlockId);
   },
 
@@ -173,6 +183,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     const prevBlockId = selectableBlocks[prevIndex].id;
     get().selectBlock(prevBlockId);
+
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          get().scrollToBlock(prevBlockId);
+        });
+      });
+      return;
+    }
+
     get().scrollToBlock(prevBlockId);
   },
 

@@ -13,15 +13,15 @@ import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
 
 export function ComparisonView() {
-  const { comparisonResult, leftText, rightText, selectBlock } = useEditorStore();
+  const { comparisonResult, leftText, rightText, selectBlock, scrollToBlock } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
   const { executeCompare } = useCompareActions();
 
-  const storeRefs = useRef({ leftText, rightText, executeCompare, settings, selectBlock });
+  const storeRefs = useRef({ leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock });
 
   useEffect(() => {
-    storeRefs.current = { leftText, rightText, executeCompare, settings, selectBlock };
+    storeRefs.current = { leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock };
   });
 
   useEffect(() => {
@@ -34,36 +34,25 @@ export function ComparisonView() {
     storeRefs.current.selectBlock(null);
   }, [settings.ignoreWhitespace]);
 
-  const handleSegmentClick = (blockId: string, offsetPct: number) => {
+  const handleSegmentClick = (blockId: string) => {
     selectBlock(blockId);
 
-    const container = document.getElementById("diff-container");
-
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-
-      scrollAreas.forEach((scrollArea) => {
-        const topOffset = scrollArea.clientHeight * 0.1;
-        let targetScroll = (offsetPct / 100) * scrollArea.scrollHeight - topOffset;
-
-        if (targetScroll < 0) {
-          targetScroll = 0;
-        }
-
-        scrollArea.scrollTop = targetScroll;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBlock(blockId);
       });
-    }
+    });
   };
 
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const hideBody = !hasResult && isInputExpanded;
 
   return (
-    <div className={cn("flex w-full flex-col bg-bg-primary relative", !hideBody && "h-full")}>
-      <ComparisonToolbar />
+    <div className={cn("flex w-full min-h-0 flex-col bg-bg-primary relative", !hideBody && "h-full")}>
+      {!hideBody && <ComparisonToolbar />}
 
       {!hideBody && (
-        <div id="diff-container" className="flex flex-1 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
+        <div id="diff-container" className="flex flex-1 min-h-0 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
           {!hasResult ? (
             <div className="flex h-full w-full items-center justify-center">
               <p className="text-text-secondary">No comparison generated yet.</p>

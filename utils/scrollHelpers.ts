@@ -1,49 +1,92 @@
 import { ComparisonResult } from "@/types/diff";
+import { UI_CONSTANTS } from "@/config/constants";
 
-export function scrollToBlockInDOM(comparisonResult: ComparisonResult | null, blockId: string): void {
-  if (!comparisonResult) {
-    return;
+function getDiffScrollAreas(container: HTMLElement): Array<HTMLElement> {
+  const explicitArea = container.querySelector<HTMLElement>("#diff-scroll-area");
+  if (explicitArea) {
+    return [explicitArea];
   }
 
-  let totalHeight = 0;
+  return Array.from(container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto"));
+}
 
-  for (let i = 0; i < comparisonResult.blocks.length; i++) {
-    totalHeight += Math.max(comparisonResult.blocks[i].oldLines.length, comparisonResult.blocks[i].newLines.length);
+function findTargetRow(scrollArea: HTMLElement, blockId: string): HTMLElement | null {
+  const escapedId = CSS.escape(blockId);
+
+  const headerRow = scrollArea.querySelector<HTMLElement>(`[data-block-id="${escapedId}"][data-row-type="header-controls"]`);
+  if (headerRow) {
+    return headerRow;
   }
 
-  if (totalHeight === 0) {
-    totalHeight = 1;
+  return scrollArea.querySelector<HTMLElement>(`[data-block-id="${escapedId}"][data-row-type="line"][data-first-line="true"]`);
+}
+
+function alignBlockTopInScrollArea(scrollArea: HTMLElement, blockId: string): boolean {
+  const targetRow = findTargetRow(scrollArea, blockId);
+  if (!targetRow) {
+    return false;
   }
 
-  let currentIndex = 0;
-  let targetOffsetPct = 0;
+  const delta = targetRow.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top;
+  scrollArea.scrollTop += delta;
+  return true;
+}
+
+function estimateScrollTop(comparisonResult: ComparisonResult, blockId: string): number {
+  let rowsBefore = 0;
 
   for (let i = 0; i < comparisonResult.blocks.length; i++) {
     const block = comparisonResult.blocks[i];
-    const height = Math.max(block.oldLines.length, block.newLines.length);
 
     if (block.id === blockId) {
-      targetOffsetPct = (currentIndex / totalHeight) * 100;
       break;
     }
 
-    currentIndex += height;
+    rowsBefore += Math.max(block.oldLines.length, block.newLines.length);
   }
 
+  return rowsBefore * UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
+}
+
+export function scrollToBlockInDOM(comparisonResult: ComparisonResult | null, blockId: string): void {
   const container = document.getElementById("diff-container");
 
   if (container) {
-    const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
+    const scrollAreas = getDiffScrollAreas(container);
+    const alignNow = () => {
+      let alignedAny = false;
+
+      scrollAreas.forEach((scrollArea) => {
+        if (alignBlockTopInScrollArea(scrollArea, blockId)) {
+          alignedAny = true;
+        }
+      });
+
+      return alignedAny;
+    };
+
+    if (alignNow()) {
+      return;
+    }
+
+    if (!comparisonResult) {
+      return;
+    }
+
+    const targetScrollTop = estimateScrollTop(comparisonResult, blockId);
 
     scrollAreas.forEach((scrollArea) => {
-      const topOffset = scrollArea.clientHeight * 0.1;
-      let targetScroll = (targetOffsetPct / 100) * scrollArea.scrollHeight - topOffset;
+      scrollArea.scrollTop = targetScrollTop;
+    });
 
-      if (targetScroll < 0) {
-        targetScroll = 0;
+    requestAnimationFrame(() => {
+      if (alignNow()) {
+        return;
       }
 
-      scrollArea.scrollTop = targetScroll;
+      requestAnimationFrame(() => {
+        alignNow();
+      });
     });
   }
 }
@@ -52,7 +95,7 @@ export function scrollToTopInDOM(): void {
   const container = document.getElementById("diff-container");
 
   if (container) {
-    const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
+    const scrollAreas = getDiffScrollAreas(container);
 
     scrollAreas.forEach((scrollArea) => {
       scrollArea.scrollTop = 0;
@@ -64,7 +107,7 @@ export function scrollToBottomInDOM(): void {
   const container = document.getElementById("diff-container");
 
   if (container) {
-    const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
+    const scrollAreas = getDiffScrollAreas(container);
 
     scrollAreas.forEach((scrollArea) => {
       scrollArea.scrollTop = scrollArea.scrollHeight;
