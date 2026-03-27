@@ -42,7 +42,8 @@ export function UnifiedView() {
   const unifiedVirtualizer = useDiffVirtualizer(
     rows.length,
     () => unifiedScrollRef.current,
-    estimateSize
+    estimateSize,
+    (index) => rows[index]?.id ?? `${index}`
   );
 
   if (!comparisonResult) {
@@ -56,7 +57,7 @@ export function UnifiedView() {
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   return (
-    <div className="flex-1 overflow-auto custom-scrollbar py-2" ref={unifiedScrollRef} style={customStyles}>
+    <div id="diff-scroll-area" className="flex-1 min-h-0 overflow-auto custom-scrollbar pb-2" ref={unifiedScrollRef} style={customStyles}>
       <div className={cn("relative pr-0 sm:pr-6", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
         {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];

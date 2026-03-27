@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useEditorUIStore } from "@/store/useEditorUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -13,15 +14,15 @@ import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
 
 export function ComparisonView() {
-  const { comparisonResult, leftText, rightText, selectBlock } = useEditorStore();
+  const { comparisonResult, leftText, rightText, selectBlock, scrollToBlock, scrollToTop, scrollToBottom } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
   const { executeCompare } = useCompareActions();
 
-  const storeRefs = useRef({ leftText, rightText, executeCompare, settings, selectBlock });
+  const storeRefs = useRef({ leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock });
 
   useEffect(() => {
-    storeRefs.current = { leftText, rightText, executeCompare, settings, selectBlock };
+    storeRefs.current = { leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock };
   });
 
   useEffect(() => {
@@ -34,36 +35,25 @@ export function ComparisonView() {
     storeRefs.current.selectBlock(null);
   }, [settings.ignoreWhitespace]);
 
-  const handleSegmentClick = (blockId: string, offsetPct: number) => {
+  const handleSegmentClick = (blockId: string) => {
     selectBlock(blockId);
 
-    const container = document.getElementById("diff-container");
-
-    if (container) {
-      const scrollAreas = container.querySelectorAll<HTMLElement>(".overflow-auto, .overflow-y-auto");
-
-      scrollAreas.forEach((scrollArea) => {
-        const topOffset = scrollArea.clientHeight * 0.1;
-        let targetScroll = (offsetPct / 100) * scrollArea.scrollHeight - topOffset;
-
-        if (targetScroll < 0) {
-          targetScroll = 0;
-        }
-
-        scrollArea.scrollTop = targetScroll;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBlock(blockId);
       });
-    }
+    });
   };
 
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const hideBody = !hasResult && isInputExpanded;
 
   return (
-    <div className={cn("flex w-full flex-col bg-bg-primary relative", !hideBody && "h-full")}>
-      <ComparisonToolbar />
+    <div className={cn("flex w-full min-h-0 flex-col bg-bg-primary relative", !hideBody && "h-full")}>
+      {!hideBody && <ComparisonToolbar />}
 
       {!hideBody && (
-        <div id="diff-container" className="flex flex-1 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
+        <div id="diff-container" className="flex flex-1 min-h-0 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
           {!hasResult ? (
             <div className="flex h-full w-full items-center justify-center">
               <p className="text-text-secondary">No comparison generated yet.</p>
@@ -83,6 +73,25 @@ export function ComparisonView() {
                   onSegmentClick={handleSegmentClick}
                 />
               </div>
+            </div>
+          )}
+
+          {hasResult && settings.isJumpButtonsVisible && (
+            <div className="absolute bottom-4 right-4 sm:right-16 z-30 flex flex-col items-center gap-2">
+              <button
+                onClick={scrollToTop}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                title="Jump to top"
+              >
+                <MdKeyboardDoubleArrowUp className="text-2xl" />
+              </button>
+              <button
+                onClick={scrollToBottom}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                title="Jump to bottom"
+              >
+                <MdKeyboardDoubleArrowDown className="text-2xl" />
+              </button>
             </div>
           )}
         </div>

@@ -6,7 +6,6 @@ import { useEditorStore } from "@/store/useEditorStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useDiffVirtualizer } from "@/hooks/useDiffVirtualizer";
 import { SplitRow } from "./SplitRow";
-import { cn } from "@/utils/uiHelpers";
 import { useCalculateSplitRows } from "@/hooks/useCalculateSplitRows";
 import { UI_CONSTANTS } from "@/config/constants";
 
@@ -48,7 +47,8 @@ export function SplitView() {
   const virtualizer = useDiffVirtualizer(
     rows.length,
     () => scrollRef.current,
-    estimateSize
+    estimateSize,
+    (index) => rows[index]?.id ?? `${index}`
   );
 
   if (!comparisonResult) {
@@ -75,9 +75,10 @@ export function SplitView() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full relative pr-0 sm:pr-6" style={customStyles}>
+    <div className="flex flex-col h-full min-h-0 w-full relative pr-0 sm:pr-6" style={customStyles}>
       <div
-        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-2"
+        id="diff-scroll-area"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-2"
         ref={scrollRef}
         onWheel={handleWheel}
       >

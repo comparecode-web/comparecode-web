@@ -49,13 +49,13 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
     return (
       <div
         data-index={virtualRow.index}
+        data-block-id={row.block.id}
+        data-row-type={row.type}
         ref={measureRef}
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <div className={cn("overflow-hidden transition-all duration-(--duration-medium) ease-in-out", row.block.isSelected ? "h-11 opacity-100" : "h-0 opacity-0")}>
-          <BlockHeaderControls />
-        </div>
+        {row.block.isSelected && <BlockHeaderControls />}
       </div>
     );
   }
@@ -64,18 +64,20 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
     return (
       <div
         data-index={virtualRow.index}
+        data-block-id={row.block.id}
+        data-row-type={row.type}
         ref={measureRef}
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
-        <div className={cn("overflow-hidden transition-all duration-(--duration-medium) ease-in-out", row.block.isSelected ? "h-13 opacity-100" : "h-0 opacity-0")}>
+        {row.block.isSelected && (
           <RowControls
             block={row.block}
             settings={settings}
             selectBlock={selectBlock}
             mergeBlock={mergeBlock}
           />
-        </div>
+        )}
       </div>
     );
   }
@@ -85,6 +87,9 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
   return (
     <div
       data-index={virtualRow.index}
+      data-block-id={row.block.id}
+      data-row-type={row.type}
+      data-first-line={row.type === "line" && row.isFirstLine ? "true" : undefined}
       ref={measureRef}
       className="absolute top-0 left-0 w-full"
       style={{ transform: `translateY(${virtualRow.start}px)` }}
