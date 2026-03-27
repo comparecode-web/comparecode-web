@@ -6,7 +6,7 @@ import { BlockType } from "@/types/diff";
 
 export function useCompareActions() {
   const executeCompare = async (settings: CompareSettings, saveToHistory: boolean, preserveInputState: boolean = false) => {
-    const { leftText, rightText, compare } = useEditorStore.getState();
+    const { leftText, rightText, compare, setHistorySessionId, bumpHistoryRefreshKey } = useEditorStore.getState();
     const { setIsInputExpanded, setIsComparing, isInputExpanded } = useEditorUIStore.getState();
 
     setIsComparing(true);
@@ -15,7 +15,9 @@ export function useCompareActions() {
     setIsComparing(false);
 
     if (saveToHistory && (leftText || rightText)) {
-      await HistoryService.addAsync(leftText, rightText);
+      const sessionId = await HistoryService.addAsync(leftText, rightText);
+      setHistorySessionId(sessionId);
+      bumpHistoryRefreshKey();
     }
   };
 
@@ -28,11 +30,24 @@ export function useCompareActions() {
   };
 
   const executeSwap = async (settings: CompareSettings) => {
-    const { swapTexts, currentBlockIndex, selectBlock } = useEditorStore.getState();
+    const { swapTexts, currentBlockIndex, selectBlock, leftText, rightText, historySessionId, setHistorySessionId, bumpHistoryRefreshKey } = useEditorStore.getState();
     const prevIndex = currentBlockIndex;
+    const beforeLeft = leftText;
+    const beforeRight = rightText;
 
     swapTexts();
-    await executeCompare(settings, true, true);
+    const { leftText: afterLeft, rightText: afterRight } = useEditorStore.getState();
+
+    let sessionId = historySessionId;
+    if (!sessionId) {
+      sessionId = await HistoryService.createMergeSessionAsync(beforeLeft, beforeRight);
+      setHistorySessionId(sessionId);
+    }
+
+    await HistoryService.appendSwapStepAsync(sessionId, beforeLeft, beforeRight, afterLeft, afterRight);
+    bumpHistoryRefreshKey();
+
+    await executeCompare(settings, false, true);
 
     if (prevIndex > 0) {
       const { comparisonResult } = useEditorStore.getState();

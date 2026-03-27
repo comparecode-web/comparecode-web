@@ -1,18 +1,24 @@
 import { memo } from "react";
 import { MdDelete, MdArrowForward, MdArrowDownward, MdBookmark, MdBookmarkBorder } from "react-icons/md";
-import { getLineCount, generatePreviewLines, getRelativeTime } from "@/utils/formatters";
+import { formatAbsoluteDateTimeWithSettings, generatePreviewLines, getLineCount, getRelativeTime } from "@/utils/formatters";
 import { cn } from "@/utils/uiHelpers";
 import { DiffHistoryItem } from "@/types/history";
+import { DateFormat, TimeFormat } from "@/types/settings";
 
 interface HistoryItemCardProps {
   item: DiffHistoryItem;
   fontFamily: string;
-  onRestore: (original: string, modified: string) => void;
+  dateFormat: DateFormat;
+  timeFormat: TimeFormat;
+  tickerNowMs: number;
+  onRestore: (item: DiffHistoryItem) => void;
   onToggleBookmark: (e: React.MouseEvent, id: string, currentStatus: boolean) => void;
   onDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
+export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat, tickerNowMs, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
+  const actionAt = item.lastActionAt ?? item.updatedAt ?? item.createdAt;
+
   const origLines = generatePreviewLines(item.originalText);
   const modLines = generatePreviewLines(item.modifiedText);
   const maxDisplayLines = Math.max(origLines.length, modLines.length);
@@ -29,7 +35,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBook
 
   return (
     <div
-      onClick={() => onRestore(item.originalText, item.modifiedText)}
+      onClick={() => onRestore(item)}
       className={cn(
         "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
         item.isBookmarked ? "border-accent-primary" : "border-border-default"
@@ -41,9 +47,14 @@ export const HistoryItemCard = memo(({ item, fontFamily, onRestore, onToggleBook
 
       <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 z-10">
         <div className="flex items-center justify-between sm:contents">
-          <span className="min-w-17.5 truncate text-xs font-bold text-accent-primary">
-            {getRelativeTime(item.createdAt)}
-          </span>
+          <div className="min-w-36 flex flex-col gap-1">
+            <span className="truncate text-xs font-bold text-accent-primary">
+              {getRelativeTime(actionAt, tickerNowMs)}
+            </span>
+            <span className="truncate text-[11px] text-text-secondary">
+              {formatAbsoluteDateTimeWithSettings(actionAt, dateFormat, timeFormat)}
+            </span>
+          </div>
 
           <div className="flex shrink-0 items-center gap-1">
             <button

@@ -145,7 +145,7 @@ function MergeSection() {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
         <button
-          onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled"])}
+          onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled", "isJumpButtonsVisible"])}
           className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
           title="Restore section defaults"
         >
@@ -158,6 +158,12 @@ function MergeSection() {
         label="Continuous merge"
         title="If enabled, merging will automatically jump to the next merge block."
         containerClassName="mt-1"
+      />
+      <Checkbox
+        checked={settings.isJumpButtonsVisible}
+        onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
+        label="Show FABs"
+        title="Shows floating jump buttons in the diff view so you can quickly jump to the top and bottom."
       />
     </div>
   );

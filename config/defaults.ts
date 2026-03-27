@@ -1,4 +1,4 @@
-import { AppSettings, PrecisionLevel, ViewMode } from "@/types/settings";
+import { AppSettings, PrecisionLevel, TimeFormat, ViewMode } from "@/types/settings";
 
 export const defaultSettings: AppSettings = {
   isWordWrapEnabled: true,
@@ -8,5 +8,8 @@ export const defaultSettings: AppSettings = {
   fontSize: 13.0,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   theme: "light",
-  isContinuousMergeEnabled: true
+  dateFormat: "MMMM d",
+  timeFormat: TimeFormat.TwentyFourHour,
+  isContinuousMergeEnabled: true,
+  isJumpButtonsVisible: true
 };

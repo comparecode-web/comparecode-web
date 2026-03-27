@@ -4,17 +4,19 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdKeyboardArrowUp, MdTune, M
 import { useEditorStore } from "@/store/useEditorStore";
 import { useEditorUIStore } from "@/store/useEditorUIStore";
 import { OptionsView } from "./OptionsView";
+import { MergeHistoryView } from "./MergeHistoryView";
 import { InputView } from "./InputView";
 import { ComparisonView } from "@/components/diff/ComparisonView";
 import { cn } from "@/utils/uiHelpers";
+import { MdHistory } from "react-icons/md";
 
 export function EditorView() {
   const { comparisonResult } = useEditorStore();
-  const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen } = useEditorUIStore();
+  const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen, optionsPanelTab, setOptionsPanelTab } = useEditorUIStore();
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-bg-primary relative">
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-bg-primary relative">
       <div
         className={cn(
           "flex flex-col bg-bg-secondary transition-[width] duration-(--duration-medium) overflow-hidden h-full shrink-0 z-10",
@@ -26,9 +28,31 @@ export function EditorView() {
       >
         <div className="flex w-64 flex-col h-full shrink-0">
           <div className="flex items-center justify-between border-b border-border-default px-4 h-(--header-height) shrink-0 bg-bg-secondary">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <MdTune className="text-xl sm:text-2xl text-text-secondary" />
-              <h2 className="text-lg sm:text-xl font-bold text-text-primary">Options</h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setOptionsPanelTab("options")}
+                className={cn(
+                  "flex items-center justify-center rounded p-2 transition-colors duration-(--duration-short)",
+                  optionsPanelTab === "options"
+                    ? "bg-hover-overlay text-accent-primary"
+                    : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+                )}
+                title="Options"
+              >
+                <MdTune className="text-xl" />
+              </button>
+              <button
+                onClick={() => setOptionsPanelTab("history")}
+                className={cn(
+                  "flex items-center justify-center rounded p-2 transition-colors duration-(--duration-short)",
+                  optionsPanelTab === "history"
+                    ? "bg-hover-overlay text-accent-primary"
+                    : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+                )}
+                title="Merge History"
+              >
+                <MdHistory className="text-xl" />
+              </button>
             </div>
             <button
               onClick={() => setIsOptionsPanelOpen(false)}
@@ -40,7 +64,7 @@ export function EditorView() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <OptionsView />
+            {optionsPanelTab === "options" ? <OptionsView /> : <MergeHistoryView />}
           </div>
         </div>
       </div>
@@ -52,7 +76,7 @@ export function EditorView() {
         />
       )}
 
-      <div className="flex flex-1 flex-col overflow-hidden relative z-0">
+      <div className="flex flex-1 min-h-0 flex-col overflow-hidden relative z-0">
         {!isOptionsPanelOpen && (
           <button
             onClick={() => setIsOptionsPanelOpen(true)}
