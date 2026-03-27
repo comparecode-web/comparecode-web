@@ -9,8 +9,9 @@ import { UI_CONSTANTS } from "@/config/constants";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Slider } from "@/components/ui/Slider";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { AVAILABLE_FONTS } from "@/config/fonts";
-import { MdExpandMore, MdRestartAlt } from "react-icons/md";
+import { MdRestartAlt } from "react-icons/md";
 
 export function OptionsView() {
   return (
@@ -90,20 +91,12 @@ function AppearanceSection() {
       />
       <div className="flex flex-col gap-1 mt-1">
         <span className="text-sm font-medium text-text-primary">Font Family</span>
-        <div className="relative flex items-center w-full">
-          <select
-            value={settings.fontFamily}
-            onChange={(e) => updateSettings({ fontFamily: e.target.value })}
-            className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-1.5 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)"
-          >
-            {AVAILABLE_FONTS.map((font) => (
-              <option key={font.id} value={font.value}>
-                {font.name}
-              </option>
-            ))}
-          </select>
-          <MdExpandMore className="absolute right-2 text-xl text-text-secondary pointer-events-none" />
-        </div>
+        <SelectDropdown
+          value={settings.fontFamily}
+          onChange={(value) => updateSettings({ fontFamily: value })}
+          options={AVAILABLE_FONTS.map((font) => ({ value: font.value, label: font.name }))}
+          triggerClassName="py-1.5"
+        />
       </div>
     </div>
   );
