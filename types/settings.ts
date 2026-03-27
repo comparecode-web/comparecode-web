@@ -28,6 +28,11 @@ export interface AppSettings {
   fontSize: number;
   fontFamily: string;
   theme: string;
+  useCustomHighlightColors: boolean;
+  customDiffAddedBg: string;
+  customDiffAddedFg: string;
+  customDiffRemovedBg: string;
+  customDiffRemovedFg: string;
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
   isContinuousMergeEnabled: boolean;
