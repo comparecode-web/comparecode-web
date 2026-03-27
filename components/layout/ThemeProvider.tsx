@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { getThemeHighlightDefaults } from "@/config/themes";
+import { resolveCustomHighlightColors } from "@/utils/highlightColors";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const {
@@ -21,21 +22,31 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.colorScheme = darkThemes.has(theme) ? "dark" : "light";
 
     if (useCustomHighlightColors) {
+      const resolvedCustomColors = resolveCustomHighlightColors(
+        {
+          customDiffAddedBg,
+          customDiffAddedFg,
+          customDiffRemovedBg,
+          customDiffRemovedFg
+        },
+        themeHighlightDefaults
+      );
+
       document.documentElement.style.setProperty(
         "--diff-added-bg",
-        customDiffAddedBg.trim() || themeHighlightDefaults.diffAddedBg
+        resolvedCustomColors.diffAddedBg
       );
       document.documentElement.style.setProperty(
         "--diff-added-fg",
-        customDiffAddedFg.trim() || themeHighlightDefaults.diffAddedFg
+        resolvedCustomColors.diffAddedFg
       );
       document.documentElement.style.setProperty(
         "--diff-removed-bg",
-        customDiffRemovedBg.trim() || themeHighlightDefaults.diffRemovedBg
+        resolvedCustomColors.diffRemovedBg
       );
       document.documentElement.style.setProperty(
         "--diff-removed-fg",
-        customDiffRemovedFg.trim() || themeHighlightDefaults.diffRemovedFg
+        resolvedCustomColors.diffRemovedFg
       );
       return;
     }
