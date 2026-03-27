@@ -1,18 +1,24 @@
 import { create } from "zustand";
-import { ComparisonResult, ChangeBlock, BlockType } from "@/types/diff";
+import { ComparisonResult, ChangeBlock, BlockType, DiffChangeType } from "@/types/diff";
 import { CompareSettings } from "@/types/settings";
 import { MergeDirection } from "@/types/ui";
 import { ComparisonService } from "@/services/comparisonService";
 import { MergeService } from "@/services/mergeService";
+import { HistoryService } from "@/services/historyService";
+import { HistoryActionDirection } from "@/types/history";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/utils/scrollHelpers";
 
 interface EditorState {
   leftText: string;
   rightText: string;
+  historySessionId: string | null;
+  historyRefreshKey: number;
   comparisonResult: ComparisonResult | null;
   totalSelectableBlocks: number;
   currentBlockIndex: number;
+  setHistorySessionId: (sessionId: string | null) => void;
+  bumpHistoryRefreshKey: () => void;
   setLeftText: (text: string) => void;
   setRightText: (text: string) => void;
   swapTexts: () => void;
@@ -20,7 +26,7 @@ interface EditorState {
   compare: (settings: CompareSettings) => void;
   selectBlock: (blockId: string | null) => void;
   mergeBlock: (block: ChangeBlock, direction: MergeDirection, settings: CompareSettings) => void;
-  loadFromHistory: (left: string, right: string, settings: CompareSettings) => void;
+  loadFromHistory: (left: string, right: string, settings: CompareSettings, sessionId?: string | null) => void;
   jumpToNextBlock: () => void;
   jumpToPreviousBlock: () => void;
   scrollToBlock: (blockId: string) => void;
@@ -31,9 +37,14 @@ interface EditorState {
 export const useEditorStore = create<EditorState>((set, get) => ({
   leftText: "",
   rightText: "",
+  historySessionId: null,
+  historyRefreshKey: 0,
   comparisonResult: null,
   totalSelectableBlocks: 0,
   currentBlockIndex: 0,
+
+  setHistorySessionId: (sessionId: string | null) => set({ historySessionId: sessionId }),
+  bumpHistoryRefreshKey: () => set((state) => ({ historyRefreshKey: state.historyRefreshKey + 1 })),
 
   setLeftText: (text: string) => set({ leftText: text }),
 
@@ -48,6 +59,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({
       leftText: "",
       rightText: "",
+      historySessionId: null,
+      historyRefreshKey: 0,
       comparisonResult: null,
       totalSelectableBlocks: 0,
       currentBlockIndex: 0
@@ -87,7 +100,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   mergeBlock: (block: ChangeBlock, direction: MergeDirection, settings: CompareSettings) => {
-    const { leftText, rightText, currentBlockIndex } = get();
+    const { leftText, rightText, currentBlockIndex, historySessionId } = get();
+    const beforeLeft = leftText;
+    const beforeRight = rightText;
     let newLeft = leftText;
     let newRight = rightText;
 
@@ -98,6 +113,39 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
 
     set({ leftText: newLeft, rightText: newRight });
+
+    const persistMergeStep = async (): Promise<void> => {
+      let sessionId = historySessionId;
+      if (!sessionId) {
+        sessionId = await HistoryService.createMergeSessionAsync(beforeLeft, beforeRight);
+        set({ historySessionId: sessionId });
+      }
+
+      const stepDirection = direction === MergeDirection.LeftToRight
+        ? HistoryActionDirection.LeftToRight
+        : HistoryActionDirection.RightToLeft;
+
+      const originalLinesAffected = block.oldLines.filter(l => l.kind !== DiffChangeType.Imaginary).length;
+      const modifiedLinesAffected = block.newLines.filter(l => l.kind !== DiffChangeType.Imaginary).length;
+
+      await HistoryService.appendMergeStepAsync(
+        sessionId,
+        stepDirection,
+        originalLinesAffected,
+        modifiedLinesAffected,
+        beforeLeft,
+        beforeRight,
+        newLeft,
+        newRight,
+        block.id,
+        block.kind
+      );
+
+      get().bumpHistoryRefreshKey();
+    };
+
+    void persistMergeStep();
+
     get().compare(settings);
 
     const appSettings = useSettingsStore.getState().settings;
@@ -119,8 +167,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
-  loadFromHistory: (left: string, right: string, settings: CompareSettings) => {
-    set({ leftText: left, rightText: right });
+  loadFromHistory: (left: string, right: string, settings: CompareSettings, sessionId: string | null = null) => {
+    set({ leftText: left, rightText: right, historySessionId: sessionId });
     get().compare(settings);
   },
 

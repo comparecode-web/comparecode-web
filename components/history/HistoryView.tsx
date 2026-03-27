@@ -9,6 +9,8 @@ import { useAppStore } from "@/store/useAppStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { Button } from "@/components/ui/Button";
 import { HistoryItemCard } from "./HistoryItemCard";
+import { DiffHistoryItem } from "@/types/history";
+import { useLiveTimeTicker } from "@/hooks/useLiveTimeTicker";
 
 export function HistoryView() {
   const { items, loadHistory, deleteItem, deleteAll, toggleBookmark } = useHistoryStore();
@@ -16,6 +18,7 @@ export function HistoryView() {
   const navigate = useAppStore((state) => state.navigate);
   const settings = useSettingsStore((state) => state.settings);
   const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
+  const tickerNowMs = useLiveTimeTicker(items.map((item) => item.lastActionAt ?? item.updatedAt ?? item.createdAt));
 
   const bookmarkedCount = useMemo(() => items.filter((i) => i.isBookmarked).length, [items]);
 
@@ -23,8 +26,8 @@ export function HistoryView() {
     loadHistory();
   }, [loadHistory]);
 
-  const handleRestore = useCallback((original: string, modified: string) => {
-    loadFromHistory(original, modified, settings);
+  const handleRestore = useCallback((item: DiffHistoryItem) => {
+    loadFromHistory(item.originalText, item.modifiedText, settings, item.id);
     navigate("editor");
   }, [loadFromHistory, navigate, settings]);
 
@@ -100,6 +103,9 @@ export function HistoryView() {
                 key={item.id}
                 item={item}
                 fontFamily={settings.fontFamily}
+                dateFormat={settings.dateFormat}
+                timeFormat={settings.timeFormat}
+                tickerNowMs={tickerNowMs}
                 onRestore={handleRestore}
                 onToggleBookmark={handleToggleBookmark}
                 onDelete={handleDeleteItem}

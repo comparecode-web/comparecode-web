@@ -8,6 +8,13 @@ export enum PrecisionLevel {
   Character = "Character"
 }
 
+export type DateFormat = string;
+
+export enum TimeFormat {
+  TwentyFourHour = "TwentyFourHour",
+  TwelveHour = "TwelveHour"
+}
+
 export interface CompareSettings {
   ignoreWhitespace: boolean;
   precision: PrecisionLevel;
@@ -21,6 +28,8 @@ export interface AppSettings {
   fontSize: number;
   fontFamily: string;
   theme: string;
+  dateFormat: DateFormat;
+  timeFormat: TimeFormat;
   isContinuousMergeEnabled: boolean;
   isJumpButtonsVisible: boolean;
 }

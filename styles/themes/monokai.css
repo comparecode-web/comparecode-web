@@ -12,6 +12,10 @@
   --danger-bg: rgba(249, 38, 114, 0.15);
   --success: #a6e22e;
   --success-hover: #b6e354;
+  --history-merge-ltr-bg: rgba(166, 226, 46, 0.24);
+  --history-merge-ltr-fg: #f2ffd0;
+  --history-merge-rtl-bg: rgba(249, 38, 114, 0.22);
+  --history-merge-rtl-fg: #ffe3ef;
   --diff-added-bg: rgba(166, 226, 46, 0.15);
   --diff-added-fg: #8bb529;
   --diff-removed-bg: rgba(249, 38, 114, 0.15);

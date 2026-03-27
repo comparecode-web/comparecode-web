@@ -162,7 +162,8 @@ function MergeSection() {
       <Checkbox
         checked={settings.isJumpButtonsVisible}
         onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
-        label={'Show "Jump To" buttons (FAB)'}
+        label="Show FABs"
+        title="Shows floating jump buttons in the diff view so you can quickly jump to the top and bottom."
       />
     </div>
   );
