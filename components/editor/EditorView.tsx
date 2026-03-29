@@ -68,6 +68,26 @@ export function EditorView() {
         />
       )}
 
+      <div className="fixed bottom-3 right-2 z-40 flex flex-col gap-2 rounded-lg border border-border-default bg-bg-secondary/95 p-1 shadow-lg backdrop-blur-sm sm:hidden">
+        <button
+          onClick={() => setIsOptionsPanelOpen(!isOptionsPanelOpen)}
+          className="grid h-8 w-11 grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm hover:bg-accent-hover transition-colors duration-(--duration-short)"
+          title={isOptionsPanelOpen ? "Close Options" : "Open Options"}
+        >
+          <MdTune className="text-xl shrink-0" />
+          {isOptionsPanelOpen ? <MdKeyboardArrowLeft className="text-2xl shrink-0" /> : <MdKeyboardArrowRight className="text-2xl shrink-0" />}
+        </button>
+
+        <button
+          onClick={toggleInputPanel}
+          className="grid h-8 w-11 grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm hover:bg-accent-hover transition-colors duration-(--duration-short)"
+          title={isInputExpanded ? "Hide Input Editor" : "Show Input Editor"}
+        >
+          <MdBorderColor className="text-xl shrink-0" />
+          {isInputExpanded ? <MdKeyboardArrowDown className="text-2xl shrink-0" /> : <MdKeyboardArrowUp className="text-2xl shrink-0" />}
+        </button>
+      </div>
+
       <div className="hidden sm:flex w-16 shrink-0 flex-col items-center gap-2 border-r border-border-default bg-bg-secondary px-1 py-2 z-20">
         <button
           onClick={() => setIsOptionsPanelOpen(!isOptionsPanelOpen)}
@@ -89,16 +109,6 @@ export function EditorView() {
       </div>
 
       <div className="flex flex-1 min-h-0 flex-col overflow-hidden relative z-0">
-        {!isOptionsPanelOpen && (
-          <button
-            onClick={() => setIsOptionsPanelOpen(true)}
-            className="absolute left-0 top-6 z-30 flex h-12 w-6 items-center justify-center rounded-r-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short) sm:hidden"
-            title="Open Options"
-          >
-            <MdKeyboardArrowRight className="text-2xl" />
-          </button>
-        )}
-
         <div
           className={cn(
             "flex flex-col bg-bg-primary relative",
@@ -107,18 +117,6 @@ export function EditorView() {
         >
           <ComparisonView />
         </div>
-
-        {!isInputExpanded && (
-          <button
-            onClick={toggleInputPanel}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 flex h-8 pl-3 pr-5 items-center justify-center gap-1 rounded-t-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short) text-sm font-semibold sm:hidden"
-            title="Show Input"
-          >
-            <MdKeyboardArrowUp className="text-xl" />
-            <span className="hidden sm:inline">Input Editor</span>
-            <span className="sm:hidden">Input</span>
-          </button>
-        )}
 
         <div
           className={cn(
