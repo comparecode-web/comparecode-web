@@ -6,19 +6,63 @@ import {
   HistoryStepItem
 } from "@/types/history";
 import type { CompareMode } from "@/features/compare/shared/types/compareMode";
+import type { CompareHistorySnapshot, HistoryStepMeta, TextHistorySnapshot } from "@/features/compare/shared/types/historySnapshot";
+
+interface HistorySnapshotState {
+  snapshot: CompareHistorySnapshot;
+  stepCount: number;
+  stepCursor: number;
+}
+
+interface LegacyTextPair {
+  originalText: string;
+  modifiedText: string;
+}
 
 export class HistoryService {
-  public static async createMergeSessionAsync(original: string, modified: string, compareMode: CompareMode = "text"): Promise<string> {
+  private static toTextSnapshot(originalText: string, modifiedText: string): TextHistorySnapshot {
+    return {
+      mode: "text",
+      originalText,
+      modifiedText
+    };
+  }
+
+  private static toLegacyTextPair(snapshot: CompareHistorySnapshot): LegacyTextPair {
+    if (snapshot.mode === "text") {
+      return {
+        originalText: snapshot.originalText,
+        modifiedText: snapshot.modifiedText
+      };
+    }
+
+    return {
+      originalText: "",
+      modifiedText: ""
+    };
+  }
+
+  private static buildComparableKey(snapshot: CompareHistorySnapshot): string {
+    if (snapshot.mode === "text") {
+      return `${snapshot.mode}::${snapshot.originalText}::${snapshot.modifiedText}`;
+    }
+
+    return `${snapshot.mode}::${snapshot.originalImageUrl}::${snapshot.modifiedImageUrl}`;
+  }
+
+  public static async createSessionAsync(snapshot: CompareHistorySnapshot, actionType: HistoryActionType = HistoryActionType.Compare): Promise<string> {
     const now = new Date().toISOString();
+    const textPair = this.toLegacyTextPair(snapshot);
     const newItem: DiffHistoryItem = {
       id: crypto.randomUUID(),
-      compareMode,
-      originalText: original,
-      modifiedText: modified,
+      compareMode: snapshot.mode,
+      snapshot,
+      originalText: textPair.originalText,
+      modifiedText: textPair.modifiedText,
       createdAt: now,
       updatedAt: now,
       lastActionAt: now,
-      lastActionType: HistoryActionType.Merge,
+      lastActionType: actionType,
       lastActionDirection: null,
       stepCount: 0,
       stepCursor: 0,
@@ -27,6 +71,14 @@ export class HistoryService {
 
     await db.history.add(newItem);
     return newItem.id;
+  }
+
+  public static async createMergeSessionAsync(original: string, modified: string, compareMode: CompareMode = "text"): Promise<string> {
+    if (compareMode === "image") {
+      return this.createSessionAsync({ mode: "image", originalImageUrl: original, modifiedImageUrl: modified }, HistoryActionType.Merge);
+    }
+
+    return this.createSessionAsync(this.toTextSnapshot(original, modified), HistoryActionType.Merge);
   }
 
   public static async getSessionAsync(sessionId: string): Promise<DiffHistoryItem | undefined> {
@@ -46,38 +98,123 @@ export class HistoryService {
   }
 
   public static async addAsync(original: string, modified: string, compareMode: CompareMode = "text"): Promise<string> {
+    const snapshot = compareMode === "image"
+      ? { mode: "image", originalImageUrl: original, modifiedImageUrl: modified } as const
+      : this.toTextSnapshot(original, modified);
+
+    return this.addSnapshotAsync(snapshot);
+  }
+
+  public static async addSnapshotAsync(snapshot: CompareHistorySnapshot): Promise<string> {
     const now = new Date().toISOString();
+    const targetKey = this.buildComparableKey(snapshot);
     const existingItems = await db.history
-      .filter(x => x.originalText === original && x.modifiedText === modified && (x.compareMode ?? "text") === compareMode)
+      .filter((item) => {
+        const mode = item.compareMode ?? "text";
+        if (mode !== snapshot.mode) {
+          return false;
+        }
+
+        if (item.snapshot) {
+          return this.buildComparableKey(item.snapshot) === targetKey;
+        }
+
+        if (snapshot.mode === "text") {
+          return item.originalText === snapshot.originalText && item.modifiedText === snapshot.modifiedText;
+        }
+
+        return false;
+      })
       .toArray();
 
     if (existingItems.length > 0) {
       const item = existingItems[0];
-      item.compareMode = compareMode;
+      const textPair = this.toLegacyTextPair(snapshot);
+      item.compareMode = snapshot.mode;
+      item.snapshot = snapshot;
+      item.originalText = textPair.originalText;
+      item.modifiedText = textPair.modifiedText;
       item.updatedAt = now;
       item.lastActionAt = now;
       item.lastActionType = HistoryActionType.Compare;
       item.lastActionDirection = null;
       await db.history.put(item);
       return item.id;
-    } else {
-      const newItem: DiffHistoryItem = {
+    }
+
+    return this.createSessionAsync(snapshot, HistoryActionType.Compare);
+  }
+
+  public static async appendStepAsync(
+    sessionId: string,
+    actionType: HistoryActionType,
+    direction: HistoryActionDirection | null,
+    beforeSnapshot: CompareHistorySnapshot,
+    afterSnapshot: CompareHistorySnapshot,
+    stepMeta: HistoryStepMeta = {}
+  ): Promise<void> {
+    const session = await db.history.get(sessionId);
+    if (!session) {
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const currentStepCount = session.stepCount ?? 0;
+    const currentCursor = session.stepCursor ?? currentStepCount;
+
+    const beforeTextPair = this.toLegacyTextPair(beforeSnapshot);
+    const afterTextPair = this.toLegacyTextPair(afterSnapshot);
+
+    const originalLinesAffected = stepMeta.originalLinesAffected
+      ?? (beforeSnapshot.mode === "text" ? this.getLineCount(beforeSnapshot.originalText) : 0);
+    const modifiedLinesAffected = stepMeta.modifiedLinesAffected
+      ?? (beforeSnapshot.mode === "text" ? this.getLineCount(beforeSnapshot.modifiedText) : 0);
+
+    await db.transaction("rw", db.history, db.historySteps, async () => {
+      if (currentCursor < currentStepCount) {
+        await db.historySteps
+          .where("sessionId")
+          .equals(sessionId)
+          .and((step) => step.sequenceNumber > currentCursor)
+          .delete();
+      }
+
+      const nextSequence = currentCursor + 1;
+
+      const step: HistoryStepItem = {
         id: crypto.randomUUID(),
-        compareMode,
-        originalText: original,
-        modifiedText: modified,
-        createdAt: now,
+        sessionId,
+        actionType,
+        direction,
+        beforeSnapshot,
+        afterSnapshot,
+        stepMeta,
+        originalLinesAffected,
+        modifiedLinesAffected,
+        beforeOriginalText: beforeTextPair.originalText,
+        beforeModifiedText: beforeTextPair.modifiedText,
+        afterOriginalText: afterTextPair.originalText,
+        afterModifiedText: afterTextPair.modifiedText,
+        blockId: stepMeta.blockId ?? null,
+        blockKind: stepMeta.blockKind ?? null,
+        sequenceNumber: nextSequence,
+        createdAt: now
+      };
+
+      await db.historySteps.add(step);
+      await db.history.update(sessionId, {
+        compareMode: afterSnapshot.mode,
+        snapshot: afterSnapshot,
+        originalText: afterTextPair.originalText,
+        modifiedText: afterTextPair.modifiedText,
         updatedAt: now,
         lastActionAt: now,
-        lastActionType: HistoryActionType.Compare,
-        lastActionDirection: null,
-        stepCount: 0,
-        stepCursor: 0,
-        isBookmarked: false
-      };
-      await db.history.add(newItem);
-      return newItem.id;
-    }
+        lastActionType: actionType,
+        lastActionDirection: direction,
+        stepCount: nextSequence,
+        stepCursor: nextSequence
+      });
+    });
   }
 
   public static async appendMergeStepAsync(
@@ -92,55 +229,19 @@ export class HistoryService {
     blockId: string,
     blockKind: string
   ): Promise<void> {
-    const session = await db.history.get(sessionId);
-    if (!session) {
-      return;
-    }
-
-    const now = new Date().toISOString();
-    const currentStepCount = session.stepCount ?? 0;
-    const currentCursor = session.stepCursor ?? currentStepCount;
-
-    await db.transaction("rw", db.history, db.historySteps, async () => {
-      if (currentCursor < currentStepCount) {
-        await db.historySteps
-          .where("sessionId")
-          .equals(sessionId)
-          .and((step) => step.sequenceNumber > currentCursor)
-          .delete();
-      }
-
-      const nextSequence = currentCursor + 1;
-
-      const step: HistoryStepItem = {
-        id: crypto.randomUUID(),
-        sessionId,
-        actionType: HistoryActionType.Merge,
-        direction,
+    return this.appendStepAsync(
+      sessionId,
+      HistoryActionType.Merge,
+      direction,
+      this.toTextSnapshot(beforeOriginalText, beforeModifiedText),
+      this.toTextSnapshot(afterOriginalText, afterModifiedText),
+      {
         originalLinesAffected,
         modifiedLinesAffected,
-        beforeOriginalText,
-        beforeModifiedText,
-        afterOriginalText,
-        afterModifiedText,
         blockId,
-        blockKind,
-        sequenceNumber: nextSequence,
-        createdAt: now
-      };
-
-      await db.historySteps.add(step);
-      await db.history.update(sessionId, {
-        originalText: afterOriginalText,
-        modifiedText: afterModifiedText,
-        updatedAt: now,
-        lastActionAt: now,
-        lastActionType: HistoryActionType.Merge,
-        lastActionDirection: direction,
-        stepCount: nextSequence,
-        stepCursor: nextSequence
-      });
-    });
+        blockKind
+      }
+    );
   }
 
   public static async appendSwapStepAsync(
@@ -150,71 +251,22 @@ export class HistoryService {
     afterOriginalText: string,
     afterModifiedText: string
   ): Promise<void> {
-    const session = await db.history.get(sessionId);
-    if (!session) {
-      return;
-    }
-
-    const now = new Date().toISOString();
-    const currentStepCount = session.stepCount ?? 0;
-    const currentCursor = session.stepCursor ?? currentStepCount;
-
-    await db.transaction("rw", db.history, db.historySteps, async () => {
-      if (currentCursor < currentStepCount) {
-        await db.historySteps
-          .where("sessionId")
-          .equals(sessionId)
-          .and((step) => step.sequenceNumber > currentCursor)
-          .delete();
-      }
-
-      const nextSequence = currentCursor + 1;
-
-      const step: HistoryStepItem = {
-        id: crypto.randomUUID(),
-        sessionId,
-        actionType: HistoryActionType.Swap,
-        direction: null,
+    return this.appendStepAsync(
+      sessionId,
+      HistoryActionType.Swap,
+      null,
+      this.toTextSnapshot(beforeOriginalText, beforeModifiedText),
+      this.toTextSnapshot(afterOriginalText, afterModifiedText),
+      {
         originalLinesAffected: this.getLineCount(beforeOriginalText),
         modifiedLinesAffected: this.getLineCount(beforeModifiedText),
-        beforeOriginalText,
-        beforeModifiedText,
-        afterOriginalText,
-        afterModifiedText,
         blockId: null,
-        blockKind: null,
-        sequenceNumber: nextSequence,
-        createdAt: now
-      };
-
-      await db.historySteps.add(step);
-      await db.history.update(sessionId, {
-        originalText: afterOriginalText,
-        modifiedText: afterModifiedText,
-        updatedAt: now,
-        lastActionAt: now,
-        lastActionType: HistoryActionType.Swap,
-        lastActionDirection: null,
-        stepCount: nextSequence,
-        stepCursor: nextSequence
-      });
-    });
+        blockKind: null
+      }
+    );
   }
 
-  private static getLineCount(text: string): number {
-    if (!text) {
-      return 0;
-    }
-
-    return text.split(/\r?\n/).length;
-  }
-
-  public static async undoMergeStepAsync(sessionId: string): Promise<{
-    originalText: string;
-    modifiedText: string;
-    stepCount: number;
-    stepCursor: number;
-  } | null> {
+  public static async undoStepAsync(sessionId: string): Promise<HistorySnapshotState | null> {
     const session = await db.history.get(sessionId);
     if (!session) {
       return null;
@@ -235,12 +287,16 @@ export class HistoryService {
       return null;
     }
 
+    const beforeSnapshot = step.beforeSnapshot ?? this.toTextSnapshot(step.beforeOriginalText, step.beforeModifiedText);
+    const beforeTextPair = this.toLegacyTextPair(beforeSnapshot);
     const now = new Date().toISOString();
     const nextCursor = stepCursor - 1;
 
     await db.history.update(sessionId, {
-      originalText: step.beforeOriginalText,
-      modifiedText: step.beforeModifiedText,
+      compareMode: beforeSnapshot.mode,
+      snapshot: beforeSnapshot,
+      originalText: beforeTextPair.originalText,
+      modifiedText: beforeTextPair.modifiedText,
       updatedAt: now,
       lastActionAt: now,
       lastActionType: HistoryActionType.Undo,
@@ -249,19 +305,13 @@ export class HistoryService {
     });
 
     return {
-      originalText: step.beforeOriginalText,
-      modifiedText: step.beforeModifiedText,
+      snapshot: beforeSnapshot,
       stepCount,
       stepCursor: nextCursor
     };
   }
 
-  public static async redoMergeStepAsync(sessionId: string): Promise<{
-    originalText: string;
-    modifiedText: string;
-    stepCount: number;
-    stepCursor: number;
-  } | null> {
+  public static async redoStepAsync(sessionId: string): Promise<HistorySnapshotState | null> {
     const session = await db.history.get(sessionId);
     if (!session) {
       return null;
@@ -283,10 +333,15 @@ export class HistoryService {
       return null;
     }
 
+    const afterSnapshot = step.afterSnapshot ?? this.toTextSnapshot(step.afterOriginalText, step.afterModifiedText);
+    const afterTextPair = this.toLegacyTextPair(afterSnapshot);
     const now = new Date().toISOString();
+
     await db.history.update(sessionId, {
-      originalText: step.afterOriginalText,
-      modifiedText: step.afterModifiedText,
+      compareMode: afterSnapshot.mode,
+      snapshot: afterSnapshot,
+      originalText: afterTextPair.originalText,
+      modifiedText: afterTextPair.modifiedText,
       updatedAt: now,
       lastActionAt: now,
       lastActionType: HistoryActionType.Redo,
@@ -295,10 +350,55 @@ export class HistoryService {
     });
 
     return {
-      originalText: step.afterOriginalText,
-      modifiedText: step.afterModifiedText,
+      snapshot: afterSnapshot,
       stepCount,
       stepCursor: targetSequence
+    };
+  }
+
+  private static getLineCount(text: string): number {
+    if (!text) {
+      return 0;
+    }
+
+    return text.split(/\r?\n/).length;
+  }
+
+  public static async undoMergeStepAsync(sessionId: string): Promise<{
+    originalText: string;
+    modifiedText: string;
+    stepCount: number;
+    stepCursor: number;
+  } | null> {
+    const result = await this.undoStepAsync(sessionId);
+    if (!result || result.snapshot.mode !== "text") {
+      return null;
+    }
+
+    return {
+      originalText: result.snapshot.originalText,
+      modifiedText: result.snapshot.modifiedText,
+      stepCount: result.stepCount,
+      stepCursor: result.stepCursor
+    };
+  }
+
+  public static async redoMergeStepAsync(sessionId: string): Promise<{
+    originalText: string;
+    modifiedText: string;
+    stepCount: number;
+    stepCursor: number;
+  } | null> {
+    const result = await this.redoStepAsync(sessionId);
+    if (!result || result.snapshot.mode !== "text") {
+      return null;
+    }
+
+    return {
+      originalText: result.snapshot.originalText,
+      modifiedText: result.snapshot.modifiedText,
+      stepCount: result.stepCount,
+      stepCursor: result.stepCursor
     };
   }
 

@@ -1,2 +1,2 @@
-export { TextView } from "./text/components/TextView";
-export { ImageView } from "./image/components/ImageView";
+export { TextView, useTextHistoryRestore } from "./text";
+export { ImageView } from "./image";

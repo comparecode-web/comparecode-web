@@ -4,7 +4,8 @@ import { useEffect, useCallback, useMemo } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useHistoryStore } from "@/store/useHistoryStore";
-import { useEditorStore } from "@/features/compare/text/store/useTextStore";
+import { useTextHistoryRestore } from "@/features/compare/text";
+import { useImageHistoryRestore } from "@/features/compare/image";
 import { useAppStore } from "@/store/useAppStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +15,8 @@ import { useLiveTimeTicker } from "@/hooks/useLiveTimeTicker";
 
 export function HistoryView() {
   const { items, loadHistory, deleteItem, deleteAll, toggleBookmark } = useHistoryStore();
-  const loadFromHistory = useEditorStore((state) => state.loadFromHistory);
+  const { restoreTextHistoryItem } = useTextHistoryRestore();
+  const { restoreImageHistoryItem } = useImageHistoryRestore();
   const navigate = useAppStore((state) => state.navigate);
   const settings = useSettingsStore((state) => state.settings);
   const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
@@ -27,15 +29,16 @@ export function HistoryView() {
   }, [loadHistory]);
 
   const handleRestore = useCallback((item: DiffHistoryItem) => {
-    const compareMode = item.compareMode ?? "text";
+    const compareMode = item.snapshot?.mode ?? item.compareMode ?? "text";
     if (compareMode === "image") {
+      restoreImageHistoryItem(item);
       navigate("image");
       return;
     }
 
-    loadFromHistory(item.originalText, item.modifiedText, settings, item.id);
+    restoreTextHistoryItem(item, settings);
     navigate("text");
-  }, [loadFromHistory, navigate, settings]);
+  }, [navigate, restoreImageHistoryItem, restoreTextHistoryItem, settings]);
 
   const handleDeleteAll = useCallback(async () => {
     if (window.confirm("You are about to delete the whole history database. Are you sure?")) {

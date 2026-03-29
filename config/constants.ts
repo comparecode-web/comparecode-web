@@ -4,7 +4,7 @@ export const STORAGE_KEYS = {
 
 export const DB_CONFIG = {
   NAME: "CompareCodeDatabase",
-  VERSION: 3
+  VERSION: 4
 };
 
 export const UI_CONSTANTS = {
