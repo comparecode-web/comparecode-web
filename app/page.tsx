@@ -1,8 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/Header";
-import { TextView } from "@/features/compare/text/components/TextView";
-import { ImageView } from "@/features/compare/image/components/ImageView";
+import { TextView, ImageView } from "@/features/compare";
 import { HistoryView } from "@/components/history/HistoryView";
 import { MainSettingsView } from "@/components/settings/MainSettingsView";
 import { useAppStore } from "@/store/useAppStore";
