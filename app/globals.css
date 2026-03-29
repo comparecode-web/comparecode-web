@@ -111,14 +111,23 @@ button:not(:disabled) {
 
 @media (max-width: 639px) {
   .custom-scrollbar::-webkit-scrollbar {
-    height: 4px;
-    width: 4px;
+    height: 6px;
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    border-width: 1px;
   }
 }
 
+.custom-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: var(--border-default) transparent;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
+  height: 14px;
+  width: 14px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -128,6 +137,8 @@ button:not(:disabled) {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: var(--border-default);
   border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -146,6 +157,8 @@ button:not(:disabled) {
 .hide-vertical-scrollbar::-webkit-scrollbar-thumb {
   background-color: var(--border-default);
   border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
 }
 
 .hide-vertical-scrollbar::-webkit-scrollbar-thumb:hover {
