@@ -15,7 +15,7 @@ import { MdRestartAlt } from "react-icons/md";
 
 export function OptionsView() {
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-2 p-2">
       <ComparisonSection />
       <AppearanceSection />
       <LayoutSection />
@@ -29,7 +29,7 @@ function ComparisonSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
         <button
@@ -62,7 +62,7 @@ function AppearanceSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
         <button
@@ -106,7 +106,7 @@ function LayoutSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
         <button
@@ -134,7 +134,7 @@ function MergeSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
         <button
@@ -174,7 +174,7 @@ function ActionSection() {
   };
 
   return (
-    <div className="flex flex-col gap-3 mt-4 border-t border-border-default pt-6">
+    <div className="mt-1 flex flex-col gap-1 pt-1">
       <button
         onClick={handleLoadTestData}
         className="w-full py-2 bg-accent-primary text-white hover:bg-accent-hover rounded text-sm font-semibold transition-all shadow-sm"
