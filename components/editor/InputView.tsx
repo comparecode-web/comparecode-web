@@ -1,15 +1,13 @@
 "use client";
 
-import { MdDescription, MdSearch, MdKeyboardArrowDown } from "react-icons/md";
+import { MdDescription, MdSearch } from "react-icons/md";
 import { useEditorStore } from "@/store/useEditorStore";
-import { useEditorUIStore } from "@/store/useEditorUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCompareActions } from "@/hooks/useCompareActions";
 import { EditorTextArea } from "./EditorTextArea";
 
 export function InputView() {
   const { leftText, rightText, setLeftText, setRightText } = useEditorStore();
-  const { toggleInputPanel } = useEditorUIStore();
   const settings = useSettingsStore((state) => state.settings);
   const { executeCompare } = useCompareActions();
 
@@ -30,15 +28,6 @@ export function InputView() {
             <span className="font-bold text-text-primary text-sm hidden sm:inline">Original Text</span>
             <span className="font-bold text-text-primary text-sm sm:hidden">Input Editor</span>
           </div>
-          <button
-            onClick={toggleInputPanel}
-            className="flex items-center gap-1 bg-accent-primary text-white hover:bg-accent-hover shadow-sm px-2 sm:px-3 py-1.5 rounded-md transition-colors"
-            title="Hide Input Editor"
-          >
-            <span className="text-xs font-bold tracking-wider hidden sm:inline">Hide Input Editor</span>
-            <span className="text-xs font-bold tracking-wider sm:hidden">Hide</span>
-            <MdKeyboardArrowDown className="text-lg" />
-          </button>
         </div>
         <div className="items-center gap-2 flex-1 hidden sm:flex">
           <MdDescription className="text-text-secondary text-lg" />

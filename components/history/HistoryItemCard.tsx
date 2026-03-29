@@ -18,6 +18,7 @@ interface HistoryItemCardProps {
 
 export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat, tickerNowMs, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
   const actionAt = item.lastActionAt ?? item.updatedAt ?? item.createdAt;
+  const createdAt = item.createdAt;
 
   const origLines = generatePreviewLines(item.originalText);
   const modLines = generatePreviewLines(item.modifiedText);
@@ -37,7 +38,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat,
     <div
       onClick={() => onRestore(item)}
       className={cn(
-        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 sm:p-4 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
+        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 pb-7 sm:p-4 sm:pb-8 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
         item.isBookmarked ? "border-accent-primary" : "border-border-default"
       )}
     >
@@ -48,6 +49,9 @@ export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat,
       <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 z-10">
         <div className="flex items-center justify-between sm:contents">
           <div className="min-w-36 flex flex-col gap-1">
+            <span className="truncate text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+              Last activity
+            </span>
             <span className="truncate text-xs font-bold text-accent-primary">
               {getRelativeTime(actionAt, tickerNowMs)}
             </span>
@@ -108,6 +112,10 @@ export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat,
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="pointer-events-none absolute bottom-2 left-3 z-10 text-[10px] text-text-secondary sm:bottom-2.5 sm:left-4">
+        Created: {formatAbsoluteDateTimeWithSettings(createdAt, dateFormat, timeFormat)}
       </div>
     </div>
   );

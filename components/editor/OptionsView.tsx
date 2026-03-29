@@ -9,12 +9,13 @@ import { UI_CONSTANTS } from "@/config/constants";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Slider } from "@/components/ui/Slider";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { AVAILABLE_FONTS } from "@/config/fonts";
-import { MdExpandMore, MdRestartAlt } from "react-icons/md";
+import { MdRestartAlt } from "react-icons/md";
 
 export function OptionsView() {
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex min-h-full flex-col gap-2 bg-hover-overlay p-2">
       <ComparisonSection />
       <AppearanceSection />
       <LayoutSection />
@@ -28,7 +29,7 @@ function ComparisonSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
         <button
@@ -61,7 +62,7 @@ function AppearanceSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
         <button
@@ -90,20 +91,12 @@ function AppearanceSection() {
       />
       <div className="flex flex-col gap-1 mt-1">
         <span className="text-sm font-medium text-text-primary">Font Family</span>
-        <div className="relative flex items-center w-full">
-          <select
-            value={settings.fontFamily}
-            onChange={(e) => updateSettings({ fontFamily: e.target.value })}
-            className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-1.5 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)"
-          >
-            {AVAILABLE_FONTS.map((font) => (
-              <option key={font.id} value={font.value}>
-                {font.name}
-              </option>
-            ))}
-          </select>
-          <MdExpandMore className="absolute right-2 text-xl text-text-secondary pointer-events-none" />
-        </div>
+        <SelectDropdown
+          value={settings.fontFamily}
+          onChange={(value) => updateSettings({ fontFamily: value })}
+          options={AVAILABLE_FONTS.map((font) => ({ value: font.value, label: font.name }))}
+          triggerClassName="py-1.5"
+        />
       </div>
     </div>
   );
@@ -113,7 +106,7 @@ function LayoutSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
         <button
@@ -141,7 +134,7 @@ function MergeSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
         <button
@@ -181,7 +174,7 @@ function ActionSection() {
   };
 
   return (
-    <div className="flex flex-col gap-3 mt-4 border-t border-border-default pt-6">
+    <div className="mt-1 flex flex-col gap-1 pt-1">
       <button
         onClick={handleLoadTestData}
         className="w-full py-2 bg-accent-primary text-white hover:bg-accent-hover rounded text-sm font-semibold transition-all shadow-sm"
