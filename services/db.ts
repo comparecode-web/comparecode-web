@@ -18,6 +18,7 @@ export class CompareCodeDatabase extends Dexie {
     }).upgrade(async (tx) => {
       await tx.table("history").toCollection().modify((item: DiffHistoryItem) => {
         const timestamp = item.createdAt ?? new Date().toISOString();
+        item.compareMode = item.compareMode ?? "text";
         item.updatedAt = item.updatedAt ?? timestamp;
         item.lastActionAt = item.lastActionAt ?? timestamp;
         item.lastActionType = item.lastActionType ?? HistoryActionType.Compare;

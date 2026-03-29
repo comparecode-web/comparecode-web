@@ -14,6 +14,7 @@ export enum HistoryActionDirection {
 
 export interface DiffHistoryItem {
   id: string;
+  compareMode?: "text" | "image";
   originalText: string;
   modifiedText: string;
   createdAt: string;

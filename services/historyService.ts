@@ -7,10 +7,11 @@ import {
 } from "@/types/history";
 
 export class HistoryService {
-  public static async createMergeSessionAsync(original: string, modified: string): Promise<string> {
+  public static async createMergeSessionAsync(original: string, modified: string, compareMode: "text" | "image" = "text"): Promise<string> {
     const now = new Date().toISOString();
     const newItem: DiffHistoryItem = {
       id: crypto.randomUUID(),
+      compareMode,
       originalText: original,
       modifiedText: modified,
       createdAt: now,
@@ -43,14 +44,15 @@ export class HistoryService {
     return { stepCount, stepCursor };
   }
 
-  public static async addAsync(original: string, modified: string): Promise<string> {
+  public static async addAsync(original: string, modified: string, compareMode: "text" | "image" = "text"): Promise<string> {
     const now = new Date().toISOString();
     const existingItems = await db.history
-      .filter(x => x.originalText === original && x.modifiedText === modified)
+      .filter(x => x.originalText === original && x.modifiedText === modified && (x.compareMode ?? "text") === compareMode)
       .toArray();
 
     if (existingItems.length > 0) {
       const item = existingItems[0];
+      item.compareMode = compareMode;
       item.updatedAt = now;
       item.lastActionAt = now;
       item.lastActionType = HistoryActionType.Compare;
@@ -60,6 +62,7 @@ export class HistoryService {
     } else {
       const newItem: DiffHistoryItem = {
         id: crypto.randomUUID(),
+        compareMode,
         originalText: original,
         modifiedText: modified,
         createdAt: now,

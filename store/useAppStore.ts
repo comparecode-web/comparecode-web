@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AppView = "editor" | "history" | "settings";
+export type AppView = "text" | "image" | "history" | "settings";
 
 interface AppState {
   currentView: AppView;
@@ -8,6 +8,6 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  currentView: "editor",
+  currentView: "text",
   navigate: (view: AppView) => set({ currentView: view })
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { MdDifference, MdCode, MdHistory, MdSettings } from "react-icons/md";
+import { MdDifference, MdCode, MdHistory, MdSettings, MdImage } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/uiHelpers";
@@ -10,7 +10,8 @@ export function Header() {
   const navigate = useAppStore((state) => state.navigate);
 
   const navItems = [
-    { view: "editor" as const, label: "Editor", icon: MdCode },
+    { view: "text" as const, label: "Text", icon: MdCode },
+    { view: "image" as const, label: "Image", icon: MdImage },
     { view: "history" as const, label: "History", icon: MdHistory },
     { view: "settings" as const, label: "Settings", icon: MdSettings }
   ];
