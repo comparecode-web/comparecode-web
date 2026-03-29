@@ -19,13 +19,14 @@ interface HistoryItemCardProps {
 export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat, tickerNowMs, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
   const actionAt = item.lastActionAt ?? item.updatedAt ?? item.createdAt;
   const createdAt = item.createdAt;
-  const isImageSnapshot = item.snapshot?.mode === "image";
+  const imageSnapshot = item.snapshot?.mode === "image" ? item.snapshot : null;
+  const isImageSnapshot = imageSnapshot !== null;
 
   const originalPreviewSource = isImageSnapshot
-    ? (item.snapshot.originalImageUrl || "[No original image]")
+    ? (imageSnapshot.originalImageUrl || "[No original image]")
     : item.originalText;
   const modifiedPreviewSource = isImageSnapshot
-    ? (item.snapshot.modifiedImageUrl || "[No modified image]")
+    ? (imageSnapshot.modifiedImageUrl || "[No modified image]")
     : item.modifiedText;
 
   const origLines = generatePreviewLines(originalPreviewSource);
