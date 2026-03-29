@@ -1,6 +1,6 @@
 "use client";
 
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdKeyboardArrowUp, MdTune, MdClose } from "react-icons/md";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdKeyboardArrowUp, MdKeyboardArrowDown, MdTune, MdBorderColor } from "react-icons/md";
 import { useEditorStore } from "@/store/useEditorStore";
 import { useEditorUIStore } from "@/store/useEditorUIStore";
 import { OptionsView } from "./OptionsView";
@@ -54,14 +54,6 @@ export function EditorView() {
                 <MdHistory className="text-xl" />
               </button>
             </div>
-            <button
-              onClick={() => setIsOptionsPanelOpen(false)}
-              className="flex items-center justify-center rounded p-1 text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors duration-(--duration-short)"
-              title="Close Options"
-            >
-              <MdKeyboardArrowLeft className="text-2xl hidden sm:block" />
-              <MdClose className="text-2xl sm:hidden" />
-            </button>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {optionsPanelTab === "options" ? <OptionsView /> : <MergeHistoryView />}
@@ -76,11 +68,31 @@ export function EditorView() {
         />
       )}
 
+      <div className="hidden sm:flex w-16 shrink-0 flex-col items-center gap-2 border-r border-border-default bg-bg-secondary px-1 py-2 z-20">
+        <button
+          onClick={() => setIsOptionsPanelOpen(!isOptionsPanelOpen)}
+          className="grid h-8 w-full grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm hover:bg-accent-hover transition-colors duration-(--duration-short)"
+          title={isOptionsPanelOpen ? "Close Options" : "Open Options"}
+        >
+          <MdTune className="text-xl shrink-0" />
+          {isOptionsPanelOpen ? <MdKeyboardArrowLeft className="text-2xl shrink-0" /> : <MdKeyboardArrowRight className="text-2xl shrink-0" />}
+        </button>
+
+        <button
+          onClick={toggleInputPanel}
+          className="grid h-8 w-full grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm hover:bg-accent-hover transition-colors duration-(--duration-short)"
+          title={isInputExpanded ? "Hide Input Editor" : "Show Input Editor"}
+        >
+          <MdBorderColor className="text-xl shrink-0" />
+          {isInputExpanded ? <MdKeyboardArrowDown className="text-2xl shrink-0" /> : <MdKeyboardArrowUp className="text-2xl shrink-0" />}
+        </button>
+      </div>
+
       <div className="flex flex-1 min-h-0 flex-col overflow-hidden relative z-0">
         {!isOptionsPanelOpen && (
           <button
             onClick={() => setIsOptionsPanelOpen(true)}
-            className="absolute left-0 top-6 z-30 flex h-12 w-6 items-center justify-center rounded-r-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+            className="absolute left-0 top-6 z-30 flex h-12 w-6 items-center justify-center rounded-r-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short) sm:hidden"
             title="Open Options"
           >
             <MdKeyboardArrowRight className="text-2xl" />
@@ -99,7 +111,7 @@ export function EditorView() {
         {!isInputExpanded && (
           <button
             onClick={toggleInputPanel}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 flex h-8 pl-3 pr-5 items-center justify-center gap-1 rounded-t-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short) text-sm font-semibold"
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 flex h-8 pl-3 pr-5 items-center justify-center gap-1 rounded-t-md bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short) text-sm font-semibold sm:hidden"
             title="Show Input"
           >
             <MdKeyboardArrowUp className="text-xl" />
