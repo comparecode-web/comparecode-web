@@ -5,7 +5,7 @@ import { MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
+import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { ViewMode } from "@/types/settings";
 import { ComparisonToolbar } from "./ComparisonToolbar";
 import { SplitView } from "./SplitView";
@@ -17,7 +17,7 @@ export function ComparisonView() {
   const { comparisonResult, leftText, rightText, selectBlock, scrollToBlock, scrollToTop, scrollToBottom } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
-  const { executeCompare } = useCompareActions();
+  const { executeCompare } = useTextCompareActions();
 
   const storeRefs = useRef({ leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock });
 

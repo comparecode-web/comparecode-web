@@ -5,9 +5,10 @@ import {
   HistoryActionType,
   HistoryStepItem
 } from "@/types/history";
+import type { CompareMode } from "@/features/compare/shared/types/compareMode";
 
 export class HistoryService {
-  public static async createMergeSessionAsync(original: string, modified: string, compareMode: "text" | "image" = "text"): Promise<string> {
+  public static async createMergeSessionAsync(original: string, modified: string, compareMode: CompareMode = "text"): Promise<string> {
     const now = new Date().toISOString();
     const newItem: DiffHistoryItem = {
       id: crypto.randomUUID(),
@@ -44,7 +45,7 @@ export class HistoryService {
     return { stepCount, stepCursor };
   }
 
-  public static async addAsync(original: string, modified: string, compareMode: "text" | "image" = "text"): Promise<string> {
+  public static async addAsync(original: string, modified: string, compareMode: CompareMode = "text"): Promise<string> {
     const now = new Date().toISOString();
     const existingItems = await db.history
       .filter(x => x.originalText === original && x.modifiedText === modified && (x.compareMode ?? "text") === compareMode)

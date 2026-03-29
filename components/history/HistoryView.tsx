@@ -27,6 +27,12 @@ export function HistoryView() {
   }, [loadHistory]);
 
   const handleRestore = useCallback((item: DiffHistoryItem) => {
+    const compareMode = item.compareMode ?? "text";
+    if (compareMode === "image") {
+      navigate("image");
+      return;
+    }
+
     loadFromHistory(item.originalText, item.modifiedText, settings, item.id);
     navigate("text");
   }, [loadFromHistory, navigate, settings]);

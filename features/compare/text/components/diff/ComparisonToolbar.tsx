@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { MdContentCopy, MdSwapHoriz, MdDelete, MdDescription, MdCheck } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
+import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { calculateStats } from "@/features/compare/text/utils/diffHelpers";
 import { Button } from "@/components/ui/Button";
 import { UI_CONSTANTS } from "@/config/constants";
@@ -12,7 +12,7 @@ import { UI_CONSTANTS } from "@/config/constants";
 export function ComparisonToolbar() {
   const { comparisonResult, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
-  const { executeClear, executeSwap } = useCompareActions();
+  const { executeClear, executeSwap } = useTextCompareActions();
 
   const [copiedSide, setCopiedSide] = useState<"left" | "right" | null>(null);
 

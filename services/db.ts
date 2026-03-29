@@ -12,6 +12,11 @@ export class CompareCodeDatabase extends Dexie {
       history: "id, createdAt, isBookmarked"
     });
 
+    this.version(2).stores({
+      history: "id, createdAt, updatedAt, isBookmarked, lastActionAt, lastActionType, stepCursor",
+      historySteps: "id, sessionId, [sessionId+sequenceNumber], createdAt, sequenceNumber, actionType, direction"
+    });
+
     this.version(DB_CONFIG.VERSION).stores({
       history: "id, createdAt, updatedAt, isBookmarked, lastActionAt, lastActionType, stepCursor",
       historySteps: "id, sessionId, [sessionId+sequenceNumber], createdAt, sequenceNumber, actionType, direction"

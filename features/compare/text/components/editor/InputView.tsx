@@ -3,13 +3,13 @@
 import { MdDescription, MdSearch } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
+import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { EditorTextArea } from "./EditorTextArea";
 
 export function InputView() {
   const { leftText, rightText, setLeftText, setRightText } = useEditorStore();
   const settings = useSettingsStore((state) => state.settings);
-  const { executeCompare } = useCompareActions();
+  const { executeCompare } = useTextCompareActions();
 
   const isCompareDisabled = !leftText?.trim() && !rightText?.trim();
 

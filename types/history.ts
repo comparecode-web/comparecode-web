@@ -1,3 +1,5 @@
+import type { CompareMode } from "@/features/compare/shared/types/compareMode";
+
 export enum HistoryActionType {
   Compare = "COMPARE",
   Merge = "MERGE",
@@ -14,7 +16,7 @@ export enum HistoryActionDirection {
 
 export interface DiffHistoryItem {
   id: string;
-  compareMode?: "text" | "image";
+  compareMode?: CompareMode;
   originalText: string;
   modifiedText: string;
   createdAt: string;

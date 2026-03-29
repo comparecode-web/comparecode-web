@@ -3,7 +3,7 @@
 import { PrecisionLevel, ViewMode } from "@/types/settings";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
-import { useCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
+import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { originalTestText, modifiedTestText } from "@/utils/testData";
 import { UI_CONSTANTS } from "@/config/constants";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -165,7 +165,7 @@ function MergeSection() {
 function ActionSection() {
   const { settings, resetToDefaults } = useSettingsStore();
   const { setLeftText, setRightText } = useEditorStore();
-  const { executeCompare } = useCompareActions();
+  const { executeCompare } = useTextCompareActions();
 
   const handleLoadTestData = () => {
     setLeftText(originalTestText);
