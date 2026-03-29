@@ -4,7 +4,7 @@ import { useEffect, useCallback, useMemo } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useHistoryStore } from "@/store/useHistoryStore";
-import { useEditorStore } from "@/store/useEditorStore";
+import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useAppStore } from "@/store/useAppStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { Button } from "@/components/ui/Button";
@@ -27,8 +27,14 @@ export function HistoryView() {
   }, [loadHistory]);
 
   const handleRestore = useCallback((item: DiffHistoryItem) => {
+    const compareMode = item.compareMode ?? "text";
+    if (compareMode === "image") {
+      navigate("image");
+      return;
+    }
+
     loadFromHistory(item.originalText, item.modifiedText, settings, item.id);
-    navigate("editor");
+    navigate("text");
   }, [loadFromHistory, navigate, settings]);
 
   const handleDeleteAll = useCallback(async () => {
