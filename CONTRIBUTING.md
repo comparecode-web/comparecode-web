@@ -31,6 +31,12 @@ git checkout -b fix/issue-description
 -   Write your code.
     
 -   Ensure your code follows the existing style and uses **TypeScript** properly.
+
+-   Follow module boundaries strictly:
+	- Text-related logic/UI changes belong in the Text module.
+	- Image-related logic/UI changes belong in the Image module.
+	- Cross-module reusable code belongs in Shared.
+	- Avoid coupling Text internals to Image internals (and vice versa).
     
 -   Run `npm run lint` to check for any formatting or linting issues.
     
