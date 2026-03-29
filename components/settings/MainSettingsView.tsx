@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MdSettings, MdExpandMore, MdRestartAlt } from "react-icons/md";
+import { useMemo } from "react";
+import { MdSettings, MdRestartAlt } from "react-icons/md";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { AVAILABLE_THEMES, getThemeHighlightDefaults } from "@/config/themes";
 import { getThemeDefaultsAsCustomColors } from "@/utils/highlightColors";
 import { TimeFormat } from "@/types/settings";
 import { Switch } from "@/components/ui/Switch";
 import { ColorInput } from "@/components/ui/ColorInput";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { formatDateOnlyWithSettings } from "@/utils/formatters";
 
 const DATE_SEPARATORS = ["."];
@@ -43,8 +44,6 @@ function normalizeColorForComparison(value: string): string {
 
 export function MainSettingsView() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
-  const [isDateFormatOpen, setIsDateFormatOpen] = useState(false);
-  const dateFormatDropdownRef = useRef<HTMLDivElement | null>(null);
   const themeHighlightDefaults = getThemeHighlightDefaults(settings.theme);
   const dateFormatOptions = useMemo(() => {
     const numericOrders = generatePermutations(NUMERIC_DATE_TOKENS);
@@ -70,34 +69,6 @@ export function MainSettingsView() {
       value: pattern,
       label: formatDateOnlyWithSettings(nowIso, pattern)
     }));
-  }, []);
-
-  const selectedDateFormatLabel = useMemo(() => {
-    const selected = dateFormatOptions.find((option) => option.value === settings.dateFormat);
-    return selected?.label ?? settings.dateFormat;
-  }, [dateFormatOptions, settings.dateFormat]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (dateFormatDropdownRef.current && !dateFormatDropdownRef.current.contains(target)) {
-        setIsDateFormatOpen(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsDateFormatOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
   }, []);
 
   const handleThemeChange = (themeId: string) => {
@@ -139,20 +110,12 @@ export function MainSettingsView() {
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
               <span className="text-sm sm:text-base font-medium text-text-primary">Theme</span>
-              <div className="relative flex items-center w-full sm:w-48">
-                <select
-                  value={settings.theme}
-                  onChange={(e) => handleThemeChange(e.target.value)}
-                  className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-2 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)"
-                >
-                  {AVAILABLE_THEMES.map((theme) => (
-                    <option key={theme.id} value={theme.id}>
-                      {theme.name}
-                    </option>
-                  ))}
-                </select>
-                <MdExpandMore className="absolute right-2 text-xl text-text-secondary pointer-events-none" />
-              </div>
+              <SelectDropdown
+                className="w-full sm:w-48"
+                value={settings.theme}
+                onChange={handleThemeChange}
+                options={AVAILABLE_THEMES.map((theme) => ({ value: theme.id, label: theme.name }))}
+              />
             </div>
 
             <div className="mt-2">
@@ -267,52 +230,25 @@ export function MainSettingsView() {
 
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
               <span className="text-sm sm:text-base font-medium text-text-primary">Date Format</span>
-              <div ref={dateFormatDropdownRef} className="relative w-full sm:w-48">
-                <button
-                  type="button"
-                  onClick={() => setIsDateFormatOpen((previous) => !previous)}
-                  className="w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-2 text-sm text-left outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)"
-                >
-                  {selectedDateFormatLabel}
-                </button>
-                <MdExpandMore className="absolute right-2 top-1/2 -translate-y-1/2 text-xl text-text-secondary pointer-events-none" />
-                {isDateFormatOpen && (
-                  <div className="absolute z-20 mt-1 w-full rounded-md border border-border-default bg-bg-secondary shadow-lg max-h-56 overflow-y-auto custom-scrollbar">
-                    {dateFormatOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          updateSettings({ dateFormat: option.value });
-                          setIsDateFormatOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                          option.value === settings.dateFormat
-                            ? "bg-hover-overlay text-text-primary"
-                            : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <SelectDropdown
+                className="w-full sm:w-48"
+                value={settings.dateFormat}
+                onChange={(value) => updateSettings({ dateFormat: value })}
+                options={dateFormatOptions}
+              />
             </div>
 
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
               <span className="text-sm sm:text-base font-medium text-text-primary">Time Format</span>
-              <div className="relative flex items-center w-full sm:w-48">
-                <select
-                  value={settings.timeFormat}
-                  onChange={(e) => updateSettings({ timeFormat: e.target.value as TimeFormat })}
-                  className="appearance-none w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-2 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)"
-                >
-                  <option value={TimeFormat.TwentyFourHour}>24-hour (21:09)</option>
-                  <option value={TimeFormat.TwelveHour}>12-hour (9:09 PM)</option>
-                </select>
-                <MdExpandMore className="absolute right-2 text-xl text-text-secondary pointer-events-none" />
-              </div>
+              <SelectDropdown
+                className="w-full sm:w-48"
+                value={settings.timeFormat}
+                onChange={(value) => updateSettings({ timeFormat: value as TimeFormat })}
+                options={[
+                  { value: TimeFormat.TwentyFourHour, label: "24-hour (21:09)" },
+                  { value: TimeFormat.TwelveHour, label: "12-hour (9:09 PM)" }
+                ]}
+              />
             </div>
           </div>
         </div>
