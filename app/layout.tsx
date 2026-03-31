@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { GlobalTooltip } from "@/components/layout/GlobalTooltip";
 
 const THEME_INIT_SCRIPT = `
   (function () {
@@ -59,6 +60,7 @@ export default function RootLayout({
         <SettingsProvider>
           <ThemeProvider>
             {children}
+            <GlobalTooltip />
           </ThemeProvider>
         </SettingsProvider>
       </body>

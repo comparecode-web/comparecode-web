@@ -1,3 +1,6 @@
+import type { CompareMode } from "@/features/compare/shared/types/compareMode";
+import type { CompareHistorySnapshot, HistoryStepMeta } from "@/features/compare/shared/types/historySnapshot";
+
 export enum HistoryActionType {
   Compare = "COMPARE",
   Merge = "MERGE",
@@ -14,6 +17,8 @@ export enum HistoryActionDirection {
 
 export interface DiffHistoryItem {
   id: string;
+  compareMode?: CompareMode;
+  snapshot?: CompareHistorySnapshot;
   originalText: string;
   modifiedText: string;
   createdAt: string;
@@ -31,6 +36,9 @@ export interface HistoryStepItem {
   sessionId: string;
   actionType: HistoryActionType;
   direction: HistoryActionDirection | null;
+  beforeSnapshot?: CompareHistorySnapshot;
+  afterSnapshot?: CompareHistorySnapshot;
+  stepMeta?: HistoryStepMeta;
   originalLinesAffected: number;
   modifiedLinesAffected: number;
   beforeOriginalText: string;
