@@ -220,3 +220,33 @@ button:not(:disabled) {
   border: none;
   cursor: pointer;
 }
+
+.cc-global-tooltip {
+  position: fixed;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  user-select: none;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  animation: cc-tooltip-fade-in var(--duration-short) ease forwards;
+}
+
+@keyframes cc-tooltip-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

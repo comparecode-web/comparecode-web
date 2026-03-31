@@ -6,12 +6,23 @@ import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { originalTestText, modifiedTestText } from "@/utils/testData";
 import { UI_CONSTANTS } from "@/config/constants";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { defaultSettings } from "@/config/defaults";
+import { Switch } from "@/components/ui/Switch";
 import { Slider } from "@/components/ui/Slider";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { AVAILABLE_FONTS } from "@/config/fonts";
+import { cn } from "@/utils/uiHelpers";
 import { MdRestartAlt } from "react-icons/md";
+
+function getSectionResetButtonClass(isDirty: boolean): string {
+  return cn(
+    "transition-colors p-1 rounded border",
+    isDirty
+      ? "border-accent-primary/60 bg-accent-primary/10 text-accent-primary hover:border-accent-primary hover:text-accent-hover"
+      : "border-transparent text-text-secondary hover:border-border-default hover:bg-hover-overlay hover:text-accent-primary"
+  );
+}
 
 export function OptionsView() {
   return (
@@ -28,6 +39,9 @@ export function OptionsView() {
 
 function ComparisonSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+  const isSectionDirty =
+    settings.ignoreWhitespace !== defaultSettings.ignoreWhitespace ||
+    settings.precision !== defaultSettings.precision;
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
@@ -35,13 +49,13 @@ function ComparisonSection() {
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
         <button
           onClick={() => resetSectionToDefaults(["ignoreWhitespace", "precision"])}
-          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.ignoreWhitespace}
         onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
         label="Ignore Whitespace"
@@ -61,6 +75,10 @@ function ComparisonSection() {
 
 function AppearanceSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+  const isSectionDirty =
+    settings.isWordWrapEnabled !== defaultSettings.isWordWrapEnabled ||
+    settings.fontSize !== defaultSettings.fontSize ||
+    settings.fontFamily !== defaultSettings.fontFamily;
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
@@ -68,13 +86,13 @@ function AppearanceSection() {
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
         <button
           onClick={() => resetSectionToDefaults(["isWordWrapEnabled", "fontSize", "fontFamily"])}
-          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.isWordWrapEnabled}
         onChange={(e) => updateSettings({ isWordWrapEnabled: e.target.checked })}
         label="Word Wrap"
@@ -105,6 +123,7 @@ function AppearanceSection() {
 
 function LayoutSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+  const isSectionDirty = settings.viewMode !== defaultSettings.viewMode;
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
@@ -112,7 +131,7 @@ function LayoutSection() {
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
         <button
           onClick={() => resetSectionToDefaults(["viewMode"])}
-          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
           <MdRestartAlt className="text-lg" />
@@ -133,6 +152,7 @@ function LayoutSection() {
 
 function MergeSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+  const isSectionDirty = settings.isContinuousMergeEnabled !== defaultSettings.isContinuousMergeEnabled;
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
@@ -140,13 +160,13 @@ function MergeSection() {
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
         <button
           onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled"])}
-          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.isContinuousMergeEnabled}
         onChange={(e) => updateSettings({ isContinuousMergeEnabled: e.target.checked })}
         label="Continuous merge"
@@ -159,6 +179,9 @@ function MergeSection() {
 
 function ButtonVisibilitySection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+  const isSectionDirty =
+    settings.isJumpButtonsVisible !== defaultSettings.isJumpButtonsVisible ||
+    settings.isMergeJumpButtonsVisible !== defaultSettings.isMergeJumpButtonsVisible;
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
@@ -166,20 +189,20 @@ function ButtonVisibilitySection() {
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Button visibility</h3>
         <button
           onClick={() => resetSectionToDefaults(["isJumpButtonsVisible", "isMergeJumpButtonsVisible"])}
-          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.isJumpButtonsVisible}
         onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
         label="Jump to top/bottom"
         title="Shows floating jump buttons in the diff view so you can quickly jump to the top and bottom."
         containerClassName="mt-1"
       />
-      <Checkbox
+      <Switch
         checked={settings.isMergeJumpButtonsVisible}
         onChange={(e) => updateSettings({ isMergeJumpButtonsVisible: e.target.checked })}
         label="Jump to next/previous"
