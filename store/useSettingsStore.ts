@@ -11,12 +11,8 @@ interface SettingsState {
   resetSectionToDefaults: (keys: Array<keyof AppSettings>) => void;
 }
 
-function getInitialSettings(): AppSettings {
-  return SettingsService.loadSettings();
-}
-
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  settings: getInitialSettings(),
+  settings: defaultSettings,
   loadSettings: () => {
     const loaded = SettingsService.loadSettings();
     set({ settings: loaded });

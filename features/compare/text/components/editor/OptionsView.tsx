@@ -20,6 +20,7 @@ export function OptionsView() {
       <AppearanceSection />
       <LayoutSection />
       <MergeSection />
+      <ButtonVisibilitySection />
       <ActionSection />
     </div>
   );
@@ -138,7 +139,7 @@ function MergeSection() {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
         <button
-          onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled", "isJumpButtonsVisible"])}
+          onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled"])}
           className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
           title="Restore section defaults"
         >
@@ -152,11 +153,37 @@ function MergeSection() {
         title="If enabled, merging will automatically jump to the next merge block."
         containerClassName="mt-1"
       />
+    </div>
+  );
+}
+
+function ButtonVisibilitySection() {
+  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Button visibility</h3>
+        <button
+          onClick={() => resetSectionToDefaults(["isJumpButtonsVisible", "isMergeJumpButtonsVisible"])}
+          className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+          title="Restore section defaults"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
+      </div>
       <Checkbox
         checked={settings.isJumpButtonsVisible}
         onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
-        label="Show FABs"
+        label="Jump to top/bottom"
         title="Shows floating jump buttons in the diff view so you can quickly jump to the top and bottom."
+        containerClassName="mt-1"
+      />
+      <Checkbox
+        checked={settings.isMergeJumpButtonsVisible}
+        onChange={(e) => updateSettings({ isMergeJumpButtonsVisible: e.target.checked })}
+        label="Jump to next/previous"
+        title="Shows floating merge jump buttons in the top-right corner so you can quickly jump to previous or next merge block."
       />
     </div>
   );
