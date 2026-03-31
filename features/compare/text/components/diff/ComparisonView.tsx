@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
+import { MdKeyboardArrowDown, MdKeyboardArrowUp, MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -14,7 +14,17 @@ import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
 
 export function ComparisonView() {
-  const { comparisonResult, leftText, rightText, selectBlock, scrollToBlock, scrollToTop, scrollToBottom } = useEditorStore();
+  const {
+    comparisonResult,
+    leftText,
+    rightText,
+    selectBlock,
+    scrollToBlock,
+    scrollToTop,
+    scrollToBottom,
+    jumpToNextBlock,
+    jumpToPreviousBlock
+  } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
   const { executeCompare } = useTextCompareActions();
@@ -91,6 +101,25 @@ export function ComparisonView() {
                 title="Jump to bottom"
               >
                 <MdKeyboardDoubleArrowDown className="text-2xl" />
+              </button>
+            </div>
+          )}
+
+          {hasResult && settings.isMergeJumpButtonsVisible && (
+            <div className="absolute top-4 right-4 sm:right-16 z-30 flex flex-col items-center gap-2">
+              <button
+                onClick={jumpToPreviousBlock}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                title="Jump to previous difference"
+              >
+                <MdKeyboardArrowUp className="text-2xl" />
+              </button>
+              <button
+                onClick={jumpToNextBlock}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                title="Jump to next difference"
+              >
+                <MdKeyboardArrowDown className="text-2xl" />
               </button>
             </div>
           )}

@@ -37,4 +37,5 @@ export interface AppSettings {
   timeFormat: TimeFormat;
   isContinuousMergeEnabled: boolean;
   isJumpButtonsVisible: boolean;
+  isMergeJumpButtonsVisible: boolean;
 }

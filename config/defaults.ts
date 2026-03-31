@@ -16,5 +16,6 @@ export const defaultSettings: AppSettings = {
   dateFormat: "MMMM d",
   timeFormat: TimeFormat.TwentyFourHour,
   isContinuousMergeEnabled: true,
-  isJumpButtonsVisible: true
+  isJumpButtonsVisible: true,
+  isMergeJumpButtonsVisible: false
 };
