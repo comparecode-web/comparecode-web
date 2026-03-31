@@ -6,7 +6,7 @@ import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { originalTestText, modifiedTestText } from "@/utils/testData";
 import { UI_CONSTANTS } from "@/config/constants";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { Switch } from "@/components/ui/Switch";
 import { Slider } from "@/components/ui/Slider";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
@@ -41,7 +41,7 @@ function ComparisonSection() {
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.ignoreWhitespace}
         onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
         label="Ignore Whitespace"
@@ -74,7 +74,7 @@ function AppearanceSection() {
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.isWordWrapEnabled}
         onChange={(e) => updateSettings({ isWordWrapEnabled: e.target.checked })}
         label="Word Wrap"
@@ -146,7 +146,7 @@ function MergeSection() {
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.isContinuousMergeEnabled}
         onChange={(e) => updateSettings({ isContinuousMergeEnabled: e.target.checked })}
         label="Continuous merge"
@@ -172,14 +172,14 @@ function ButtonVisibilitySection() {
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <Checkbox
+      <Switch
         checked={settings.isJumpButtonsVisible}
         onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
         label="Jump to top/bottom"
         title="Shows floating jump buttons in the diff view so you can quickly jump to the top and bottom."
         containerClassName="mt-1"
       />
-      <Checkbox
+      <Switch
         checked={settings.isMergeJumpButtonsVisible}
         onChange={(e) => updateSettings({ isMergeJumpButtonsVisible: e.target.checked })}
         label="Jump to next/previous"
