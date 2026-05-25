@@ -4,6 +4,7 @@ import "./globals.css";
 import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { GlobalTooltip } from "@/components/layout/GlobalTooltip";
+import { ToastViewport } from "@/components/layout/ToastViewport";
 
 const THEME_INIT_SCRIPT = `
   (function () {
@@ -42,6 +43,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CompareCode",
   description: "A fast and robust code comparison tool",
+  icons: {
+    icon: "/brand/comparecode-logo.png",
+    shortcut: "/brand/comparecode-logo.png",
+    apple: "/brand/comparecode-logo.png"
+  }
 };
 
 export default function RootLayout({
@@ -61,6 +67,7 @@ export default function RootLayout({
           <ThemeProvider>
             {children}
             <GlobalTooltip />
+            <ToastViewport />
           </ThemeProvider>
         </SettingsProvider>
       </body>

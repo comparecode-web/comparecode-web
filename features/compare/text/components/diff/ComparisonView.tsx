@@ -7,11 +7,23 @@ import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { ViewMode } from "@/types/settings";
+import { MergeDirection } from "@/types/ui";
 import { ComparisonToolbar } from "./ComparisonToolbar";
 import { SplitView } from "./SplitView";
 import { UnifiedView } from "./UnifiedView";
 import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
+import { useToastStore } from "@/store/useToastStore";
+import type { PushToastParams } from "@/store/useToastStore";
+import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
+
+function isMacPlatform(): boolean {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  return /Mac|iPhone|iPod|iPad/i.test(navigator.platform);
+}
 
 export function ComparisonView() {
   const {
@@ -23,16 +35,49 @@ export function ComparisonView() {
     scrollToTop,
     scrollToBottom,
     jumpToNextBlock,
-    jumpToPreviousBlock
+    jumpToPreviousBlock,
+    mergeBlock,
+    undoMergeStep,
+    redoMergeStep
   } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
   const { executeCompare } = useTextCompareActions();
+  const pushToast = useToastStore((state): ((toast: PushToastParams) => void) => state.pushToast);
 
-  const storeRefs = useRef({ leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock });
+  const storeRefs = useRef({
+    leftText,
+    rightText,
+    executeCompare,
+    settings,
+    selectBlock,
+    scrollToBlock,
+    comparisonResult,
+    jumpToNextBlock,
+    jumpToPreviousBlock,
+    mergeBlock,
+    undoMergeStep,
+    redoMergeStep,
+    pushToast
+  });
+  const historyShortcutInFlight = useRef(false);
 
   useEffect(() => {
-    storeRefs.current = { leftText, rightText, executeCompare, settings, selectBlock, scrollToBlock };
+    storeRefs.current = {
+      leftText,
+      rightText,
+      executeCompare,
+      settings,
+      selectBlock,
+      scrollToBlock,
+      comparisonResult,
+      jumpToNextBlock,
+      jumpToPreviousBlock,
+      mergeBlock,
+      undoMergeStep,
+      redoMergeStep,
+      pushToast
+    };
   });
 
   useEffect(() => {
@@ -44,6 +89,113 @@ export function ComparisonView() {
   useEffect(() => {
     storeRefs.current.selectBlock(null);
   }, [settings.ignoreWhitespace]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const refs = storeRefs.current;
+      const editableTarget = isEditableTarget(event.target);
+      const key = event.key;
+      const isModifierPressed = isMacPlatform() ? event.metaKey : event.ctrlKey;
+      const isUndoShortcut = !event.altKey
+        && !event.shiftKey
+        && isModifierPressed
+        && (key === "z" || key === "Z");
+      const isRedoShortcut = !event.altKey
+        && isModifierPressed
+        && ((key === "y" || key === "Y") || (event.shiftKey && (key === "z" || key === "Z")));
+
+      if (isUndoShortcut || isRedoShortcut) {
+        if (editableTarget) {
+          return;
+        }
+
+        event.preventDefault();
+        if (historyShortcutInFlight.current) {
+          return;
+        }
+
+        historyShortcutInFlight.current = true;
+        const shouldUndo = isUndoShortcut;
+
+        void (async () => {
+          try {
+            const result = shouldUndo
+              ? await refs.undoMergeStep(refs.settings)
+              : await refs.redoMergeStep(refs.settings);
+
+            if (result === "applied") {
+              refs.pushToast({
+                message: shouldUndo ? "Undo applied" : "Redo applied",
+                tone: "success"
+              });
+              return;
+            }
+
+            refs.pushToast({
+              message: shouldUndo ? "Nothing to undo" : "Nothing to redo",
+              tone: "info",
+              dedupeKey: shouldUndo ? "nothing-to-undo" : "nothing-to-redo"
+            });
+          } finally {
+            historyShortcutInFlight.current = false;
+          }
+        })();
+
+        return;
+      }
+
+      if (editableTarget || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        return;
+      }
+
+      const result = refs.comparisonResult;
+      if (!result || result.blocks.length === 0) {
+        return;
+      }
+
+      if (key === "ArrowUp") {
+        event.preventDefault();
+        refs.jumpToPreviousBlock();
+        return;
+      }
+
+      if (key === "ArrowDown") {
+        event.preventDefault();
+        refs.jumpToNextBlock();
+        return;
+      }
+
+      const selectedBlock = result.blocks.find((block) => block.isSelected);
+      if (!selectedBlock) {
+        if (key === "Escape") {
+          event.preventDefault();
+        }
+        return;
+      }
+
+      if (key === "Escape") {
+        event.preventDefault();
+        refs.selectBlock(null);
+        return;
+      }
+
+      if (key === "ArrowRight") {
+        event.preventDefault();
+        refs.mergeBlock(selectedBlock, MergeDirection.LeftToRight, refs.settings);
+        return;
+      }
+
+      if (key === "ArrowLeft") {
+        event.preventDefault();
+        refs.mergeBlock(selectedBlock, MergeDirection.RightToLeft, refs.settings);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const handleSegmentClick = (blockId: string) => {
     selectBlock(blockId);

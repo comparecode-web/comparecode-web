@@ -26,6 +26,8 @@ interface EditorState {
   compare: (settings: CompareSettings) => void;
   selectBlock: (blockId: string | null) => void;
   mergeBlock: (block: ChangeBlock, direction: MergeDirection, settings: CompareSettings) => void;
+  undoMergeStep: (settings: CompareSettings) => Promise<"applied" | "not-available" | "no-session">;
+  redoMergeStep: (settings: CompareSettings) => Promise<"applied" | "not-available" | "no-session">;
   loadFromHistory: (left: string, right: string, settings: CompareSettings, sessionId?: string | null) => void;
   jumpToNextBlock: () => void;
   jumpToPreviousBlock: () => void;
@@ -34,7 +36,48 @@ interface EditorState {
   scrollToBottom: () => void;
 }
 
-export const useEditorStore = create<EditorState>((set, get) => ({
+export const useEditorStore = create<EditorState>((set, get) => {
+  let pendingHistorySessionPromise: Promise<string> | null = null;
+  let pendingHistorySessionVersion = 0;
+
+  const invalidatePendingHistorySession = () => {
+    pendingHistorySessionVersion += 1;
+    pendingHistorySessionPromise = null;
+  };
+
+  const resolveHistorySessionId = async (beforeLeft: string, beforeRight: string): Promise<string> => {
+    const existingSessionId = get().historySessionId;
+    if (existingSessionId) {
+      return existingSessionId;
+    }
+
+    if (pendingHistorySessionPromise) {
+      return pendingHistorySessionPromise;
+    }
+
+    const requestVersion = pendingHistorySessionVersion;
+    const sessionPromise = HistoryService.createMergeSessionAsync(beforeLeft, beforeRight)
+      .then((sessionId) => {
+        const currentSessionId = get().historySessionId;
+        if (requestVersion === pendingHistorySessionVersion && !currentSessionId) {
+          set({ historySessionId: sessionId });
+          return sessionId;
+        }
+
+        return currentSessionId ?? sessionId;
+      })
+      .finally(() => {
+        if (pendingHistorySessionPromise === sessionPromise) {
+          pendingHistorySessionPromise = null;
+        }
+      });
+
+    pendingHistorySessionPromise = sessionPromise;
+
+    return pendingHistorySessionPromise;
+  };
+
+  return ({
   leftText: "",
   rightText: "",
   historySessionId: null,
@@ -43,7 +86,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   totalSelectableBlocks: 0,
   currentBlockIndex: 0,
 
-  setHistorySessionId: (sessionId: string | null) => set({ historySessionId: sessionId }),
+  setHistorySessionId: (sessionId: string | null) => {
+    invalidatePendingHistorySession();
+    set({ historySessionId: sessionId });
+  },
   bumpHistoryRefreshKey: () => set((state) => ({ historyRefreshKey: state.historyRefreshKey + 1 })),
 
   setLeftText: (text: string) => set({ leftText: text }),
@@ -56,6 +102,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   clearContent: () => {
+    invalidatePendingHistorySession();
     set({
       leftText: "",
       rightText: "",
@@ -115,11 +162,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ leftText: newLeft, rightText: newRight });
 
     const persistMergeStep = async (): Promise<void> => {
-      let sessionId = historySessionId;
-      if (!sessionId) {
-        sessionId = await HistoryService.createMergeSessionAsync(beforeLeft, beforeRight);
-        set({ historySessionId: sessionId });
-      }
+      const sessionId = historySessionId ?? await resolveHistorySessionId(beforeLeft, beforeRight);
 
       const stepDirection = direction === MergeDirection.LeftToRight
         ? HistoryActionDirection.LeftToRight
@@ -167,7 +210,52 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
+  undoMergeStep: async (settings: CompareSettings) => {
+    let { historySessionId } = get();
+    if (!historySessionId && pendingHistorySessionPromise) {
+      historySessionId = await pendingHistorySessionPromise;
+    }
+
+    if (!historySessionId) {
+      return "no-session";
+    }
+
+    const snapshot = await HistoryService.undoMergeStepAsync(historySessionId);
+    if (!snapshot) {
+      return "not-available";
+    }
+
+    set({ leftText: snapshot.originalText, rightText: snapshot.modifiedText });
+    get().compare(settings);
+    get().selectBlock(null);
+    get().bumpHistoryRefreshKey();
+    return "applied";
+  },
+
+  redoMergeStep: async (settings: CompareSettings) => {
+    let { historySessionId } = get();
+    if (!historySessionId && pendingHistorySessionPromise) {
+      historySessionId = await pendingHistorySessionPromise;
+    }
+
+    if (!historySessionId) {
+      return "no-session";
+    }
+
+    const snapshot = await HistoryService.redoMergeStepAsync(historySessionId);
+    if (!snapshot) {
+      return "not-available";
+    }
+
+    set({ leftText: snapshot.originalText, rightText: snapshot.modifiedText });
+    get().compare(settings);
+    get().selectBlock(null);
+    get().bumpHistoryRefreshKey();
+    return "applied";
+  },
+
   loadFromHistory: (left: string, right: string, settings: CompareSettings, sessionId: string | null = null) => {
+    invalidatePendingHistorySession();
     set({ leftText: left, rightText: right, historySessionId: sessionId });
     get().compare(settings);
   },
@@ -256,7 +344,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   scrollToBottom: () => {
     scrollToBottomInDOM();
   }
-}));
+  });
+});
 
 export const useTextStore = useEditorStore;
 

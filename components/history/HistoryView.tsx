@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useHistoryStore } from "@/store/useHistoryStore";
@@ -21,12 +21,22 @@ export function HistoryView() {
   const settings = useSettingsStore((state) => state.settings);
   const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
   const tickerNowMs = useLiveTimeTicker(items.map((item) => item.lastActionAt ?? item.updatedAt ?? item.createdAt));
+  const [movingItemId, setMovingItemId] = useState<string | null>(null);
+  const movingResetTimerRef = useRef<number | null>(null);
 
   const bookmarkedCount = useMemo(() => items.filter((i) => i.isBookmarked).length, [items]);
 
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
+
+  useEffect(() => {
+    return () => {
+      if (movingResetTimerRef.current !== null) {
+        window.clearTimeout(movingResetTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleRestore = useCallback((item: DiffHistoryItem) => {
     const compareMode = item.snapshot?.mode ?? item.compareMode ?? "text";
@@ -55,7 +65,21 @@ export function HistoryView() {
 
   const handleToggleBookmark = useCallback(async (e: React.MouseEvent, id: string, currentStatus: boolean) => {
     e.stopPropagation();
-    await toggleBookmark(id, currentStatus);
+    setMovingItemId(id);
+
+    if (movingResetTimerRef.current !== null) {
+      window.clearTimeout(movingResetTimerRef.current);
+      movingResetTimerRef.current = null;
+    }
+
+    try {
+      await toggleBookmark(id, currentStatus);
+    } finally {
+      movingResetTimerRef.current = window.setTimeout(() => {
+        setMovingItemId((current) => (current === id ? null : current));
+        movingResetTimerRef.current = null;
+      }, 400);
+    }
   }, [toggleBookmark]);
 
   return (
@@ -111,6 +135,7 @@ export function HistoryView() {
               <HistoryItemCard
                 key={item.id}
                 item={item}
+                isTransitioning={movingItemId === item.id}
                 fontFamily={settings.fontFamily}
                 dateFormat={settings.dateFormat}
                 timeFormat={settings.timeFormat}
