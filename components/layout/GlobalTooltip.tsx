@@ -146,16 +146,6 @@ export function GlobalTooltip() {
       hideTooltip();
     }
 
-    function handlePointerDown() {
-      hideTooltip();
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        hideTooltip();
-      }
-    }
-
     function updateTooltipPosition() {
       setActiveTooltip((current) => {
         if (!current || !current.target.isConnected) {
@@ -173,8 +163,6 @@ export function GlobalTooltip() {
     document.addEventListener("mouseout", handleMouseOut, true);
     document.addEventListener("focusin", handleFocusIn, true);
     document.addEventListener("focusout", handleFocusOut, true);
-    document.addEventListener("pointerdown", handlePointerDown, true);
-    document.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("scroll", updateTooltipPosition, true);
     window.addEventListener("resize", updateTooltipPosition);
 
@@ -183,8 +171,6 @@ export function GlobalTooltip() {
       document.removeEventListener("mouseout", handleMouseOut, true);
       document.removeEventListener("focusin", handleFocusIn, true);
       document.removeEventListener("focusout", handleFocusOut, true);
-      document.removeEventListener("pointerdown", handlePointerDown, true);
-      document.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("scroll", updateTooltipPosition, true);
       window.removeEventListener("resize", updateTooltipPosition);
     };
