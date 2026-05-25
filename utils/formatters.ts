@@ -57,7 +57,7 @@ export function getRelativeTime(dateString: string, nowMs?: number): string {
   }
 
   const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths < 12) {
+  if (diffDays < 365) {
     return formatRelativeUnit(diffMonths, "month", "months");
   }
 

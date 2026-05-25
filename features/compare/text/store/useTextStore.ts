@@ -38,6 +38,12 @@ interface EditorState {
 
 export const useEditorStore = create<EditorState>((set, get) => {
   let pendingHistorySessionPromise: Promise<string> | null = null;
+  let pendingHistorySessionVersion = 0;
+
+  const invalidatePendingHistorySession = () => {
+    pendingHistorySessionVersion += 1;
+    pendingHistorySessionPromise = null;
+  };
 
   const resolveHistorySessionId = async (beforeLeft: string, beforeRight: string): Promise<string> => {
     const existingSessionId = get().historySessionId;
@@ -49,14 +55,24 @@ export const useEditorStore = create<EditorState>((set, get) => {
       return pendingHistorySessionPromise;
     }
 
-    pendingHistorySessionPromise = HistoryService.createMergeSessionAsync(beforeLeft, beforeRight)
+    const requestVersion = pendingHistorySessionVersion;
+    const sessionPromise = HistoryService.createMergeSessionAsync(beforeLeft, beforeRight)
       .then((sessionId) => {
-        set({ historySessionId: sessionId });
-        return sessionId;
+        const currentSessionId = get().historySessionId;
+        if (requestVersion === pendingHistorySessionVersion && !currentSessionId) {
+          set({ historySessionId: sessionId });
+          return sessionId;
+        }
+
+        return currentSessionId ?? sessionId;
       })
       .finally(() => {
-        pendingHistorySessionPromise = null;
+        if (pendingHistorySessionPromise === sessionPromise) {
+          pendingHistorySessionPromise = null;
+        }
       });
+
+    pendingHistorySessionPromise = sessionPromise;
 
     return pendingHistorySessionPromise;
   };
@@ -70,7 +86,10 @@ export const useEditorStore = create<EditorState>((set, get) => {
   totalSelectableBlocks: 0,
   currentBlockIndex: 0,
 
-  setHistorySessionId: (sessionId: string | null) => set({ historySessionId: sessionId }),
+  setHistorySessionId: (sessionId: string | null) => {
+    invalidatePendingHistorySession();
+    set({ historySessionId: sessionId });
+  },
   bumpHistoryRefreshKey: () => set((state) => ({ historyRefreshKey: state.historyRefreshKey + 1 })),
 
   setLeftText: (text: string) => set({ leftText: text }),
@@ -83,7 +102,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
   },
 
   clearContent: () => {
-    pendingHistorySessionPromise = null;
+    invalidatePendingHistorySession();
     set({
       leftText: "",
       rightText: "",
@@ -236,7 +255,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
   },
 
   loadFromHistory: (left: string, right: string, settings: CompareSettings, sessionId: string | null = null) => {
-    pendingHistorySessionPromise = null;
+    invalidatePendingHistorySession();
     set({ leftText: left, rightText: right, historySessionId: sessionId });
     get().compare(settings);
   },

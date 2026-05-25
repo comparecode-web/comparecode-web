@@ -144,7 +144,7 @@ export function ComparisonView() {
         return;
       }
 
-      if (editableTarget || event.altKey || event.ctrlKey || event.metaKey) {
+      if (editableTarget || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return;
       }
 
