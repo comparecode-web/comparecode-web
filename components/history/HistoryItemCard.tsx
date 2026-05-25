@@ -7,6 +7,7 @@ import { DateFormat, TimeFormat } from "@/types/settings";
 
 interface HistoryItemCardProps {
   item: DiffHistoryItem;
+  isTransitioning: boolean;
   fontFamily: string;
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
@@ -16,7 +17,7 @@ interface HistoryItemCardProps {
   onDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat, tickerNowMs, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
+export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFormat, timeFormat, tickerNowMs, onRestore, onToggleBookmark, onDelete }: HistoryItemCardProps) => {
   const actionAt = item.lastActionAt ?? item.updatedAt ?? item.createdAt;
   const createdAt = item.createdAt;
   const imageSnapshot = item.snapshot?.mode === "image" ? item.snapshot : null;
@@ -48,6 +49,7 @@ export const HistoryItemCard = memo(({ item, fontFamily, dateFormat, timeFormat,
       onClick={() => onRestore(item)}
       className={cn(
         "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 pb-7 sm:p-4 sm:pb-8 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
+        isTransitioning ? "z-50" : item.isBookmarked ? "z-20" : "z-0",
         item.isBookmarked ? "border-accent-primary" : "border-border-default"
       )}
     >

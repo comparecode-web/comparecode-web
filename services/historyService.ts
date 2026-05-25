@@ -411,8 +411,8 @@ export class HistoryService {
     const items = await db.history.toArray();
     return items.sort((a, b) => {
       if (a.isBookmarked === b.isBookmarked) {
-        const aTime = new Date(a.lastActionAt ?? a.updatedAt ?? a.createdAt).getTime();
-        const bTime = new Date(b.lastActionAt ?? b.updatedAt ?? b.createdAt).getTime();
+        const aTime = new Date((a.isBookmarked ? a.updatedAt : a.lastActionAt) ?? a.updatedAt ?? a.lastActionAt ?? a.createdAt).getTime();
+        const bTime = new Date((b.isBookmarked ? b.updatedAt : b.lastActionAt) ?? b.updatedAt ?? b.lastActionAt ?? b.createdAt).getTime();
         return bTime - aTime;
       }
       return a.isBookmarked ? -1 : 1;
@@ -420,7 +420,7 @@ export class HistoryService {
   }
 
   public static async updateBookmarkAsync(id: string, isBookmarked: boolean): Promise<void> {
-    await db.history.update(id, { isBookmarked });
+    await db.history.update(id, { isBookmarked, updatedAt: new Date().toISOString() });
   }
 
   public static async deleteAsync(id: string): Promise<void> {

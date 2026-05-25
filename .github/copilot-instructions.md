@@ -56,4 +56,10 @@
 - Prefer reusing existing UI primitives/components instead of introducing near-duplicate implementations.
 - Avoid ad-hoc styling or one-off component variants unless explicitly justified by requirements.
 - For data workflows, watch for N+1 query patterns and avoid per-item loops when batch operations are possible.
-- After every code modification task, always include exactly one short commit-name suggestion at the end of the chat response in English, using this exact format: `Suggested commit: \`commit-name\``.
+- After every code modification task, always include exactly one short commit message suggestion at the end of the chat response in English.
+- The suggestion must be a normal, human-readable commit message with spaces (not a branch-style slug).
+- Use this exact output format: Suggested commit: `fix: your short message here`
+- Valid examples:
+  - Suggested commit: `fix: keep Last Activity relative in history`
+  - Suggested commit: `fix: move bookmarked item above others during transition`
+  - Suggested commit: `feat: add keyboard shortcut hint to history header`

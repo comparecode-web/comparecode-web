@@ -19,8 +19,16 @@ export function generatePreviewLines(text: string | null | undefined, maxLines: 
 
 export function getRelativeTime(dateString: string, nowMs?: number): string {
   const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
   const currentMs = nowMs ?? Date.now();
   const diffMs = currentMs - date.getTime();
+  if (diffMs < 0) {
+    return "Just now";
+  }
+
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffMs / 60000);
 
@@ -29,26 +37,37 @@ export function getRelativeTime(dateString: string, nowMs?: number): string {
   }
 
   if (diffSecs < 60) {
-    return `${diffSecs} secs ago`;
+    return formatRelativeUnit(diffSecs, "sec", "secs");
   }
 
   if (diffMins < 60) {
-    return `${diffMins} mins ago`;
+    return formatRelativeUnit(diffMins, "min", "mins");
   }
 
   const diffHours = Math.floor(diffMins / 60);
 
   if (diffHours < 24) {
-    return `${diffHours} hours ago`;
+    return formatRelativeUnit(diffHours, "hour", "hours");
   }
 
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffDays < 7) {
-    return `${diffDays} days ago`;
+  if (diffDays < 30) {
+    return formatRelativeUnit(diffDays, "day", "days");
   }
 
-  return date.toLocaleDateString();
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) {
+    return formatRelativeUnit(diffMonths, "month", "months");
+  }
+
+  const diffYears = Math.floor(diffDays / 365);
+  return formatRelativeUnit(diffYears, "year", "years");
+}
+
+function formatRelativeUnit(value: number, singular: string, plural: string): string {
+  const unit = value === 1 ? singular : plural;
+  return `${value} ${unit} ago`;
 }
 
 export function formatAbsoluteDateTime(dateString: string): string {
