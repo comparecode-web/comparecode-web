@@ -4,6 +4,7 @@ import "./globals.css";
 import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { GlobalTooltip } from "@/components/layout/GlobalTooltip";
+import { ToastViewport } from "@/components/layout/ToastViewport";
 
 const THEME_INIT_SCRIPT = `
   (function () {
@@ -61,6 +62,7 @@ export default function RootLayout({
           <ThemeProvider>
             {children}
             <GlobalTooltip />
+            <ToastViewport />
           </ThemeProvider>
         </SettingsProvider>
       </body>
