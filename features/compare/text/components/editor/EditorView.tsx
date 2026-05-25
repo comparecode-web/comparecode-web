@@ -14,6 +14,7 @@ export function EditorView() {
   const { comparisonResult } = useEditorStore();
   const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen, optionsPanelTab, setOptionsPanelTab } = useEditorUIStore();
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
+  const isInputEditorToggleDisabled = !hasResult && isInputExpanded;
 
   return (
     <div className="flex h-full min-h-0 w-full overflow-hidden bg-bg-primary relative">
@@ -80,7 +81,11 @@ export function EditorView() {
 
         <button
           onClick={toggleInputPanel}
-          className="grid h-8 w-11 grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm hover:bg-accent-hover transition-colors duration-(--duration-short)"
+          disabled={isInputEditorToggleDisabled}
+          className={cn(
+            "grid h-8 w-11 grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm transition-colors duration-(--duration-short)",
+            isInputEditorToggleDisabled ? "cursor-not-allowed opacity-60" : "hover:bg-accent-hover"
+          )}
           title={isInputExpanded ? "Hide Input Editor" : "Show Input Editor"}
         >
           <MdBorderColor className="text-xl shrink-0" />
@@ -100,7 +105,11 @@ export function EditorView() {
 
         <button
           onClick={toggleInputPanel}
-          className="grid h-8 w-full grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm hover:bg-accent-hover transition-colors duration-(--duration-short)"
+          disabled={isInputEditorToggleDisabled}
+          className={cn(
+            "grid h-8 w-full grid-cols-2 place-items-center rounded-md bg-accent-primary px-0.5 text-white shadow-sm transition-colors duration-(--duration-short)",
+            isInputEditorToggleDisabled ? "cursor-not-allowed opacity-60" : "hover:bg-accent-hover"
+          )}
           title={isInputExpanded ? "Hide Input Editor" : "Show Input Editor"}
         >
           <MdBorderColor className="text-xl shrink-0" />
