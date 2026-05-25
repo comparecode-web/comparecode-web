@@ -43,6 +43,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CompareCode",
   description: "A fast and robust code comparison tool",
+  icons: {
+    icon: "/brand/comparecode-logo.png",
+    shortcut: "/brand/comparecode-logo.png",
+    apple: "/brand/comparecode-logo.png"
+  }
 };
 
 export default function RootLayout({
