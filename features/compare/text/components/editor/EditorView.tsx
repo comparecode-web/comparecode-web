@@ -10,19 +10,7 @@ import { InputView } from "./InputView";
 import { ComparisonView } from "@/features/compare/text/components/diff/ComparisonView";
 import { cn } from "@/utils/uiHelpers";
 import { MdHistory } from "react-icons/md";
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  if (target.isContentEditable) {
-    return true;
-  }
-
-  const tag = target.tagName;
-  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-}
+import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
 
 export function EditorView() {
   const { comparisonResult } = useEditorStore();
@@ -43,6 +31,10 @@ export function EditorView() {
       const key = event.key.toLowerCase();
 
       if (key !== "e" && key !== "o") {
+        return;
+      }
+
+      if (event.repeat) {
         return;
       }
 

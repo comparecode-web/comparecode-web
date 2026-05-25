@@ -48,6 +48,7 @@ Apply them in order: block on higher-priority issues before discussing lower-pri
 - Prefer token/theme variables over ad-hoc inline styles.
 - Only use explicit local overrides when there is a clear UX reason.
 - Keep keyboard interactions and accessibility behavior consistent (focus, escape, ARIA roles, key conflicts).
+- Ignore `aria-label`-only review findings by default in this repository; treat them as non-blocking unless the user explicitly requests such changes.
 
 ## Data and Workflow Guidance
 - Keep operations idempotent where practical.

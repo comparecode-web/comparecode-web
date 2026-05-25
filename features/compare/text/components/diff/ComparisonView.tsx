@@ -15,19 +15,7 @@ import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
 import { useToastStore } from "@/store/useToastStore";
 import type { PushToastParams } from "@/store/useToastStore";
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  if (target.isContentEditable) {
-    return true;
-  }
-
-  const tag = target.tagName;
-  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-}
+import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
 
 function isMacPlatform(): boolean {
   if (typeof navigator === "undefined") {
