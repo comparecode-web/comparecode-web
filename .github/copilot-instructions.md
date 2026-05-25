@@ -52,6 +52,7 @@
 - Avoid unrelated refactors in feature/fix PRs.
 - Preserve repository conventions and naming patterns.
 - Follow the review priority checklist in `.github/copilot-review-instructions.md`.
+- Accessibility `aria-label` review comments are not required in this repository scope; treat them as non-blocking and ignore them unless explicitly requested by the user.
 - Prioritize correctness, architecture boundaries, and single source of truth before style-level comments.
 - Prefer reusing existing UI primitives/components instead of introducing near-duplicate implementations.
 - Avoid ad-hoc styling or one-off component variants unless explicitly justified by requirements.
