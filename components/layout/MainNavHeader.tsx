@@ -1,26 +1,36 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { MdCode, MdHistory, MdSettings, MdImage } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
-import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/uiHelpers";
 
 export function MainNavHeader() {
-  const currentView = useAppStore((state) => state.currentView);
-  const navigate = useAppStore((state) => state.navigate);
+  const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = [
-    { view: "text" as const, label: "Text", icon: MdCode },
-    { view: "image" as const, label: "Image", icon: MdImage },
-    { view: "history" as const, label: "History", icon: MdHistory },
-    { view: "settings" as const, label: "Settings", icon: MdSettings }
+    { href: "/text", label: "Text", icon: MdCode },
+    { href: "/image", label: "Image", icon: MdImage },
+    { href: "/history", label: "History", icon: MdHistory },
+    { href: "/settings", label: "Settings", icon: MdSettings }
   ];
+
+  const navigateTo = (href: string) => {
+    if (pathname === href) {
+      return;
+    }
+
+    // Tabs use replace so browser history does not get noisy while switching sections.
+    router.replace(href);
+  };
 
   return (
     <header className="relative z-50 flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
       <div className="flex h-full items-center gap-3 sm:gap-8">
-        <div className="flex items-center gap-2 sm:gap-3">
+        <Link href="/" className="flex items-center gap-2 rounded-md p-1 sm:gap-3 hover:bg-hover-overlay" title="Welcome">
           <Image
             src="/brand/comparecode-logo.png"
             alt="CompareCode"
@@ -30,14 +40,15 @@ export function MainNavHeader() {
             priority
           />
           <h1 className="text-sm font-bold text-text-primary sm:text-lg">CompareCode</h1>
-        </div>
+        </Link>
         <nav className="flex h-full items-center gap-1 sm:gap-2">
-          {navItems.map(({ view, label, icon: Icon }) => {
-            const isActive = currentView === view;
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const isActive = pathname === href;
             return (
               <button
-                key={view}
-                onClick={() => navigate(view)}
+                key={href}
+                type="button"
+                onClick={() => navigateTo(href)}
                 className={cn(
                   "relative z-10 flex items-center gap-2 overflow-hidden rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium)",
                   isActive ? "text-white" : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
