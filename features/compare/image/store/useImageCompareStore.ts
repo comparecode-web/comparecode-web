@@ -35,18 +35,6 @@ interface ImageCompareState {
   clearAll: () => void;
 }
 
-const canRevokeObjectUrl = typeof URL !== "undefined" && typeof URL.revokeObjectURL === "function";
-
-function revokeObjectUrl(url: string | null | undefined): void {
-  if (!canRevokeObjectUrl || !url || !url.startsWith("blob:")) return;
-  URL.revokeObjectURL(url);
-}
-
-function revokeUniqueObjectUrls(urls: Array<string | null | undefined>): void {
-  const uniqueUrls = new Set(urls.filter((url): url is string => Boolean(url && url.startsWith("blob:"))));
-  uniqueUrls.forEach((url) => revokeObjectUrl(url));
-}
-
 export const useImageCompareStore = create<ImageCompareState>((set) => ({
   originalImage: null,
   modifiedImage: null,
@@ -56,37 +44,20 @@ export const useImageCompareStore = create<ImageCompareState>((set) => ({
   sliderPosition: 50,
   isMetadataPanelOpen: false,
 
-  setOriginalImage: (img) => set((state) => {
-    const previousUrl = state.originalImage?.url;
-    const nextUrl = img?.url;
-    if (previousUrl && previousUrl !== nextUrl && previousUrl !== state.modifiedImage?.url) {
-      revokeObjectUrl(previousUrl);
-    }
-    return { originalImage: img };
-  }),
-  setModifiedImage: (img) => set((state) => {
-    const previousUrl = state.modifiedImage?.url;
-    const nextUrl = img?.url;
-    if (previousUrl && previousUrl !== nextUrl && previousUrl !== state.originalImage?.url) {
-      revokeObjectUrl(previousUrl);
-    }
-    return { modifiedImage: img };
-  }),
+  setOriginalImage: (img) => set({ originalImage: img }),
+  setModifiedImage: (img) => set({ modifiedImage: img }),
   setCompareMode: (mode) => set({ compareMode: mode }),
   setDiffAlgorithm: (algo) => set({ diffAlgorithm: algo }),
   setFadeValue: (value) => set({ fadeValue: value }),
   setSliderPosition: (pos) => set({ sliderPosition: pos }),
   setIsMetadataPanelOpen: (open) => set({ isMetadataPanelOpen: open }),
-  clearAll: () => set((state) => {
-    revokeUniqueObjectUrls([state.originalImage?.url, state.modifiedImage?.url]);
-    return {
-      originalImage: null,
-      modifiedImage: null,
-      compareMode: "side-by-side",
-      diffAlgorithm: "highlight",
-      fadeValue: 500,
-      sliderPosition: 50,
-      isMetadataPanelOpen: false
-    };
+  clearAll: () => set({
+    originalImage: null,
+    modifiedImage: null,
+    compareMode: "side-by-side",
+    diffAlgorithm: "highlight",
+    fadeValue: 500,
+    sliderPosition: 50,
+    isMetadataPanelOpen: false
   })
 }));
