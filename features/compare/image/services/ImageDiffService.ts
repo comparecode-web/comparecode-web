@@ -89,22 +89,35 @@ export async function renderDiff(
     loadImageToCanvas(modifiedUrl)
   ]);
 
-  const width = Math.max(original.canvas.width, modified.canvas.width);
-  const height = Math.max(original.canvas.height, modified.canvas.height);
+  const originalWidth = original.canvas.width;
+  const originalHeight = original.canvas.height;
+  const modifiedWidth = modified.canvas.width;
+  const modifiedHeight = modified.canvas.height;
+
+  const width = Math.max(originalWidth, modifiedWidth);
+  const height = Math.max(originalHeight, modifiedHeight);
   const totalPixels = width * height;
   let differentPixels = 0;
   const DIFF_THRESHOLD = 30;
 
-  const normOrig = document.createElement("canvas");
-  normOrig.width = width; normOrig.height = height;
-  normOrig.getContext("2d")!.drawImage(original.canvas, 0, 0, width, height);
+  const originalData = original.ctx.getImageData(0, 0, originalWidth, originalHeight).data;
+  const modifiedData = modified.ctx.getImageData(0, 0, modifiedWidth, modifiedHeight).data;
+  const o = new Uint8ClampedArray(totalPixels * 4);
+  const m = new Uint8ClampedArray(totalPixels * 4);
 
-  const normMod = document.createElement("canvas");
-  normMod.width = width; normMod.height = height;
-  normMod.getContext("2d")!.drawImage(modified.canvas, 0, 0, width, height);
+  for (let y = 0; y < originalHeight; y++) {
+    const srcStart = y * originalWidth * 4;
+    const srcEnd = srcStart + originalWidth * 4;
+    const dstStart = y * width * 4;
+    o.set(originalData.subarray(srcStart, srcEnd), dstStart);
+  }
 
-  const o = normOrig.getContext("2d")!.getImageData(0, 0, width, height).data;
-  const m = normMod.getContext("2d")!.getImageData(0, 0, width, height).data;
+  for (let y = 0; y < modifiedHeight; y++) {
+    const srcStart = y * modifiedWidth * 4;
+    const srcEnd = srcStart + modifiedWidth * 4;
+    const dstStart = y * width * 4;
+    m.set(modifiedData.subarray(srcStart, srcEnd), dstStart);
+  }
 
 
   if (algorithm === "channel-split") {
@@ -121,10 +134,12 @@ export async function renderDiff(
       const dr = Math.abs(o[i] - m[i]);
       const dg = Math.abs(o[i + 1] - m[i + 1]);
       const db = Math.abs(o[i + 2] - m[i + 2]);
-      panels[0].data[i] = Math.min(255, dr * 4); panels[0].data[i + 1] = 0;               panels[0].data[i + 2] = 0;               panels[0].data[i + 3] = 255;
-      panels[1].data[i] = 0;               panels[1].data[i + 1] = Math.min(255, dg * 4); panels[1].data[i + 2] = 0;               panels[1].data[i + 3] = 255;
-      panels[2].data[i] = 0;               panels[2].data[i + 1] = 0;               panels[2].data[i + 2] = Math.min(255, db * 4); panels[2].data[i + 3] = 255;
-      if (Math.sqrt(dr * dr + dg * dg + db * db) > DIFF_THRESHOLD) differentPixels++;
+      const da = Math.abs(o[i + 3] - m[i + 3]);
+      const alphaBoost = Math.min(255, da * 4);
+      panels[0].data[i] = Math.max(Math.min(255, dr * 4), alphaBoost); panels[0].data[i + 1] = 0;               panels[0].data[i + 2] = 0;               panels[0].data[i + 3] = 255;
+      panels[1].data[i] = 0;               panels[1].data[i + 1] = Math.max(Math.min(255, dg * 4), alphaBoost); panels[1].data[i + 2] = 0;               panels[1].data[i + 3] = 255;
+      panels[2].data[i] = 0;               panels[2].data[i + 1] = 0;               panels[2].data[i + 2] = Math.max(Math.min(255, db * 4), alphaBoost); panels[2].data[i + 3] = 255;
+      if (Math.sqrt(dr * dr + dg * dg + db * db + da * da) > DIFF_THRESHOLD) differentPixels++;
     }
     const tmp = document.createElement("canvas");
     tmp.width = width; tmp.height = height;
@@ -154,8 +169,10 @@ export async function renderDiff(
     const L1 = new Float32Array(totalPixels);
     const L2 = new Float32Array(totalPixels);
     for (let i = 0; i < totalPixels; i++) {
-      L1[i] = 0.299 * o[i * 4] + 0.587 * o[i * 4 + 1] + 0.114 * o[i * 4 + 2];
-      L2[i] = 0.299 * m[i * 4] + 0.587 * m[i * 4 + 1] + 0.114 * m[i * 4 + 2];
+      const alpha1 = o[i * 4 + 3] / 255;
+      const alpha2 = m[i * 4 + 3] / 255;
+      L1[i] = alpha1 * (0.299 * o[i * 4] + 0.587 * o[i * 4 + 1] + 0.114 * o[i * 4 + 2]);
+      L2[i] = alpha2 * (0.299 * m[i * 4] + 0.587 * m[i * 4 + 1] + 0.114 * m[i * 4 + 2]);
     }
     const L1sq = L1.map((v) => v * v);
     const L2sq = L2.map((v) => v * v);
@@ -206,7 +223,8 @@ export async function renderDiff(
       const dr = Math.abs(o[pi] - m[pi]);
       const dg = Math.abs(o[pi + 1] - m[pi + 1]);
       const db = Math.abs(o[pi + 2] - m[pi + 2]);
-      diffMag[i] = Math.sqrt(dr * dr + dg * dg + db * db);
+      const da = Math.abs(o[pi + 3] - m[pi + 3]);
+      diffMag[i] = Math.sqrt(dr * dr + dg * dg + db * db + da * da);
     }
     const getDM = (x: number, y: number) =>
       diffMag[Math.min(height - 1, Math.max(0, y)) * width + Math.min(width - 1, Math.max(0, x))];
@@ -234,29 +252,39 @@ export async function renderDiff(
     const dr = Math.abs(o[i] - m[i]);
     const dg = Math.abs(o[i + 1] - m[i + 1]);
     const db = Math.abs(o[i + 2] - m[i + 2]);
-    const deltaE = Math.sqrt(dr * dr + dg * dg + db * db);
+    const da = Math.abs(o[i + 3] - m[i + 3]);
+    const deltaE = Math.sqrt(dr * dr + dg * dg + db * db + da * da);
 
     switch (algorithm) {
       case "absolute": {
-        out[i] = Math.min(255, dr * 4);
-        out[i + 1] = Math.min(255, dg * 4);
-        out[i + 2] = Math.min(255, db * 4);
+        const alphaBoost = Math.min(255, da * 4);
+        out[i] = Math.max(Math.min(255, dr * 4), alphaBoost);
+        out[i + 1] = Math.max(Math.min(255, dg * 4), alphaBoost);
+        out[i + 2] = Math.max(Math.min(255, db * 4), alphaBoost);
         out[i + 3] = 255;
         if (deltaE > DIFF_THRESHOLD) differentPixels++;
         break;
       }
       case "subtract": {
+        const alphaBoost = Math.min(255, da * 4);
         out[i] = Math.max(0, m[i] - o[i]);
         out[i + 1] = Math.max(0, m[i + 1] - o[i + 1]);
         out[i + 2] = Math.max(0, m[i + 2] - o[i + 2]);
+        out[i] = Math.max(out[i], alphaBoost);
+        out[i + 1] = Math.max(out[i + 1], alphaBoost);
+        out[i + 2] = Math.max(out[i + 2], alphaBoost);
         out[i + 3] = 255;
         if (deltaE > DIFF_THRESHOLD) differentPixels++;
         break;
       }
       case "xor": {
+        const alphaBoost = da;
         out[i] = o[i] ^ m[i];
         out[i + 1] = o[i + 1] ^ m[i + 1];
         out[i + 2] = o[i + 2] ^ m[i + 2];
+        out[i] = Math.max(out[i], alphaBoost);
+        out[i + 1] = Math.max(out[i + 1], alphaBoost);
+        out[i + 2] = Math.max(out[i + 2], alphaBoost);
         out[i + 3] = 255;
         if (deltaE > DIFF_THRESHOLD) differentPixels++;
         break;
@@ -268,6 +296,12 @@ export async function renderDiff(
         break;
       }
       case "perceptual": {
+        if (da > DIFF_THRESHOLD) {
+          out[i] = 96; out[i + 1] = 164; out[i + 2] = 255; out[i + 3] = 255;
+          differentPixels++;
+          break;
+        }
+
         const [L1, a1, b1] = rgbToLab(o[i], o[i + 1], o[i + 2]);
         const [L2, a2, b2] = rgbToLab(m[i], m[i + 1], m[i + 2]);
         const dE = Math.sqrt((L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2);
@@ -290,6 +324,11 @@ export async function renderDiff(
       default: {
         if (deltaE > DIFF_THRESHOLD) {
           differentPixels++;
+          if (da > DIFF_THRESHOLD) {
+            out[i] = 96; out[i + 1] = 164; out[i + 2] = 255; out[i + 3] = 255;
+            break;
+          }
+
           const origLuma = 0.299 * o[i] + 0.587 * o[i + 1] + 0.114 * o[i + 2];
           const modLuma = 0.299 * m[i] + 0.587 * m[i + 1] + 0.114 * m[i + 2];
           if (modLuma > origLuma) {

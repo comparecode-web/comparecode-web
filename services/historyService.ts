@@ -47,7 +47,10 @@ export class HistoryService {
       return `${snapshot.mode}::${snapshot.originalText}::${snapshot.modifiedText}`;
     }
 
-    return `${snapshot.mode}::${snapshot.originalImageUrl}::${snapshot.modifiedImageUrl}`;
+    const originalKey = snapshot.originalImageDataUrl || snapshot.originalImageUrl;
+    const modifiedKey = snapshot.modifiedImageDataUrl || snapshot.modifiedImageUrl;
+
+    return `${snapshot.mode}::${originalKey}::${modifiedKey}`;
   }
 
   public static async createSessionAsync(snapshot: CompareHistorySnapshot, actionType: HistoryActionType = HistoryActionType.Compare): Promise<string> {

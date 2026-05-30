@@ -477,7 +477,7 @@ function DiffView() {
         <div className="flex flex-wrap items-center gap-4 shrink-0">
           <span className="flex items-center gap-1.5 text-xs text-text-secondary"><span className="inline-block w-3 h-3 rounded-sm bg-black border border-border-default" /> Identical</span>
           <span className="flex items-center gap-1.5 text-xs text-text-secondary"><span className="inline-block w-3 h-3 rounded-sm bg-white border border-border-default" /> Maximum difference</span>
-          <span className="text-xs text-text-tertiary">Per-channel |orig − mod| × 4</span>
+          <span className="text-xs text-text-secondary">Per-channel |orig − mod| × 4</span>
         </div>
       )}
       {diffAlgorithm === "subtract" && (
