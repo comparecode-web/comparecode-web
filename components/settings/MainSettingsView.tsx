@@ -5,11 +5,12 @@ import { MdSettings, MdRestartAlt } from "react-icons/md";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { AVAILABLE_THEMES, getThemeHighlightDefaults } from "@/config/themes";
 import { getThemeDefaultsAsCustomColors } from "@/utils/highlightColors";
-import { TimeFormat } from "@/types/settings";
+import { type AppSettings, TimeFormat } from "@/types/settings";
 import { Switch } from "@/components/ui/Switch";
 import { ColorInput } from "@/components/ui/ColorInput";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { formatDateOnlyWithSettings } from "@/utils/formatters";
+import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
 
 const DATE_SEPARATORS = ["."];
 
@@ -17,6 +18,15 @@ const NUMERIC_DATE_TOKENS = ["yyyy", "MM", "dd"];
 const TEXTUAL_LONG_DATE_TOKENS = ["yyyy", "MMMM", "dd"];
 const TEXTUAL_SHORT_DATE_TOKENS = ["yyyy", "MMM", "dd"];
 const TEXTUAL_MONTH_DAY_PATTERNS = ["MMMM d", "MMM d"];
+const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = [
+  "theme",
+  "useCustomHighlightColors",
+  "customDiffAddedBg",
+  "customDiffAddedFg",
+  "customDiffRemovedBg",
+  "customDiffRemovedFg"
+];
+const DATE_TIME_SECTION_KEYS: Array<keyof AppSettings> = ["dateFormat", "timeFormat"];
 
 function generatePermutations(tokens: Array<string>): Array<Array<string>> {
   if (tokens.length === 1) {
@@ -45,6 +55,8 @@ function normalizeColorForComparison(value: string): string {
 export function MainSettingsView() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
   const themeHighlightDefaults = getThemeHighlightDefaults(settings.theme);
+  const isAppearanceSectionDirty = isSettingsSectionDirty(settings, APPEARANCE_SECTION_KEYS);
+  const isDateTimeSectionDirty = isSettingsSectionDirty(settings, DATE_TIME_SECTION_KEYS);
   const dateFormatOptions = useMemo(() => {
     const numericOrders = generatePermutations(NUMERIC_DATE_TOKENS);
     const numericPatterns: Array<string> = [];
@@ -94,15 +106,8 @@ export function MainSettingsView() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
               <button
-                onClick={() => resetSectionToDefaults([
-                  "theme",
-                  "useCustomHighlightColors",
-                  "customDiffAddedBg",
-                  "customDiffAddedFg",
-                  "customDiffRemovedBg",
-                  "customDiffRemovedFg"
-                ])}
-                className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+                onClick={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}
+                className={getSectionResetButtonClass(isAppearanceSectionDirty)}
                 title="Restore section defaults"
               >
                 <MdRestartAlt className="text-lg" />
@@ -220,8 +225,8 @@ export function MainSettingsView() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Date & Time</h3>
               <button
-                onClick={() => resetSectionToDefaults(["dateFormat", "timeFormat"])}
-                className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+                onClick={() => resetSectionToDefaults(DATE_TIME_SECTION_KEYS)}
+                className={getSectionResetButtonClass(isDateTimeSectionDirty)}
                 title="Restore section defaults"
               >
                 <MdRestartAlt className="text-lg" />

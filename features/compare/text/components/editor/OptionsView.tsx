@@ -1,28 +1,24 @@
 "use client";
 
-import { PrecisionLevel, ViewMode } from "@/types/settings";
+import { type AppSettings, PrecisionLevel, ViewMode } from "@/types/settings";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { originalTestText, modifiedTestText } from "@/utils/testData";
 import { UI_CONSTANTS } from "@/config/constants";
-import { defaultSettings } from "@/config/defaults";
 import { Switch } from "@/components/ui/Switch";
 import { Slider } from "@/components/ui/Slider";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { AVAILABLE_FONTS } from "@/config/fonts";
-import { cn } from "@/utils/uiHelpers";
+import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
 import { MdRestartAlt } from "react-icons/md";
 
-function getSectionResetButtonClass(isDirty: boolean): string {
-  return cn(
-    "transition-colors p-1 rounded border",
-    isDirty
-      ? "border-accent-primary/60 bg-accent-primary/10 text-accent-primary hover:border-accent-primary hover:text-accent-hover"
-      : "border-transparent text-text-secondary hover:border-border-default hover:bg-hover-overlay hover:text-accent-primary"
-  );
-}
+const COMPARISON_SECTION_KEYS: Array<keyof AppSettings> = ["ignoreWhitespace", "precision"];
+const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = ["isWordWrapEnabled", "fontSize", "fontFamily"];
+const LAYOUT_SECTION_KEYS: Array<keyof AppSettings> = ["viewMode"];
+const MERGE_SECTION_KEYS: Array<keyof AppSettings> = ["isContinuousMergeEnabled"];
+const BUTTON_VISIBILITY_SECTION_KEYS: Array<keyof AppSettings> = ["isJumpButtonsVisible", "isMergeJumpButtonsVisible"];
 
 export function OptionsView() {
   return (
@@ -39,16 +35,14 @@ export function OptionsView() {
 
 function ComparisonSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
-  const isSectionDirty =
-    settings.ignoreWhitespace !== defaultSettings.ignoreWhitespace ||
-    settings.precision !== defaultSettings.precision;
+  const isSectionDirty = isSettingsSectionDirty(settings, COMPARISON_SECTION_KEYS);
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
         <button
-          onClick={() => resetSectionToDefaults(["ignoreWhitespace", "precision"])}
+          onClick={() => resetSectionToDefaults(COMPARISON_SECTION_KEYS)}
           className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
@@ -75,17 +69,14 @@ function ComparisonSection() {
 
 function AppearanceSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
-  const isSectionDirty =
-    settings.isWordWrapEnabled !== defaultSettings.isWordWrapEnabled ||
-    settings.fontSize !== defaultSettings.fontSize ||
-    settings.fontFamily !== defaultSettings.fontFamily;
+  const isSectionDirty = isSettingsSectionDirty(settings, APPEARANCE_SECTION_KEYS);
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
         <button
-          onClick={() => resetSectionToDefaults(["isWordWrapEnabled", "fontSize", "fontFamily"])}
+          onClick={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}
           className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
@@ -123,14 +114,14 @@ function AppearanceSection() {
 
 function LayoutSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
-  const isSectionDirty = settings.viewMode !== defaultSettings.viewMode;
+  const isSectionDirty = isSettingsSectionDirty(settings, LAYOUT_SECTION_KEYS);
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
         <button
-          onClick={() => resetSectionToDefaults(["viewMode"])}
+          onClick={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
           className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
@@ -152,14 +143,14 @@ function LayoutSection() {
 
 function MergeSection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
-  const isSectionDirty = settings.isContinuousMergeEnabled !== defaultSettings.isContinuousMergeEnabled;
+  const isSectionDirty = isSettingsSectionDirty(settings, MERGE_SECTION_KEYS);
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
         <button
-          onClick={() => resetSectionToDefaults(["isContinuousMergeEnabled"])}
+          onClick={() => resetSectionToDefaults(MERGE_SECTION_KEYS)}
           className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >
@@ -179,16 +170,14 @@ function MergeSection() {
 
 function ButtonVisibilitySection() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
-  const isSectionDirty =
-    settings.isJumpButtonsVisible !== defaultSettings.isJumpButtonsVisible ||
-    settings.isMergeJumpButtonsVisible !== defaultSettings.isMergeJumpButtonsVisible;
+  const isSectionDirty = isSettingsSectionDirty(settings, BUTTON_VISIBILITY_SECTION_KEYS);
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Button visibility</h3>
         <button
-          onClick={() => resetSectionToDefaults(["isJumpButtonsVisible", "isMergeJumpButtonsVisible"])}
+          onClick={() => resetSectionToDefaults(BUTTON_VISIBILITY_SECTION_KEYS)}
           className={getSectionResetButtonClass(isSectionDirty)}
           title="Restore section defaults"
         >

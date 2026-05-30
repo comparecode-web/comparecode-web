@@ -34,8 +34,8 @@ export function MainNavHeader() {
           <Image
             src="/brand/comparecode-logo.png"
             alt="CompareCode"
-            width={42}
-            height={42}
+            width={36}
+            height={36}
             className="rounded-sm"
             priority
           />

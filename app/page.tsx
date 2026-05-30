@@ -37,12 +37,12 @@ export default function Home() {
       <main className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-bg-secondary px-4 py-8 sm:px-6">
         <div className="w-full max-w-5xl rounded-2xl border border-border-default bg-bg-primary p-5 shadow-lg sm:p-8">
           <div className="mb-7 border-b border-border-default pb-6 sm:mb-8">
-            <Link href="/" className="inline-flex items-center gap-3 rounded-md p-1.5 transition-colors hover:bg-hover-overlay">
+            <div className="inline-flex items-center gap-3 p-1.5">
               <Image
                 src="/brand/comparecode-logo.png"
                 alt="CompareCode"
-                width={56}
-                height={56}
+                width={64}
+                height={64}
                 className="rounded"
                 priority
               />
@@ -52,7 +52,7 @@ export default function Home() {
                   free and open-source diff checking tool, crafted with care and love.
                 </p>
               </div>
-            </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
