@@ -230,22 +230,28 @@ function SideBySideView() {
   return (
     <div className="flex gap-3 w-full h-full select-none">
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide shrink-0">Original</span>
+        <span
+          className="text-xs font-semibold text-text-secondary tracking-wide shrink-0 truncate"
+          title={originalImage ? `Original (${originalImage.width}×${originalImage.height} - ${originalImage.name})` : "Original"}
+        >
+          <span className="uppercase">Original</span>
+          {originalImage ? ` (${originalImage.width}×${originalImage.height} - ${originalImage.name})` : ""}
+        </span>
         <div ref={origContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
           <canvas ref={origCanvasRef} className="block w-full h-full" />
         </div>
-        {originalImage && (
-          <p className="text-xs text-text-secondary shrink-0">{originalImage.width}×{originalImage.height} · {originalImage.name}</p>
-        )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide shrink-0">Modified</span>
+        <span
+          className="text-xs font-semibold text-text-secondary tracking-wide shrink-0 truncate"
+          title={modifiedImage ? `Modified (${modifiedImage.width}×${modifiedImage.height} - ${modifiedImage.name})` : "Modified"}
+        >
+          <span className="uppercase">Modified</span>
+          {modifiedImage ? ` (${modifiedImage.width}×${modifiedImage.height} - ${modifiedImage.name})` : ""}
+        </span>
         <div ref={modContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
           <canvas ref={modCanvasRef} className="block w-full h-full" />
         </div>
-        {modifiedImage && (
-          <p className="text-xs text-text-secondary shrink-0">{modifiedImage.width}×{modifiedImage.height} · {modifiedImage.name}</p>
-        )}
       </div>
     </div>
   );
