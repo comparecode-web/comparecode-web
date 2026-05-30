@@ -6,7 +6,6 @@ import {
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
-import { Switch } from "@/components/ui/Switch";
 import {
   useImageCompareStore,
   ImageCompareMode,
@@ -38,8 +37,6 @@ export function ImageCompareToolbar() {
   const setCompareMode = useImageCompareStore((s) => s.setCompareMode);
   const diffAlgorithm = useImageCompareStore((s) => s.diffAlgorithm);
   const setDiffAlgorithm = useImageCompareStore((s) => s.setDiffAlgorithm);
-  const isMetadataPanelOpen = useImageCompareStore((s) => s.isMetadataPanelOpen);
-  const setIsMetadataPanelOpen = useImageCompareStore((s) => s.setIsMetadataPanelOpen);
   const clearAll = useImageCompareStore((s) => s.clearAll);
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
@@ -69,14 +66,6 @@ export function ImageCompareToolbar() {
       )}
 
       <div className="flex-1" />
-
-      <Switch
-        checked={isMetadataPanelOpen}
-        onChange={(event) => setIsMetadataPanelOpen(event.target.checked)}
-        label="Show Metadata"
-        title="Toggle metadata panel"
-        disabled={!hasImages}
-      />
 
       <ClearButton onClear={clearAll} disabled={!hasImages} />
     </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MdImage } from "react-icons/md";
+import { MdImage, MdInfo, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { HistoryService } from "@/services/historyService";
+import { cn } from "@/utils/uiHelpers";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import { ImageUploadPanel } from "./ImageUploadPanel";
 import { ImageCompareToolbar } from "./ImageCompareToolbar";
@@ -14,7 +15,7 @@ export function ImageView() {
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const isMetadataPanelOpen = useImageCompareStore((s) => s.isMetadataPanelOpen);
-  const setIsMetadataPanelOpen = useImageCompareStore((s) => s.setIsMetadataPanelOpen);
+  const toggleMetadataPanel = useImageCompareStore((s) => s.toggleMetadataPanel);
   const lastSavedImagePairKeyRef = useRef<string | null>(null);
 
   const bothLoaded = !!(originalImage && modifiedImage);
@@ -98,15 +99,35 @@ export function ImageView() {
             <ImageCompareCanvas />
           </div>
 
-          {isMetadataPanelOpen && (
-            <div className="shrink-0 max-h-[45%] overflow-y-auto custom-scrollbar">
+          <div className="shrink-0 border-t border-border-default bg-bg-secondary px-2 py-1.5 sm:px-3 sm:py-2">
+            <div className="flex items-center justify-center">
+              <button
+                onClick={toggleMetadataPanel}
+                className="inline-flex items-center gap-2 rounded-md bg-accent-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors duration-(--duration-short) hover:bg-accent-hover"
+                title={isMetadataPanelOpen ? "Hide Metadata" : "Show Metadata"}
+              >
+                <MdInfo className="text-base shrink-0" />
+                <span>Metadata</span>
+                {isMetadataPanelOpen ? <MdKeyboardArrowDown className="text-xl shrink-0" /> : <MdKeyboardArrowUp className="text-xl shrink-0" />}
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "shrink-0 transition-[max-height,opacity] duration-(--duration-medium) ease-in-out overflow-hidden bg-bg-primary z-10",
+              isMetadataPanelOpen
+                ? "max-h-120 border-t border-border-default shadow-sm opacity-100"
+                : "max-h-0 opacity-0"
+            )}
+          >
+            <div className="overflow-y-auto custom-scrollbar">
               <ImageMetadataPanel
                 originalImage={originalImage}
                 modifiedImage={modifiedImage}
-                onClose={() => setIsMetadataPanelOpen(false)}
               />
             </div>
-          )}
+          </div>
         </>
       )}
     </div>

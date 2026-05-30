@@ -32,6 +32,7 @@ interface ImageCompareState {
   setFadeValue: (value: number) => void;
   setSliderPosition: (pos: number) => void;
   setIsMetadataPanelOpen: (open: boolean) => void;
+  toggleMetadataPanel: () => void;
   clearAll: () => void;
 }
 
@@ -81,6 +82,7 @@ export const useImageCompareStore = create<ImageCompareState>((set) => ({
   setFadeValue: (value) => set({ fadeValue: clamp(value, 0, 1000) }),
   setSliderPosition: (pos) => set({ sliderPosition: clamp(pos, 0, 1) }),
   setIsMetadataPanelOpen: (open) => set({ isMetadataPanelOpen: open }),
+  toggleMetadataPanel: () => set((state) => ({ isMetadataPanelOpen: !state.isMetadataPanelOpen })),
   clearAll: () => set((state) => {
     revokeUniqueObjectUrls([state.originalImage?.url, state.modifiedImage?.url]);
     return {

@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MdInfo, MdClose, MdFolderOpen } from "react-icons/md";
+import { MdFolderOpen } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
-import { Button } from "@/components/ui/Button";
 import { ImageFileMeta } from "../store/useImageCompareStore";
 import { computeFileHash, formatFileSize } from "../utils/exifReader";
 
@@ -52,7 +51,7 @@ function ImageMetaPanel({ image, title }: ImageMetaPanelProps) {
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-1">
       <p className="text-sm font-bold text-text-primary mb-1 flex items-center gap-1.5">
-        <MdFolderOpen className="text-base text-accent-primary" />
+        <MdFolderOpen className="text-base text-text-secondary" />
         {title}
       </p>
 
@@ -82,26 +81,15 @@ function ImageMetaPanel({ image, title }: ImageMetaPanelProps) {
 interface ImageMetadataPanelProps {
   originalImage: ImageFileMeta | null;
   modifiedImage: ImageFileMeta | null;
-  onClose: () => void;
 }
 
-export function ImageMetadataPanel({ originalImage, modifiedImage, onClose }: ImageMetadataPanelProps) {
+export function ImageMetadataPanel({ originalImage, modifiedImage }: ImageMetadataPanelProps) {
   if (!originalImage && !modifiedImage) return null;
 
   return (
-    <div className="flex flex-col gap-0 border-t border-border-default bg-bg-primary">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border-default">
-        <div className="flex items-center gap-2">
-          <MdInfo className="text-accent-primary text-lg" />
-          <span className="text-sm font-bold text-text-primary">File Metadata</span>
-        </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <MdClose className="text-lg" />
-        </Button>
-      </div>
-
+    <div className="flex flex-col gap-0 bg-bg-primary">
       <div className={cn(
-        "flex gap-4 p-4 overflow-y-auto custom-scrollbar",
+        "flex gap-4 p-4",
         originalImage && modifiedImage ? "flex-row" : "flex-col"
       )}>
         {originalImage && (
