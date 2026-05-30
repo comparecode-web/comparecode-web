@@ -234,7 +234,6 @@ function SliderView() {
   const origImgEl = useRef<HTMLImageElement | null>(null);
   const modImgEl = useRef<HTMLImageElement | null>(null);
   const sliderRef = useRef(sliderPosition);
-  sliderRef.current = sliderPosition;
 
   const drawFrame = useCallback(() => {
     const canvas = canvasRef.current;
@@ -352,7 +351,10 @@ function SliderView() {
     return () => ro.disconnect();
   }, [drawFrame]);
 
-  useEffect(() => { drawFrame(); }, [sliderPosition, drawFrame]);
+  useEffect(() => {
+    sliderRef.current = sliderPosition;
+    drawFrame();
+  }, [sliderPosition, drawFrame]);
 
   const updateFromClientX = useCallback((clientX: number) => {
     const canvas = canvasRef.current;
@@ -408,19 +410,35 @@ function DiffView() {
   const diffAlgorithm = useImageCompareStore((s) => s.diffAlgorithm);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stats, setStats] = useState<DiffStats | null>(null);
-  const [isComputing, setIsComputing] = useState(false);
-
-  useEffect(() => {
-    if (!originalImage || !modifiedImage || !canvasRef.current) return;
-
-    setIsComputing(true);
-    renderDiff(originalImage.url, modifiedImage.url, canvasRef.current, diffAlgorithm)
-      .then(setStats)
-      .catch(console.error)
-      .finally(() => setIsComputing(false));
-  }, [originalImage, modifiedImage, diffAlgorithm]);
+  const latestRenderRequestIdRef = useRef(0);
 
   const ready = originalImage && modifiedImage;
+
+  useEffect(() => {
+    if (!ready || !canvasRef.current) return;
+
+    let cancelled = false;
+    const requestId = ++latestRenderRequestIdRef.current;
+    const visibleCanvas = canvasRef.current;
+    const offscreenCanvas = document.createElement("canvas");
+
+    renderDiff(originalImage.url, modifiedImage.url, offscreenCanvas, diffAlgorithm)
+      .then((nextStats) => {
+        if (cancelled || requestId !== latestRenderRequestIdRef.current) return;
+        visibleCanvas.width = offscreenCanvas.width;
+        visibleCanvas.height = offscreenCanvas.height;
+        const visibleCtx = visibleCanvas.getContext("2d");
+        if (!visibleCtx) return;
+        visibleCtx.clearRect(0, 0, visibleCanvas.width, visibleCanvas.height);
+        visibleCtx.drawImage(offscreenCanvas, 0, 0);
+        setStats(nextStats);
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, originalImage, modifiedImage, diffAlgorithm]);
 
   return (
     <div className="flex flex-col gap-3 h-full">
@@ -434,7 +452,6 @@ function DiffView() {
               {stats.percentDifferent.toFixed(2)}%
             </span> changed
           </span>
-          {isComputing && <span className="text-xs text-text-secondary animate-pulse">Computing…</span>}
         </div>
       )}
 

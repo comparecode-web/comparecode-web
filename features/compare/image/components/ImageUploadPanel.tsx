@@ -24,25 +24,30 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
     const url = URL.createObjectURL(file);
     const img = new window.Image();
 
-    await new Promise<void>((resolve) => {
-      img.onload = () => resolve();
-      img.src = url;
-    });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to decode image"));
+        img.src = url;
+      });
 
-    const exif = await readExifData(file);
+      const exif = await readExifData(file);
 
-    const meta: ImageFileMeta = {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified,
-      width: img.naturalWidth,
-      height: img.naturalHeight,
-      url,
-      exif
-    };
+      const meta: ImageFileMeta = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        url,
+        exif
+      };
 
-    onImageLoad(meta);
+      onImageLoad(meta);
+    } catch {
+      URL.revokeObjectURL(url);
+    }
   }, [onImageLoad]);
 
   const handleFiles = useCallback((files: FileList | null) => {
