@@ -6,7 +6,7 @@ import {
   HistoryStepItem
 } from "@/types/history";
 import type { CompareMode } from "@/features/compare/shared/types/compareMode";
-import type { CompareHistorySnapshot, HistoryStepMeta, TextHistorySnapshot } from "@/features/compare/shared/types/historySnapshot";
+import type { CompareHistorySnapshot, HistoryStepMeta, ImageHistorySnapshot, TextHistorySnapshot } from "@/features/compare/shared/types/historySnapshot";
 
 interface HistorySnapshotState {
   snapshot: CompareHistorySnapshot;
@@ -146,6 +146,41 @@ export class HistoryService {
     }
 
     return this.createSessionAsync(snapshot, HistoryActionType.Compare);
+  }
+
+  public static async updateImageSnapshotMetadataAsync(
+    sessionId: string,
+    metadata: Partial<Pick<ImageHistorySnapshot,
+      "originalImageType"
+      | "modifiedImageType"
+      | "originalImageSize"
+      | "modifiedImageSize"
+    >>
+  ): Promise<void> {
+    const item = await db.history.get(sessionId);
+    if (!item || item.snapshot?.mode !== "image") {
+      return;
+    }
+
+    const snapshot = item.snapshot;
+    const nextSnapshot: ImageHistorySnapshot = {
+      ...snapshot,
+      ...metadata
+    };
+
+    if (
+      snapshot.originalImageType === nextSnapshot.originalImageType
+      && snapshot.modifiedImageType === nextSnapshot.modifiedImageType
+      && snapshot.originalImageSize === nextSnapshot.originalImageSize
+      && snapshot.modifiedImageSize === nextSnapshot.modifiedImageSize
+    ) {
+      return;
+    }
+
+    await db.history.update(sessionId, {
+      snapshot: nextSnapshot,
+      updatedAt: new Date().toISOString()
+    });
   }
 
   public static async appendStepAsync(

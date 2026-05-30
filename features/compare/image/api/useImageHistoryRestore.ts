@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
+import { HistoryService } from "@/services/historyService";
 import { DiffHistoryItem } from "@/types/history";
 import { useImageCompareStore, type ImageFileMeta } from "@/features/compare/image/store/useImageCompareStore";
 
@@ -23,13 +24,15 @@ function inferImageType(url: string): string {
 function toRestoredImageMeta(
   url: string,
   name: string,
+  type: string,
+  size: number,
   width: number,
   height: number
 ): ImageFileMeta {
   return {
     name,
-    size: 0,
-    type: inferImageType(url),
+    size,
+    type,
     lastModified: Date.now(),
     width,
     height,
@@ -38,37 +41,135 @@ function toRestoredImageMeta(
   };
 }
 
+function normalizeKnownSize(size: number | undefined): number | null {
+  if (typeof size !== "number" || !Number.isFinite(size) || size <= 0) {
+    return null;
+  }
+
+  return size;
+}
+
+async function resolveImageSize(url: string): Promise<number | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+
+    const blob = await response.blob();
+    return blob.size > 0 ? blob.size : null;
+  } catch {
+    return null;
+  }
+}
+
 export function useImageHistoryRestore() {
   const setOriginalImage = useImageCompareStore((state) => state.setOriginalImage);
   const setModifiedImage = useImageCompareStore((state) => state.setModifiedImage);
   const setCompareMode = useImageCompareStore((state) => state.setCompareMode);
   const setIsMetadataPanelOpen = useImageCompareStore((state) => state.setIsMetadataPanelOpen);
+  const restoreRequestIdRef = useRef(0);
 
   const restoreImageHistoryItem = useCallback((item: DiffHistoryItem): boolean => {
     if (item.snapshot?.mode !== "image") {
       return false;
     }
 
+    const requestId = ++restoreRequestIdRef.current;
     const snapshot = item.snapshot;
     const originalImageUrl = snapshot.originalImageDataUrl || snapshot.originalImageUrl;
     const modifiedImageUrl = snapshot.modifiedImageDataUrl || snapshot.modifiedImageUrl;
+    const originalImageType = snapshot.originalImageType || inferImageType(originalImageUrl);
+    const modifiedImageType = snapshot.modifiedImageType || inferImageType(modifiedImageUrl);
+    const originalKnownSize = normalizeKnownSize(snapshot.originalImageSize);
+    const modifiedKnownSize = normalizeKnownSize(snapshot.modifiedImageSize);
 
-    setOriginalImage(toRestoredImageMeta(
+    const originalImageMeta = toRestoredImageMeta(
       originalImageUrl,
       snapshot.originalImageName ?? "Original image",
+      originalImageType,
+      originalKnownSize ?? -1,
       snapshot.originalImageWidth ?? 0,
       snapshot.originalImageHeight ?? 0
-    ));
+    );
 
-    setModifiedImage(toRestoredImageMeta(
+    const modifiedImageMeta = toRestoredImageMeta(
       modifiedImageUrl,
       snapshot.modifiedImageName ?? "Modified image",
+      modifiedImageType,
+      modifiedKnownSize ?? -1,
       snapshot.modifiedImageWidth ?? 0,
       snapshot.modifiedImageHeight ?? 0
-    ));
+    );
+
+    setOriginalImage(originalImageMeta);
+    setModifiedImage(modifiedImageMeta);
 
     setCompareMode("side-by-side");
     setIsMetadataPanelOpen(false);
+
+    const needsOriginalSizeBackfill = originalKnownSize === null;
+    const needsModifiedSizeBackfill = modifiedKnownSize === null;
+    const needsTypeBackfill = !snapshot.originalImageType || !snapshot.modifiedImageType;
+
+    if (needsOriginalSizeBackfill || needsModifiedSizeBackfill || needsTypeBackfill) {
+      const backfillMetadata = async () => {
+        const [resolvedOriginalSize, resolvedModifiedSize] = await Promise.all([
+          needsOriginalSizeBackfill ? resolveImageSize(originalImageUrl) : Promise.resolve(originalKnownSize),
+          needsModifiedSizeBackfill ? resolveImageSize(modifiedImageUrl) : Promise.resolve(modifiedKnownSize)
+        ]);
+
+        if (requestId !== restoreRequestIdRef.current) {
+          return;
+        }
+
+        const originalFinalSize = resolvedOriginalSize ?? originalImageMeta.size;
+        const modifiedFinalSize = resolvedModifiedSize ?? modifiedImageMeta.size;
+
+        if (originalFinalSize !== originalImageMeta.size) {
+          setOriginalImage({
+            ...originalImageMeta,
+            size: originalFinalSize
+          });
+        }
+
+        if (modifiedFinalSize !== modifiedImageMeta.size) {
+          setModifiedImage({
+            ...modifiedImageMeta,
+            size: modifiedFinalSize
+          });
+        }
+
+        const nextSnapshotMetadata: {
+          originalImageType?: string;
+          modifiedImageType?: string;
+          originalImageSize?: number;
+          modifiedImageSize?: number;
+        } = {};
+
+        if (!snapshot.originalImageType && originalImageType) {
+          nextSnapshotMetadata.originalImageType = originalImageType;
+        }
+
+        if (!snapshot.modifiedImageType && modifiedImageType) {
+          nextSnapshotMetadata.modifiedImageType = modifiedImageType;
+        }
+
+        if (needsOriginalSizeBackfill && typeof resolvedOriginalSize === "number" && resolvedOriginalSize > 0) {
+          nextSnapshotMetadata.originalImageSize = resolvedOriginalSize;
+        }
+
+        if (needsModifiedSizeBackfill && typeof resolvedModifiedSize === "number" && resolvedModifiedSize > 0) {
+          nextSnapshotMetadata.modifiedImageSize = resolvedModifiedSize;
+        }
+
+        if (Object.keys(nextSnapshotMetadata).length > 0) {
+          await HistoryService.updateImageSnapshotMetadataAsync(item.id, nextSnapshotMetadata);
+        }
+      };
+
+      void backfillMetadata().catch(console.error);
+    }
 
     return true;
   }, [setCompareMode, setIsMetadataPanelOpen, setModifiedImage, setOriginalImage]);

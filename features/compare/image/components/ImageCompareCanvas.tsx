@@ -5,6 +5,16 @@ import { cn } from "@/utils/uiHelpers";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import { renderDiff, renderFade, DiffStats } from "../services/ImageDiffService";
 
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 20;
+const SOFT_CLAMP_START_ZOOM = 1.35;
+const SOFT_CLAMP_RANGE = 2.5;
+const SOFT_OVERSCROLL_RATIO = 0.1;
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 // Side-by-Side
 
 function SideBySideView() {
@@ -23,6 +33,53 @@ function SideBySideView() {
   const lastTouchDist = useRef<number | null>(null);
   const origImgEl = useRef<HTMLImageElement | null>(null);
   const modImgEl = useRef<HTMLImageElement | null>(null);
+
+  const getPanLimits = useCallback((allowOverscroll: boolean) => {
+    const zoom = stateRef.current.zoom;
+    const pairs = [
+      [origCanvasRef.current, origImgEl.current],
+      [modCanvasRef.current, modImgEl.current],
+    ] as Array<[HTMLCanvasElement | null, HTMLImageElement | null]>;
+
+    let hasComparablePair = false;
+    let maxPanX = Number.POSITIVE_INFINITY;
+    let maxPanY = Number.POSITIVE_INFINITY;
+
+    pairs.forEach(([canvas, img]) => {
+      if (!canvas || !img || img.naturalWidth <= 0 || img.naturalHeight <= 0) return;
+
+      hasComparablePair = true;
+
+      const fitScale = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+      const renderedWidth = img.naturalWidth * fitScale * zoom;
+      const renderedHeight = img.naturalHeight * fitScale * zoom;
+      const hardPanX = Math.max(0, (renderedWidth - canvas.width) / 2);
+      const hardPanY = Math.max(0, (renderedHeight - canvas.height) / 2);
+
+      let overscrollX = 0;
+      let overscrollY = 0;
+      if (allowOverscroll && zoom > SOFT_CLAMP_START_ZOOM) {
+        const softProgress = clampNumber((zoom - SOFT_CLAMP_START_ZOOM) / SOFT_CLAMP_RANGE, 0, 1);
+        overscrollX = canvas.width * SOFT_OVERSCROLL_RATIO * softProgress;
+        overscrollY = canvas.height * SOFT_OVERSCROLL_RATIO * softProgress;
+      }
+
+      maxPanX = Math.min(maxPanX, hardPanX + overscrollX);
+      maxPanY = Math.min(maxPanY, hardPanY + overscrollY);
+    });
+
+    if (!hasComparablePair || !Number.isFinite(maxPanX) || !Number.isFinite(maxPanY)) {
+      return { maxPanX: 0, maxPanY: 0 };
+    }
+
+    return { maxPanX, maxPanY };
+  }, []);
+
+  const clampPanState = useCallback((allowOverscroll: boolean) => {
+    const { maxPanX, maxPanY } = getPanLimits(allowOverscroll);
+    stateRef.current.panX = clampNumber(stateRef.current.panX, -maxPanX, maxPanX);
+    stateRef.current.panY = clampNumber(stateRef.current.panY, -maxPanY, maxPanY);
+  }, [getPanLimits]);
 
   const drawCanvas = useCallback((canvas: HTMLCanvasElement, img: HTMLImageElement | null) => {
     const ctx = canvas.getContext("2d");
@@ -45,16 +102,16 @@ function SideBySideView() {
   useEffect(() => {
     if (!originalImage) { origImgEl.current = null; redrawBoth(); return; }
     const img = new Image();
-    img.onload = () => { origImgEl.current = img; redrawBoth(); };
+    img.onload = () => { origImgEl.current = img; clampPanState(false); redrawBoth(); };
     img.src = originalImage.url;
-  }, [originalImage, redrawBoth]);
+  }, [clampPanState, originalImage, redrawBoth]);
 
   useEffect(() => {
     if (!modifiedImage) { modImgEl.current = null; redrawBoth(); return; }
     const img = new Image();
-    img.onload = () => { modImgEl.current = img; redrawBoth(); };
+    img.onload = () => { modImgEl.current = img; clampPanState(false); redrawBoth(); };
     img.src = modifiedImage.url;
-  }, [modifiedImage, redrawBoth]);
+  }, [clampPanState, modifiedImage, redrawBoth]);
 
   useEffect(() => {
     const pairs = [
@@ -68,6 +125,7 @@ function SideBySideView() {
         const { width, height } = container.getBoundingClientRect();
         if (width > 0 && height > 0) { canvas.width = Math.round(width); canvas.height = Math.round(height); }
       });
+      clampPanState(false);
       redrawBoth();
     };
 
@@ -75,14 +133,15 @@ function SideBySideView() {
     pairs.forEach(([c]) => c && ro.observe(c));
     resize();
     return () => ro.disconnect();
-  }, [redrawBoth]);
+  }, [clampPanState, redrawBoth]);
 
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    stateRef.current.zoom = Math.min(20, Math.max(0.1, stateRef.current.zoom * factor));
+    stateRef.current.zoom = clampNumber(stateRef.current.zoom * factor, MIN_ZOOM, MAX_ZOOM);
+    clampPanState(true);
     redrawBoth();
-  }, [redrawBoth]);
+  }, [clampPanState, redrawBoth]);
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
     dragging.current = true;
@@ -95,10 +154,16 @@ function SideBySideView() {
     if (!dragging.current) return;
     stateRef.current.panX = panAtDrag.current.x + (e.clientX - dragOrigin.current.x);
     stateRef.current.panY = panAtDrag.current.y + (e.clientY - dragOrigin.current.y);
+    clampPanState(true);
     redrawBoth();
-  }, [redrawBoth]);
+  }, [clampPanState, redrawBoth]);
 
-  const handleMouseUp = useCallback(() => { dragging.current = false; }, []);
+  const handleMouseUp = useCallback(() => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    clampPanState(false);
+    redrawBoth();
+  }, [clampPanState, redrawBoth]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     e.preventDefault();
@@ -120,17 +185,23 @@ function SideBySideView() {
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
-      stateRef.current.zoom = Math.min(20, Math.max(0.1, stateRef.current.zoom * (dist / lastTouchDist.current)));
+      stateRef.current.zoom = clampNumber(stateRef.current.zoom * (dist / lastTouchDist.current), MIN_ZOOM, MAX_ZOOM);
       lastTouchDist.current = dist;
+      clampPanState(true);
       redrawBoth();
     } else if (e.touches.length === 1) {
       stateRef.current.panX = panAtDrag.current.x + (e.touches[0].clientX - dragOrigin.current.x);
       stateRef.current.panY = panAtDrag.current.y + (e.touches[0].clientY - dragOrigin.current.y);
+      clampPanState(true);
       redrawBoth();
     }
-  }, [redrawBoth]);
+  }, [clampPanState, redrawBoth]);
 
-  const handleTouchEnd = useCallback(() => { lastTouchDist.current = null; }, []);
+  const handleTouchEnd = useCallback(() => {
+    lastTouchDist.current = null;
+    clampPanState(false);
+    redrawBoth();
+  }, [clampPanState, redrawBoth]);
 
   useEffect(() => {
     const canvases = [origCanvasRef.current, modCanvasRef.current].filter((c): c is HTMLCanvasElement => c !== null);
@@ -194,18 +265,20 @@ function FadeView() {
 
   return (
     <div className="flex flex-col gap-3 h-full">
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-text-secondary font-semibold shrink-0">Original</span>
-        <input
-          type="range"
-          min={0}
-          max={1000}
-          value={fadeValue}
-          onChange={(e) => setFadeValue(Number(e.target.value))}
-          className="flex-1 custom-slider"
-        />
-        <span className="text-xs text-text-secondary font-semibold shrink-0">Modified</span>
-        <span className="text-xs font-bold text-text-primary w-8 text-right">{(fadeValue / 10).toFixed(0)}%</span>
+      <div className="flex justify-center">
+        <div className="flex w-full items-center gap-3" style={{ width: "min(100%, clamp(18rem, 58vw, 34rem))" }}>
+          <span className="text-xs text-text-secondary font-semibold shrink-0">Original</span>
+          <input
+            type="range"
+            min={0}
+            max={1000}
+            value={fadeValue}
+            onChange={(e) => setFadeValue(Number(e.target.value))}
+            className="flex-1 min-w-0 custom-slider"
+          />
+          <span className="text-xs text-text-secondary font-semibold shrink-0">Modified</span>
+          <span className="text-xs font-bold text-text-primary w-8 text-right">{(fadeValue / 10).toFixed(0)}%</span>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary flex items-center justify-center overflow-hidden">
@@ -254,7 +327,7 @@ function SliderView() {
     const fitH = imgH * scale;
     const offX = (width - fitW) / 2;
     const offY = (height - fitH) / 2;
-    const divX = offX + (sliderRef.current / 100) * fitW;
+    const divX = offX + sliderRef.current * fitW;
 
     ctx.drawImage(mod, offX, offY, fitW, fitH);
 
@@ -368,8 +441,9 @@ function SliderView() {
     const imgH = Math.max(orig.naturalHeight, mod.naturalHeight);
     const scale = Math.min(canvas.width / imgW, canvas.height / imgH);
     const fitW = imgW * scale;
+    if (fitW <= 0) return;
     const offX = (canvas.width - fitW) / 2;
-    setSliderPosition(Math.round(Math.min(100, Math.max(0, ((canvasX - offX) / fitW) * 100))));
+    setSliderPosition(clampNumber((canvasX - offX) / fitW, 0, 1));
   }, [setSliderPosition]);
 
   useEffect(() => {

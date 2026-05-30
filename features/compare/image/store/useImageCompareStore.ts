@@ -47,13 +47,17 @@ function revokeUniqueObjectUrls(urls: Array<string | null | undefined>): void {
   uniqueUrls.forEach((url) => revokeObjectUrl(url));
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 export const useImageCompareStore = create<ImageCompareState>((set) => ({
   originalImage: null,
   modifiedImage: null,
   compareMode: "side-by-side",
   diffAlgorithm: "highlight",
   fadeValue: 500,
-  sliderPosition: 50,
+  sliderPosition: 0.5,
   isMetadataPanelOpen: false,
 
   setOriginalImage: (img) => set((state) => {
@@ -74,8 +78,8 @@ export const useImageCompareStore = create<ImageCompareState>((set) => ({
   }),
   setCompareMode: (mode) => set({ compareMode: mode }),
   setDiffAlgorithm: (algo) => set({ diffAlgorithm: algo }),
-  setFadeValue: (value) => set({ fadeValue: value }),
-  setSliderPosition: (pos) => set({ sliderPosition: pos }),
+  setFadeValue: (value) => set({ fadeValue: clamp(value, 0, 1000) }),
+  setSliderPosition: (pos) => set({ sliderPosition: clamp(pos, 0, 1) }),
   setIsMetadataPanelOpen: (open) => set({ isMetadataPanelOpen: open }),
   clearAll: () => set((state) => {
     revokeUniqueObjectUrls([state.originalImage?.url, state.modifiedImage?.url]);
@@ -85,7 +89,7 @@ export const useImageCompareStore = create<ImageCompareState>((set) => ({
       compareMode: "side-by-side",
       diffAlgorithm: "highlight",
       fadeValue: 500,
-      sliderPosition: 50,
+      sliderPosition: 0.5,
       isMetadataPanelOpen: false
     };
   })

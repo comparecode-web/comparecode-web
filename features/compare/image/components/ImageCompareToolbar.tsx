@@ -1,27 +1,23 @@
 "use client";
 
 import {
-  MdViewSidebar,
-  MdBlurOn,
-  MdSwapHoriz,
-  MdDifference,
-  MdInfo,
   MdDelete,
 } from "react-icons/md";
-import { cn } from "@/utils/uiHelpers";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
+import { Switch } from "@/components/ui/Switch";
 import {
   useImageCompareStore,
   ImageCompareMode,
   DiffAlgorithm,
 } from "../store/useImageCompareStore";
 
-const MODES: { value: ImageCompareMode; label: string; icon: React.ReactNode; shortLabel: string }[] = [
-  { value: "side-by-side", label: "Side by Side", shortLabel: "SxS", icon: <MdViewSidebar className="text-base" /> },
-  { value: "fade", label: "Fade", shortLabel: "Fade", icon: <MdBlurOn className="text-base" /> },
-  { value: "slider", label: "Slider", shortLabel: "Slide", icon: <MdSwapHoriz className="text-base" /> },
-  { value: "diff", label: "Diff", shortLabel: "Diff", icon: <MdDifference className="text-base" /> },
+const MODES: Array<{ value: ImageCompareMode; label: string }> = [
+  { value: "side-by-side", label: "Side by Side" },
+  { value: "fade", label: "Fade" },
+  { value: "slider", label: "Slider" },
+  { value: "diff", label: "Advanced" },
 ];
 
 const DIFF_ALGORITHMS: { value: DiffAlgorithm; label: string }[] = [
@@ -52,25 +48,12 @@ export function ImageCompareToolbar() {
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border-default bg-bg-primary px-3 py-2 sm:px-4">
-      <div className="flex items-center gap-0.5 rounded-md border border-border-default bg-bg-secondary p-0.5">
-        {MODES.map((mode) => (
-          <button
-            key={mode.value}
-            type="button"
-            onClick={() => setCompareMode(mode.value)}
-            className={cn(
-              "flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold transition-all duration-(--duration-short)",
-              compareMode === mode.value
-                ? "bg-accent-primary text-white shadow-sm"
-                : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
-            )}
-            title={mode.label}
-          >
-            {mode.icon}
-            <span className="hidden sm:inline">{mode.label}</span>
-            <span className="sm:hidden">{mode.shortLabel}</span>
-          </button>
-        ))}
+      <div className="w-full sm:w-auto sm:min-w-120">
+        <SegmentedControl<ImageCompareMode>
+          options={MODES}
+          value={compareMode}
+          onChange={setCompareMode}
+        />
       </div>
 
       {compareMode === "diff" && (
@@ -87,28 +70,46 @@ export function ImageCompareToolbar() {
 
       <div className="flex-1" />
 
-      <Button
-        variant={isMetadataPanelOpen ? "outline" : "ghost"}
-        size="sm"
-        onClick={() => setIsMetadataPanelOpen(!isMetadataPanelOpen)}
-        leftIcon={<MdInfo />}
-        title="File Metadata"
+      <Switch
+        checked={isMetadataPanelOpen}
+        onChange={(event) => setIsMetadataPanelOpen(event.target.checked)}
+        label="Show Metadata"
+        title="Toggle metadata panel"
         disabled={!hasImages}
-      >
-        <span className="hidden sm:inline">Metadata</span>
-      </Button>
+      />
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={clearAll}
-        leftIcon={<MdDelete />}
-        title="Clear all"
-        disabled={!hasImages}
-        className="text-text-secondary hover:text-danger"
-      >
-        <span className="hidden sm:inline">Clear</span>
-      </Button>
+      <ClearButton onClear={clearAll} disabled={!hasImages} />
     </div>
+  );
+}
+
+interface ClearButtonProps {
+  onClear: () => void;
+  disabled?: boolean;
+}
+
+function ClearButton({ onClear, disabled = false }: ClearButtonProps) {
+  return (
+    <>
+      <Button
+        variant="danger"
+        size="sm"
+        onClick={onClear}
+        leftIcon={<MdDelete className="text-xl" />}
+        title="Clear comparison"
+        disabled={disabled}
+        className="hidden md:inline-flex"
+      >
+        Clear
+      </Button>
+      <button
+        onClick={onClear}
+        className="md:hidden p-2 text-danger hover:bg-hover-overlay rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Clear comparison"
+        disabled={disabled}
+      >
+        <MdDelete className="text-xl" />
+      </button>
+    </>
   );
 }

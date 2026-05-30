@@ -10,6 +10,10 @@ export interface ImageHistorySnapshot {
   modifiedImageUrl: string;
   originalImageName?: string;
   modifiedImageName?: string;
+  originalImageType?: string;
+  modifiedImageType?: string;
+  originalImageSize?: number;
+  modifiedImageSize?: number;
   originalImageDataUrl?: string;
   modifiedImageDataUrl?: string;
   originalImageWidth?: number;
