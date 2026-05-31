@@ -52,7 +52,12 @@
 - Avoid unrelated refactors in feature/fix PRs.
 - Preserve repository conventions and naming patterns.
 - Follow the review priority checklist in `.github/copilot-review-instructions.md`.
+- Preserve file encoding as UTF-8 and prefer UTF-8 without BOM when writing files.
+- Do not run bulk encoding conversions or character set transforms unless explicitly requested by the user.
+- Never modify repository files using bulk script/command rewrite methods (for example PowerShell search-replace, `sed`, or similar). Use manual, file-by-file edits only.
+- Command-line tools are allowed for search, diagnostics, and validation only.
 - Accessibility `aria-label` review comments are not required in this repository scope; treat them as non-blocking and ignore them unless explicitly requested by the user.
+- Do not introduce `aria-label`-only code changes unless the user explicitly asks for them.
 - Prioritize correctness, architecture boundaries, and single source of truth before style-level comments.
 - Prefer reusing existing UI primitives/components instead of introducing near-duplicate implementations.
 - Avoid ad-hoc styling or one-off component variants unless explicitly justified by requirements.

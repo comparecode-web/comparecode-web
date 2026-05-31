@@ -3,10 +3,10 @@
 import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useRouter } from "next/navigation";
 import { useHistoryStore } from "@/store/useHistoryStore";
 import { useTextHistoryRestore } from "@/features/compare/text";
 import { useImageHistoryRestore } from "@/features/compare/image";
-import { useAppStore } from "@/store/useAppStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { Button } from "@/components/ui/Button";
 import { HistoryItemCard } from "./HistoryItemCard";
@@ -17,7 +17,7 @@ export function HistoryView() {
   const { items, loadHistory, deleteItem, deleteAll, toggleBookmark } = useHistoryStore();
   const { restoreTextHistoryItem } = useTextHistoryRestore();
   const { restoreImageHistoryItem } = useImageHistoryRestore();
-  const navigate = useAppStore((state) => state.navigate);
+  const router = useRouter();
   const settings = useSettingsStore((state) => state.settings);
   const [listRef] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
   const tickerNowMs = useLiveTimeTicker(items.map((item) => item.lastActionAt ?? item.updatedAt ?? item.createdAt));
@@ -42,13 +42,13 @@ export function HistoryView() {
     const compareMode = item.snapshot?.mode ?? item.compareMode ?? "text";
     if (compareMode === "image") {
       restoreImageHistoryItem(item);
-      navigate("image");
+      router.push("/image");
       return;
     }
 
     restoreTextHistoryItem(item, settings);
-    navigate("text");
-  }, [navigate, restoreImageHistoryItem, restoreTextHistoryItem, settings]);
+    router.push("/text");
+  }, [restoreImageHistoryItem, restoreTextHistoryItem, router, settings]);
 
   const handleDeleteAll = useCallback(async () => {
     if (window.confirm("You are about to delete the whole history database. Are you sure?")) {
@@ -83,7 +83,7 @@ export function HistoryView() {
   }, [toggleBookmark]);
 
   return (
-    <div className="flex h-full w-full flex-col bg-bg-secondary">
+    <div className="flex h-full w-full flex-col bg-bg-secondary bg-linear-to-br from-accent-primary/10 via-transparent to-accent-primary/5">
       <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6 relative">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdHistory className="text-xl sm:text-2xl text-text-secondary" />

@@ -103,6 +103,45 @@ button:not(:disabled) {
   animation: slideUpFade var(--duration-medium) cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes ccFadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ccFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ccScaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.cc-animate-fade-in-up {
+  opacity: 0;
+  animation: ccFadeInUp var(--duration-long) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cc-animate-fade-in {
+  opacity: 0;
+  animation: ccFadeIn var(--duration-long) ease forwards;
+}
+
+.cc-animate-scale-in {
+  opacity: 0;
+  animation: ccScaleIn var(--duration-long) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-animate-fade-in-up,
+  .cc-animate-fade-in,
+  .cc-animate-scale-in {
+    animation-duration: 1ms;
+    animation-delay: 0ms !important;
+  }
+}
+
 @media (max-width: 639px) {
   input, textarea, select {
     font-size: 16px !important;

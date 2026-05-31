@@ -8,6 +8,20 @@ export interface ImageHistorySnapshot {
   mode: "image";
   originalImageUrl: string;
   modifiedImageUrl: string;
+  originalImageName?: string;
+  modifiedImageName?: string;
+  originalImageType?: string;
+  modifiedImageType?: string;
+  originalImageSize?: number;
+  modifiedImageSize?: number;
+  originalImageDataUrl?: string;
+  modifiedImageDataUrl?: string;
+  originalImageWidth?: number;
+  originalImageHeight?: number;
+  modifiedImageWidth?: number;
+  modifiedImageHeight?: number;
+  originalThumbnailDataUrl?: string;
+  modifiedThumbnailDataUrl?: string;
 }
 
 export type CompareHistorySnapshot = TextHistorySnapshot | ImageHistorySnapshot;

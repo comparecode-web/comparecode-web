@@ -34,10 +34,10 @@ const THEME_HIGHLIGHT_DEFAULTS: Record<string, ThemeHighlightDefaults> = {
     diffRemovedFg: "#a1292d"
   },
   dracula: {
-    diffAddedBg: "#1d3324",
-    diffAddedFg: "#357a49",
-    diffRemovedBg: "#381b1f",
-    diffRemovedFg: "#8f464d"
+    diffAddedBg: "rgba(80, 250, 123, 0.24)",
+    diffAddedFg: "#2f7a45",
+    diffRemovedBg: "rgba(255, 85, 85, 0.24)",
+    diffRemovedFg: "#9c4750"
   },
   monokai: {
     diffAddedBg: "#a6e22e26",
@@ -58,10 +58,10 @@ const THEME_HIGHLIGHT_DEFAULTS: Record<string, ThemeHighlightDefaults> = {
     diffRemovedFg: "#801d1b"
   },
   nord: {
-    diffAddedBg: "#a3be8c1f",
-    diffAddedFg: "#4f6343",
-    diffRemovedBg: "#bf616a1f",
-    diffRemovedFg: "#6b3a40"
+    diffAddedBg: "#a3be8c57",
+    diffAddedFg: "#5b7b4b",
+    diffRemovedBg: "#bf616a57",
+    diffRemovedFg: "#8b4c56"
   }
 };
 
