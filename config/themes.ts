@@ -58,10 +58,10 @@ const THEME_HIGHLIGHT_DEFAULTS: Record<string, ThemeHighlightDefaults> = {
     diffRemovedFg: "#801d1b"
   },
   nord: {
-    diffAddedBg: "#a3be8c1f",
-    diffAddedFg: "#4f6343",
-    diffRemovedBg: "#bf616a1f",
-    diffRemovedFg: "#6b3a40"
+    diffAddedBg: "#a3be8c57",
+    diffAddedFg: "#5b7b4b",
+    diffRemovedBg: "#bf616a57",
+    diffRemovedFg: "#8b4c56"
   }
 };
 

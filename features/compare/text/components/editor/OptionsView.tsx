@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Slider } from "@/components/ui/Slider";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
+import { Button } from "@/components/ui/Button";
 import { AVAILABLE_FONTS } from "@/config/fonts";
 import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
 import { MdRestartAlt } from "react-icons/md";
@@ -220,13 +221,15 @@ function ActionSection() {
       >
         Debug: TestText
       </button>
-      <button
+      <Button
+        variant="danger"
+        size="md"
         onClick={resetToDefaults}
-        className="w-full flex items-center justify-center gap-2 py-2 bg-danger-bg text-danger hover:brightness-95 rounded text-sm font-semibold transition-all border border-danger/20 mt-2"
+        leftIcon={<MdRestartAlt className="text-lg" />}
+        className="mt-2 w-full"
       >
-        <MdRestartAlt className="text-lg" />
-        <span>Reset to defaults</span>
-      </button>
+        Reset to defaults
+      </Button>
     </div>
   );
 }
