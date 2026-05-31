@@ -4,7 +4,7 @@ import {
   MdDelete,
 } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import {
   useImageCompareStore,
@@ -46,7 +46,7 @@ export function ImageCompareToolbar() {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border-default bg-bg-primary px-3 py-2 sm:px-4">
       <div className="w-full sm:w-auto sm:min-w-120">
-        <SegmentedControl<ImageCompareMode>
+        <SelectionBar<ImageCompareMode>
           options={MODES}
           value={compareMode}
           onChange={setCompareMode}
@@ -61,6 +61,7 @@ export function ImageCompareToolbar() {
             options={DIFF_ALGORITHMS}
             onChange={(v) => setDiffAlgorithm(v as DiffAlgorithm)}
             className="w-36 sm:w-44"
+            triggerClassName="py-1.5"
           />
         </div>
       )}

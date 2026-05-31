@@ -78,6 +78,20 @@ function boxQuery(
        + integral[y1 * W + x1];
 }
 
+function drawCheckerboard(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+  const tileSize = 12;
+  const light = "#f4f4f5";
+  const dark = "#d4d4d8";
+
+  for (let y = 0; y < height; y += tileSize) {
+    for (let x = 0; x < width; x += tileSize) {
+      const isLight = ((x / tileSize) + (y / tileSize)) % 2 === 0;
+      ctx.fillStyle = isLight ? light : dark;
+      ctx.fillRect(x, y, tileSize, tileSize);
+    }
+  }
+}
+
 export async function renderDiff(
   originalUrl: string,
   modifiedUrl: string,
@@ -359,6 +373,8 @@ export async function renderFade(
   targetCanvas: HTMLCanvasElement,
   alpha: number
 ): Promise<void> {
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+
   const [original, modified] = await Promise.all([
     loadImageToCanvas(originalUrl),
     loadImageToCanvas(modifiedUrl)
@@ -372,10 +388,19 @@ export async function renderFade(
   const ctx = targetCanvas.getContext("2d");
   if (!ctx) return;
 
+  const modifiedCompositeCanvas = document.createElement("canvas");
+  modifiedCompositeCanvas.width = width;
+  modifiedCompositeCanvas.height = height;
+  const modifiedCompositeCtx = modifiedCompositeCanvas.getContext("2d");
+  if (!modifiedCompositeCtx) return;
+
+  drawCheckerboard(modifiedCompositeCtx, width, height);
+  modifiedCompositeCtx.drawImage(modified.canvas, 0, 0, width, height);
+
   ctx.clearRect(0, 0, width, height);
-  ctx.globalAlpha = 1 - alpha;
+  ctx.globalAlpha = 1;
   ctx.drawImage(original.canvas, 0, 0, width, height);
-  ctx.globalAlpha = alpha;
-  ctx.drawImage(modified.canvas, 0, 0, width, height);
+  ctx.globalAlpha = clampedAlpha;
+  ctx.drawImage(modifiedCompositeCanvas, 0, 0, width, height);
   ctx.globalAlpha = 1;
 }

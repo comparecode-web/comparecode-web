@@ -8,7 +8,7 @@ import { originalTestText, modifiedTestText } from "@/utils/testData";
 import { UI_CONSTANTS } from "@/config/constants";
 import { Switch } from "@/components/ui/Switch";
 import { Slider } from "@/components/ui/Slider";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { AVAILABLE_FONTS } from "@/config/fonts";
 import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
@@ -54,7 +54,7 @@ function ComparisonSection() {
         onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
         label="Ignore Whitespace"
       />
-      <SegmentedControl<PrecisionLevel>
+      <SelectionBar<PrecisionLevel>
         options={[
           { label: "Word", value: PrecisionLevel.Word },
           { label: "Character", value: PrecisionLevel.Character }
@@ -128,7 +128,7 @@ function LayoutSection() {
           <MdRestartAlt className="text-lg" />
         </button>
       </div>
-      <SegmentedControl<ViewMode>
+      <SelectionBar<ViewMode>
         options={[
           { label: "Split", value: ViewMode.Split },
           { label: "Unified", value: ViewMode.Unified }

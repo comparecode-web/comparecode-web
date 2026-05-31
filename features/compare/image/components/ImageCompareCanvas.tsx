@@ -230,25 +230,33 @@ function SideBySideView() {
   return (
     <div className="flex gap-3 w-full h-full select-none">
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <span
-          className="text-xs font-semibold text-text-secondary tracking-wide shrink-0 truncate"
-          title={originalImage ? `Original (${originalImage.width}×${originalImage.height} - ${originalImage.name})` : "Original"}
-        >
-          <span className="uppercase">Original</span>
-          {originalImage ? ` (${originalImage.width}×${originalImage.height} - ${originalImage.name})` : ""}
-        </span>
+        <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Original</span>
+            {originalImage && (
+              <span className="text-xs font-bold text-danger shrink-0">{`${originalImage.width}x${originalImage.height}`}</span>
+            )}
+          </div>
+          {originalImage && (
+            <span className="text-xs text-text-secondary truncate">{originalImage.name}</span>
+          )}
+        </div>
         <div ref={origContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
           <canvas ref={origCanvasRef} className="block w-full h-full" />
         </div>
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <span
-          className="text-xs font-semibold text-text-secondary tracking-wide shrink-0 truncate"
-          title={modifiedImage ? `Modified (${modifiedImage.width}×${modifiedImage.height} - ${modifiedImage.name})` : "Modified"}
-        >
-          <span className="uppercase">Modified</span>
-          {modifiedImage ? ` (${modifiedImage.width}×${modifiedImage.height} - ${modifiedImage.name})` : ""}
-        </span>
+        <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Modified</span>
+            {modifiedImage && (
+              <span className="text-xs font-bold text-success shrink-0">{`${modifiedImage.width}x${modifiedImage.height}`}</span>
+            )}
+          </div>
+          {modifiedImage && (
+            <span className="text-xs text-text-secondary truncate">{modifiedImage.name}</span>
+          )}
+        </div>
         <div ref={modContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
           <canvas ref={modCanvasRef} className="block w-full h-full" />
         </div>

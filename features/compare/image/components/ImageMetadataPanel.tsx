@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { MdFolderOpen } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
 import { ImageFileMeta } from "../store/useImageCompareStore";
@@ -8,11 +8,11 @@ import { computeFileHash, formatFileSize } from "../utils/exifReader";
 
 interface MetaRowProps {
   label: string;
-  value: string | number | undefined;
+  value: ReactNode;
 }
 
 function MetaRow({ label, value }: MetaRowProps) {
-  if (!value && value !== 0) return null;
+  if (value === undefined || value === null || value === "") return null;
   return (
     <div className="flex justify-between gap-4 py-1.5 border-b border-border-default/50 last:border-b-0">
       <span className="text-xs font-semibold text-text-secondary shrink-0">{label}</span>
@@ -21,12 +21,26 @@ function MetaRow({ label, value }: MetaRowProps) {
   );
 }
 
+function formatAbsoluteFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function formatFileSizeDifference(bytes: number): string {
+  const sign = bytes >= 0 ? "+" : "-";
+  const absBytes = Math.abs(bytes);
+  return `${sign} ${formatAbsoluteFileSize(absBytes)}`;
+}
+
 interface ImageMetaPanelProps {
   image: ImageFileMeta;
   title: string;
+  sizeDifferenceBytes?: number;
+  sizeDifferenceClassName?: string;
 }
 
-function ImageMetaPanel({ image, title }: ImageMetaPanelProps) {
+function ImageMetaPanel({ image, title, sizeDifferenceBytes, sizeDifferenceClassName }: ImageMetaPanelProps) {
   const [hash, setHash] = useState<string>("");
 
   useEffect(() => {
@@ -47,6 +61,16 @@ function ImageMetaPanel({ image, title }: ImageMetaPanelProps) {
   const xRes = image.exif?.XResolution;
   const yRes = image.exif?.YResolution;
   const resString = xRes && yRes ? `${xRes} × ${yRes} ${resolutionUnit}` : undefined;
+  const fileSizeWithDifference = sizeDifferenceBytes === undefined
+    ? formatFileSize(image.size)
+    : (
+      <span className="inline-flex items-baseline gap-1">
+        <span>{formatFileSize(image.size)}</span>
+        <span className={cn("font-semibold", sizeDifferenceClassName)}>
+          ({formatFileSizeDifference(sizeDifferenceBytes)})
+        </span>
+      </span>
+    );
 
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -57,7 +81,7 @@ function ImageMetaPanel({ image, title }: ImageMetaPanelProps) {
 
       <div className="rounded-lg border border-border-default bg-bg-secondary px-3 py-1">
         <MetaRow label="File name" value={image.name} />
-        <MetaRow label="File size" value={formatFileSize(image.size)} />
+        <MetaRow label="File size" value={fileSizeWithDifference} />
         <MetaRow label="Format" value={image.type} />
         <MetaRow label="Dimensions" value={`${image.width} × ${image.height} px`} />
         <MetaRow label="Resolution" value={resString} />
@@ -86,6 +110,10 @@ interface ImageMetadataPanelProps {
 export function ImageMetadataPanel({ originalImage, modifiedImage }: ImageMetadataPanelProps) {
   if (!originalImage && !modifiedImage) return null;
 
+  const sizeDifferenceBytes = originalImage && modifiedImage
+    ? originalImage.size - modifiedImage.size
+    : undefined;
+
   return (
     <div className="flex flex-col gap-0 bg-bg-primary">
       <div className={cn(
@@ -93,10 +121,20 @@ export function ImageMetadataPanel({ originalImage, modifiedImage }: ImageMetada
         originalImage && modifiedImage ? "flex-row" : "flex-col"
       )}>
         {originalImage && (
-          <ImageMetaPanel image={originalImage} title="Original" />
+          <ImageMetaPanel
+            image={originalImage}
+            title="Original"
+            sizeDifferenceBytes={sizeDifferenceBytes}
+            sizeDifferenceClassName={sizeDifferenceBytes !== undefined ? "text-danger" : undefined}
+          />
         )}
         {modifiedImage && (
-          <ImageMetaPanel image={modifiedImage} title="Modified" />
+          <ImageMetaPanel
+            image={modifiedImage}
+            title="Modified"
+            sizeDifferenceBytes={sizeDifferenceBytes !== undefined ? -sizeDifferenceBytes : undefined}
+            sizeDifferenceClassName={sizeDifferenceBytes !== undefined ? "text-success" : undefined}
+          />
         )}
       </div>
     </div>
