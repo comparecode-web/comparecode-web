@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { MdCode, MdHistory, MdSettings, MdImage, MdHome } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
 import { cn } from "@/utils/uiHelpers";
@@ -18,6 +19,39 @@ export function MainNavHeader() {
     { href: "/history", label: "History", icon: MdHistory },
     { href: "/settings", label: "Settings", icon: MdSettings }
   ];
+
+  const navRef = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const updateIndicator = useCallback(() => {
+    const nav = navRef.current;
+    const indicator = indicatorRef.current;
+    const activeEl = itemRefs.current[pathname];
+
+    if (!indicator) {
+      return;
+    }
+
+    if (!nav || !activeEl) {
+      indicator.style.opacity = "0";
+      return;
+    }
+
+    const navRect = nav.getBoundingClientRect();
+    const rect = activeEl.getBoundingClientRect();
+    indicator.style.left = `${rect.left - navRect.left}px`;
+    indicator.style.width = `${rect.width}px`;
+    indicator.style.opacity = "1";
+  }, [pathname]);
+
+  useLayoutEffect(() => {
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => {
+      window.removeEventListener("resize", updateIndicator);
+    };
+  }, [updateIndicator]);
 
   const navigateTo = (href: string) => {
     if (pathname === href) {
@@ -40,29 +74,37 @@ export function MainNavHeader() {
             className="rounded-sm"
             priority
           />
-          <h1 className="text-sm font-bold text-text-primary sm:text-lg">CompareCode</h1>
+          <h1 className="bg-linear-to-r from-text-primary to-accent-primary bg-clip-text text-sm font-bold text-transparent sm:text-lg">CompareCode</h1>
         </Link>
-        <nav className="flex h-full items-center gap-1 sm:gap-2">
+        <nav ref={navRef} className="relative flex h-full items-center gap-1 sm:gap-2">
+          <div
+            ref={indicatorRef}
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 z-0 h-8 -translate-y-1/2 rounded-md bg-accent-primary shadow-sm ease-[cubic-bezier(0.16,1,0.3,1)] transition-all duration-(--duration-medium)"
+            style={{ left: 0, width: 0, opacity: 0 }}
+          />
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
               <button
                 key={href}
+                ref={(el) => {
+                  itemRefs.current[href] = el;
+                }}
                 type="button"
                 onClick={() => navigateTo(href)}
                 className={cn(
-                  "relative z-10 flex items-center gap-2 overflow-hidden rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium)",
+                  "group relative z-10 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium) active:scale-95",
                   isActive ? "text-white" : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
                 )}
                 title={label}
               >
-                <div
+                <Icon
                   className={cn(
-                    "absolute inset-0 -z-10 rounded-md bg-accent-primary transition-all duration-(--duration-medium) ease-out",
-                    isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"
+                    "text-lg transition-transform duration-(--duration-medium) ease-out group-hover:scale-110",
+                    isActive ? "text-white" : "text-text-secondary"
                   )}
                 />
-                <Icon className={cn("text-lg transition-colors duration-(--duration-medium)", isActive ? "text-white" : "text-text-secondary")} />
                 <span className="hidden sm:inline">{label}</span>
               </button>
             );

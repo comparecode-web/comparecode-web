@@ -83,7 +83,7 @@ export function HistoryView() {
   }, [toggleBookmark]);
 
   return (
-    <div className="flex h-full w-full flex-col bg-bg-secondary">
+    <div className="flex h-full w-full flex-col bg-bg-secondary bg-linear-to-br from-accent-primary/10 via-transparent to-accent-primary/5">
       <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6 relative">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
