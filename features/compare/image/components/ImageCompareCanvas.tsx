@@ -1,12 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MdRestartAlt } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
+import { getSectionResetButtonClass } from "@/utils/settingsReset";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import { renderDiff, renderFade, DiffStats } from "../services/ImageDiffService";
 
-const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 20;
+const DEFAULT_ZOOM = 1;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 3;
+const DEFAULT_FADE_VALUE = 500;
 const SOFT_CLAMP_START_ZOOM = 1.35;
 const SOFT_CLAMP_RANGE = 2.5;
 const SOFT_OVERSCROLL_RATIO = 0.1;
@@ -26,7 +30,8 @@ function SideBySideView() {
   const origContainerRef = useRef<HTMLDivElement>(null);
   const modContainerRef = useRef<HTMLDivElement>(null);
 
-  const stateRef = useRef({ zoom: 1, panX: 0, panY: 0 });
+  const stateRef = useRef({ zoom: DEFAULT_ZOOM, panX: 0, panY: 0 });
+  const [zoomValue, setZoomValue] = useState(DEFAULT_ZOOM);
   const dragging = useRef(false);
   const dragOrigin = useRef({ x: 0, y: 0 });
   const panAtDrag = useRef({ x: 0, y: 0 });
@@ -99,6 +104,14 @@ function SideBySideView() {
     if (modCanvasRef.current) drawCanvas(modCanvasRef.current, modImgEl.current);
   }, [drawCanvas]);
 
+  const setZoom = useCallback((nextZoom: number, allowOverscroll: boolean) => {
+    const normalizedZoom = clampNumber(nextZoom, MIN_ZOOM, MAX_ZOOM);
+    stateRef.current.zoom = normalizedZoom;
+    setZoomValue(normalizedZoom);
+    clampPanState(allowOverscroll);
+    redrawBoth();
+  }, [clampPanState, redrawBoth]);
+
   useEffect(() => {
     if (!originalImage) { origImgEl.current = null; redrawBoth(); return; }
     const img = new Image();
@@ -138,10 +151,8 @@ function SideBySideView() {
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    stateRef.current.zoom = clampNumber(stateRef.current.zoom * factor, MIN_ZOOM, MAX_ZOOM);
-    clampPanState(true);
-    redrawBoth();
-  }, [clampPanState, redrawBoth]);
+    setZoom(stateRef.current.zoom * factor, true);
+  }, [setZoom]);
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
     dragging.current = true;
@@ -185,17 +196,15 @@ function SideBySideView() {
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
-      stateRef.current.zoom = clampNumber(stateRef.current.zoom * (dist / lastTouchDist.current), MIN_ZOOM, MAX_ZOOM);
+      setZoom(stateRef.current.zoom * (dist / lastTouchDist.current), true);
       lastTouchDist.current = dist;
-      clampPanState(true);
-      redrawBoth();
     } else if (e.touches.length === 1) {
       stateRef.current.panX = panAtDrag.current.x + (e.touches[0].clientX - dragOrigin.current.x);
       stateRef.current.panY = panAtDrag.current.y + (e.touches[0].clientY - dragOrigin.current.y);
       clampPanState(true);
       redrawBoth();
     }
-  }, [clampPanState, redrawBoth]);
+  }, [clampPanState, redrawBoth, setZoom]);
 
   const handleTouchEnd = useCallback(() => {
     lastTouchDist.current = null;
@@ -227,38 +236,74 @@ function SideBySideView() {
     };
   }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
+  const handleResetZoom = useCallback(() => {
+    stateRef.current.panX = 0;
+    stateRef.current.panY = 0;
+    setZoom(DEFAULT_ZOOM, false);
+  }, [setZoom]);
+
+  const isZoomDirty = Math.abs(zoomValue - DEFAULT_ZOOM) > 0.001;
+  const zoomPercent = Math.round(zoomValue * 100);
+
   return (
-    <div className="flex gap-3 w-full h-full select-none">
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Original</span>
-            {originalImage && (
-              <span className="text-xs font-bold text-danger shrink-0">{`${originalImage.width}x${originalImage.height}`}</span>
-            )}
-          </div>
-          {originalImage && (
-            <span className="text-xs text-text-secondary truncate">{originalImage.name}</span>
-          )}
-        </div>
-        <div ref={origContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
-          <canvas ref={origCanvasRef} className="block w-full h-full" />
-        </div>
+    <div className="flex h-full w-full flex-col gap-2 select-none">
+      <div
+        className="inline-flex max-w-full items-center gap-3 self-center rounded-md border border-border-default bg-bg-primary px-3 py-2"
+        style={{ width: "min(100%, clamp(18rem, 58vw, 34rem))" }}
+      >
+        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Zoom</span>
+        <span className="w-12 text-right text-xs font-bold text-text-primary">{zoomPercent}%</span>
+        <input
+          type="range"
+          min={MIN_ZOOM * 100}
+          max={MAX_ZOOM * 100}
+          step={1}
+          value={zoomPercent}
+          onChange={(e) => setZoom(Number(e.target.value) / 100, false)}
+          className="custom-slider min-w-0 flex-1"
+        />
+        <button
+          onClick={handleResetZoom}
+          className={getSectionResetButtonClass(isZoomDirty)}
+          title="Restore default zoom"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
       </div>
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Modified</span>
-            {modifiedImage && (
-              <span className="text-xs font-bold text-success shrink-0">{`${modifiedImage.width}x${modifiedImage.height}`}</span>
+
+      <div className="flex min-h-0 flex-1 gap-3 w-full">
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+          <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Original</span>
+              {originalImage && (
+                <span className="text-xs font-bold text-danger shrink-0">{`${originalImage.width}x${originalImage.height}`}</span>
+              )}
+            </div>
+            {originalImage && (
+              <span className="text-xs text-text-secondary truncate">{originalImage.name}</span>
             )}
           </div>
-          {modifiedImage && (
-            <span className="text-xs text-text-secondary truncate">{modifiedImage.name}</span>
-          )}
+          <div ref={origContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
+            <canvas ref={origCanvasRef} className="block w-full h-full" />
+          </div>
         </div>
-        <div ref={modContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
-          <canvas ref={modCanvasRef} className="block w-full h-full" />
+
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+          <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Modified</span>
+              {modifiedImage && (
+                <span className="text-xs font-bold text-success shrink-0">{`${modifiedImage.width}x${modifiedImage.height}`}</span>
+              )}
+            </div>
+            {modifiedImage && (
+              <span className="text-xs text-text-secondary truncate">{modifiedImage.name}</span>
+            )}
+          </div>
+          <div ref={modContainerRef} className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden cursor-grab active:cursor-grabbing">
+            <canvas ref={modCanvasRef} className="block w-full h-full" />
+          </div>
         </div>
       </div>
     </div>
@@ -271,6 +316,8 @@ function FadeView() {
   const fadeValue = useImageCompareStore((s) => s.fadeValue);
   const setFadeValue = useImageCompareStore((s) => s.setFadeValue);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fadePercent = (fadeValue / 10).toFixed(0);
+  const isFadeDirty = fadeValue !== DEFAULT_FADE_VALUE;
 
   useEffect(() => {
     if (!originalImage || !modifiedImage || !canvasRef.current) return;
@@ -279,20 +326,27 @@ function FadeView() {
 
   return (
     <div className="flex flex-col gap-3 h-full">
-      <div className="flex justify-center">
-        <div className="flex w-full items-center gap-3" style={{ width: "min(100%, clamp(18rem, 58vw, 34rem))" }}>
-          <span className="text-xs text-text-secondary font-semibold shrink-0">Original</span>
-          <input
-            type="range"
-            min={0}
-            max={1000}
-            value={fadeValue}
-            onChange={(e) => setFadeValue(Number(e.target.value))}
-            className="flex-1 min-w-0 custom-slider"
-          />
-          <span className="text-xs text-text-secondary font-semibold shrink-0">Modified</span>
-          <span className="text-xs font-bold text-text-primary w-8 text-right">{(fadeValue / 10).toFixed(0)}%</span>
-        </div>
+      <div
+        className="inline-flex max-w-full items-center gap-3 self-center rounded-md border border-border-default bg-bg-primary px-3 py-2"
+        style={{ width: "min(100%, clamp(18rem, 58vw, 34rem))" }}
+      >
+        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Fade</span>
+        <span className="w-12 text-right text-xs font-bold text-text-primary">{fadePercent}%</span>
+        <input
+          type="range"
+          min={0}
+          max={1000}
+          value={fadeValue}
+          onChange={(e) => setFadeValue(Number(e.target.value))}
+          className="custom-slider min-w-0 flex-1"
+        />
+        <button
+          onClick={() => setFadeValue(DEFAULT_FADE_VALUE)}
+          className={getSectionResetButtonClass(isFadeDirty)}
+          title="Restore default fade"
+        >
+          <MdRestartAlt className="text-lg" />
+        </button>
       </div>
 
       <div className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary flex items-center justify-center overflow-hidden">

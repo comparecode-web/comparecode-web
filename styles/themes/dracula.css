@@ -17,10 +17,10 @@
   --history-merge-rtl-bg: rgba(255, 85, 85, 0.24);
   --history-merge-rtl-fg: #ffe0e0;
 
-  --diff-added-bg: #1d3324;
-  --diff-added-fg: #357a49;
-  --diff-removed-bg: #381b1f;
-  --diff-removed-fg: #8f464d;
+  --diff-added-bg: rgba(80, 250, 123, 0.24);
+  --diff-added-fg: #2f7a45;
+  --diff-removed-bg: rgba(255, 85, 85, 0.24);
+  --diff-removed-fg: #9c4750;
   --diff-empty-bg: #44475a;
   --hover-overlay: rgba(255, 255, 255, 0.08);
 
