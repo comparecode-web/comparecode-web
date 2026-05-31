@@ -1,9 +1,18 @@
+import Image from "next/image";
 import { memo } from "react";
 import { MdDelete, MdArrowForward, MdArrowDownward, MdBookmark, MdBookmarkBorder } from "react-icons/md";
 import { formatAbsoluteDateTimeWithSettings, generatePreviewLines, getLineCount, getRelativeTime } from "@/utils/formatters";
 import { cn } from "@/utils/uiHelpers";
 import { DiffHistoryItem } from "@/types/history";
 import { DateFormat, TimeFormat } from "@/types/settings";
+
+function formatImageDimensions(width?: number, height?: number): string {
+  if (!width || !height) {
+    return "Unknown size";
+  }
+
+  return `${width}x${height}`;
+}
 
 interface HistoryItemCardProps {
   item: DiffHistoryItem;
@@ -22,6 +31,12 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
   const createdAt = item.createdAt;
   const imageSnapshot = item.snapshot?.mode === "image" ? item.snapshot : null;
   const isImageSnapshot = imageSnapshot !== null;
+  const originalPreviewImageUrl = imageSnapshot?.originalThumbnailDataUrl || imageSnapshot?.originalImageUrl || "";
+  const modifiedPreviewImageUrl = imageSnapshot?.modifiedThumbnailDataUrl || imageSnapshot?.modifiedImageUrl || "";
+  const originalDimensions = formatImageDimensions(imageSnapshot?.originalImageWidth, imageSnapshot?.originalImageHeight);
+  const modifiedDimensions = formatImageDimensions(imageSnapshot?.modifiedImageWidth, imageSnapshot?.modifiedImageHeight);
+  const originalImageName = imageSnapshot?.originalImageName || "Original image";
+  const modifiedImageName = imageSnapshot?.modifiedImageName || "Modified image";
 
   const originalPreviewSource = isImageSnapshot
     ? (imageSnapshot.originalImageUrl || "[No original image]")
@@ -98,13 +113,36 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             <span className="mb-1 text-[11px] font-semibold text-danger">
               {isImageSnapshot ? "Original image" : `${getLineCount(item.originalText)} lines`}
             </span>
-            <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
-              {displayOrigLines.map((line, idx) => (
-                <span key={`orig-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
-                  {line === "" ? "\u00A0" : line}
-                </span>
-              ))}
-            </div>
+            {isImageSnapshot ? (
+              <div className="flex items-center gap-2 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded border border-border-default bg-bg-primary">
+                  {originalPreviewImageUrl ? (
+                    <Image
+                      src={originalPreviewImageUrl}
+                      alt="Original image preview"
+                      width={56}
+                      height={56}
+                      unoptimized
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10px] text-text-secondary">No preview</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex flex-col">
+                  <span className="truncate text-[11px] sm:text-xs font-semibold text-text-primary">{originalImageName}</span>
+                  <span className="truncate text-[11px] text-text-secondary">{originalDimensions}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
+                {displayOrigLines.map((line, idx) => (
+                  <span key={`orig-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
+                    {line === "" ? "\u00A0" : line}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <MdArrowForward className="text-lg shrink-0 text-text-secondary hidden sm:block" />
@@ -114,13 +152,36 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             <span className="mb-1 text-[11px] font-semibold text-success">
               {isImageSnapshot ? "Modified image" : `${getLineCount(item.modifiedText)} lines`}
             </span>
-            <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
-              {displayModLines.map((line, idx) => (
-                <span key={`mod-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
-                  {line === "" ? "\u00A0" : line}
-                </span>
-              ))}
-            </div>
+            {isImageSnapshot ? (
+              <div className="flex items-center gap-2 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded border border-border-default bg-bg-primary">
+                  {modifiedPreviewImageUrl ? (
+                    <Image
+                      src={modifiedPreviewImageUrl}
+                      alt="Modified image preview"
+                      width={56}
+                      height={56}
+                      unoptimized
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10px] text-text-secondary">No preview</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex flex-col">
+                  <span className="truncate text-[11px] sm:text-xs font-semibold text-text-primary">{modifiedImageName}</span>
+                  <span className="truncate text-[11px] text-text-secondary">{modifiedDimensions}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
+                {displayModLines.map((line, idx) => (
+                  <span key={`mod-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
+                    {line === "" ? "\u00A0" : line}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

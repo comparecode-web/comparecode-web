@@ -5,38 +5,31 @@ import { MdSettings, MdRestartAlt } from "react-icons/md";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { AVAILABLE_THEMES, getThemeHighlightDefaults } from "@/config/themes";
 import { getThemeDefaultsAsCustomColors } from "@/utils/highlightColors";
-import { TimeFormat } from "@/types/settings";
+import { type AppSettings, TimeFormat } from "@/types/settings";
 import { Switch } from "@/components/ui/Switch";
 import { ColorInput } from "@/components/ui/ColorInput";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { formatDateOnlyWithSettings } from "@/utils/formatters";
+import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
 
-const DATE_SEPARATORS = ["."];
+const DATE_FORMAT_PATTERNS = [
+  "yyyy-MM-dd",
+  "yyyy-MMM-dd",
+  "dd-MM-yyyy",
+  "MM-dd-yyyy",
+  "dd-MMM-yyyy",
+  "MMM-dd-yyyy"
+] as const;
 
-const NUMERIC_DATE_TOKENS = ["yyyy", "MM", "dd"];
-const TEXTUAL_LONG_DATE_TOKENS = ["yyyy", "MMMM", "dd"];
-const TEXTUAL_SHORT_DATE_TOKENS = ["yyyy", "MMM", "dd"];
-const TEXTUAL_MONTH_DAY_PATTERNS = ["MMMM d", "MMM d"];
-
-function generatePermutations(tokens: Array<string>): Array<Array<string>> {
-  if (tokens.length === 1) {
-    return [tokens];
-  }
-
-  const permutations: Array<Array<string>> = [];
-
-  for (let i = 0; i < tokens.length; i++) {
-    const current = tokens[i];
-    const remaining = [...tokens.slice(0, i), ...tokens.slice(i + 1)];
-    const remainingPermutations = generatePermutations(remaining);
-
-    for (let j = 0; j < remainingPermutations.length; j++) {
-      permutations.push([current, ...remainingPermutations[j]]);
-    }
-  }
-
-  return permutations;
-}
+const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = [
+  "theme",
+  "useCustomHighlightColors",
+  "customDiffAddedBg",
+  "customDiffAddedFg",
+  "customDiffRemovedBg",
+  "customDiffRemovedFg"
+];
+const DATE_TIME_SECTION_KEYS: Array<keyof AppSettings> = ["dateFormat", "timeFormat"];
 
 function normalizeColorForComparison(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, "");
@@ -45,29 +38,14 @@ function normalizeColorForComparison(value: string): string {
 export function MainSettingsView() {
   const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
   const themeHighlightDefaults = getThemeHighlightDefaults(settings.theme);
+  const isAppearanceSectionDirty = isSettingsSectionDirty(settings, APPEARANCE_SECTION_KEYS);
+  const isDateTimeSectionDirty = isSettingsSectionDirty(settings, DATE_TIME_SECTION_KEYS);
   const dateFormatOptions = useMemo(() => {
-    const numericOrders = generatePermutations(NUMERIC_DATE_TOKENS);
-    const numericPatterns: Array<string> = [];
-
-    for (let i = 0; i < numericOrders.length; i++) {
-      const order = numericOrders[i];
-      for (let j = 0; j < DATE_SEPARATORS.length; j++) {
-        numericPatterns.push(order.join(DATE_SEPARATORS[j]));
-      }
-    }
-
-    const textualPatterns = [
-      ...TEXTUAL_MONTH_DAY_PATTERNS,
-      ...generatePermutations(TEXTUAL_LONG_DATE_TOKENS).map((pattern) => pattern.join(" ")),
-      ...generatePermutations(TEXTUAL_SHORT_DATE_TOKENS).map((pattern) => pattern.join(" "))
-    ];
-
-    const patterns = Array.from(new Set([...textualPatterns, ...numericPatterns]));
     const nowIso = new Date().toISOString();
 
-    return patterns.map((pattern) => ({
+    return DATE_FORMAT_PATTERNS.map((pattern) => ({
       value: pattern,
-      label: formatDateOnlyWithSettings(nowIso, pattern)
+      label: `${formatDateOnlyWithSettings(nowIso, pattern)} (${pattern})`
     }));
   }, []);
 
@@ -80,7 +58,7 @@ export function MainSettingsView() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-bg-secondary">
+    <div className="flex h-full w-full flex-col bg-bg-secondary bg-linear-to-br from-accent-primary/10 via-transparent to-accent-primary/5">
       <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdSettings className="text-xl sm:text-2xl text-text-secondary" />
@@ -94,15 +72,8 @@ export function MainSettingsView() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
               <button
-                onClick={() => resetSectionToDefaults([
-                  "theme",
-                  "useCustomHighlightColors",
-                  "customDiffAddedBg",
-                  "customDiffAddedFg",
-                  "customDiffRemovedBg",
-                  "customDiffRemovedFg"
-                ])}
-                className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+                onClick={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}
+                className={getSectionResetButtonClass(isAppearanceSectionDirty)}
                 title="Restore section defaults"
               >
                 <MdRestartAlt className="text-lg" />
@@ -220,8 +191,8 @@ export function MainSettingsView() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Date & Time</h3>
               <button
-                onClick={() => resetSectionToDefaults(["dateFormat", "timeFormat"])}
-                className="text-text-secondary hover:text-accent-primary transition-colors p-1 rounded hover:bg-hover-overlay"
+                onClick={() => resetSectionToDefaults(DATE_TIME_SECTION_KEYS)}
+                className={getSectionResetButtonClass(isDateTimeSectionDirty)}
                 title="Restore section defaults"
               >
                 <MdRestartAlt className="text-lg" />
