@@ -44,18 +44,34 @@ function ImageMetaPanel({ image, title, sizeDifferenceBytes, sizeDifferenceClass
   const [hash, setHash] = useState<string>("");
 
   useEffect(() => {
-    // Recompute hash when image changes
+    let isActive = true;
     const objectUrl = image.url;
 
-    fetch(objectUrl)
-      .then((r) => r.blob())
-      .then((blob) => {
+    const loadHash = async () => {
+      try {
+        const response = await fetch(objectUrl);
+        const blob = await response.blob();
         const file = new File([blob], image.name, { type: image.type });
-        return computeFileHash(file);
-      })
-      .then(setHash)
-      .catch(() => setHash("n/a"));
-  }, [image]);
+        const nextHash = await computeFileHash(file);
+
+        if (!isActive) {
+          return;
+        }
+
+        setHash(nextHash);
+      } catch {
+        if (isActive) {
+          setHash("n/a");
+        }
+      }
+    };
+
+    void loadHash();
+
+    return () => {
+      isActive = false;
+    };
+  }, [image.url, image.name, image.type]);
 
   const resolutionUnit = image.exif?.ResolutionUnit === "3" ? "ppcm" : "ppi";
   const xRes = image.exif?.XResolution;

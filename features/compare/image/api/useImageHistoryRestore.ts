@@ -123,21 +123,42 @@ export function useImageHistoryRestore() {
           return;
         }
 
-        const originalFinalSize = resolvedOriginalSize ?? originalImageMeta.size;
-        const modifiedFinalSize = resolvedModifiedSize ?? modifiedImageMeta.size;
+        const currentState = useImageCompareStore.getState();
+        const isCurrentRestoredPair =
+          currentState.originalImage?.url === originalImageUrl
+          && currentState.modifiedImage?.url === modifiedImageUrl;
 
-        if (originalFinalSize !== originalImageMeta.size) {
-          setOriginalImage({
-            ...originalImageMeta,
-            size: originalFinalSize
-          });
-        }
+        const originalFinalSize = resolvedOriginalSize ?? originalKnownSize ?? originalImageMeta.size;
+        const modifiedFinalSize = resolvedModifiedSize ?? modifiedKnownSize ?? modifiedImageMeta.size;
 
-        if (modifiedFinalSize !== modifiedImageMeta.size) {
-          setModifiedImage({
-            ...modifiedImageMeta,
-            size: modifiedFinalSize
-          });
+        if (isCurrentRestoredPair) {
+          const latestOriginalImage = useImageCompareStore.getState().originalImage;
+          if (
+            latestOriginalImage?.url === originalImageUrl
+            && typeof originalFinalSize === "number"
+            && Number.isFinite(originalFinalSize)
+            && originalFinalSize > 0
+            && latestOriginalImage.size !== originalFinalSize
+          ) {
+            setOriginalImage({
+              ...latestOriginalImage,
+              size: originalFinalSize
+            });
+          }
+
+          const latestModifiedImage = useImageCompareStore.getState().modifiedImage;
+          if (
+            latestModifiedImage?.url === modifiedImageUrl
+            && typeof modifiedFinalSize === "number"
+            && Number.isFinite(modifiedFinalSize)
+            && modifiedFinalSize > 0
+            && latestModifiedImage.size !== modifiedFinalSize
+          ) {
+            setModifiedImage({
+              ...latestModifiedImage,
+              size: modifiedFinalSize
+            });
+          }
         }
 
         const nextSnapshotMetadata: {

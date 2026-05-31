@@ -26,6 +26,8 @@ export function ImageView() {
       return;
     }
 
+    let isActive = true;
+
     const pairKey = [
       originalImage.url,
       originalImage.width,
@@ -54,6 +56,23 @@ export function ImageView() {
         createImageDataUrl(modifiedImage.url)
       ]);
 
+      if (!isActive) {
+        return;
+      }
+
+      const currentState = useImageCompareStore.getState();
+      const isCurrentPair =
+        currentState.originalImage?.url === originalImage.url
+        && currentState.modifiedImage?.url === modifiedImage.url
+        && currentState.originalImage?.width === originalImage.width
+        && currentState.originalImage?.height === originalImage.height
+        && currentState.modifiedImage?.width === modifiedImage.width
+        && currentState.modifiedImage?.height === modifiedImage.height;
+
+      if (!isCurrentPair) {
+        return;
+      }
+
       await HistoryService.addSnapshotAsync({
         mode: "image",
         originalImageUrl: originalImage.url,
@@ -76,6 +95,10 @@ export function ImageView() {
     };
 
     void saveSnapshot().catch(console.error);
+
+    return () => {
+      isActive = false;
+    };
   }, [bothLoaded, modifiedImage, originalImage]);
 
   return (
