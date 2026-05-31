@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MdImage, MdInfo, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
+import { MdInfo, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { HistoryService } from "@/services/historyService";
 import { cn } from "@/utils/uiHelpers";
 import { useImageCompareStore } from "../store/useImageCompareStore";
@@ -103,15 +103,8 @@ export function ImageView() {
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary overflow-hidden">
-      <div className="flex h-(--header-height) shrink-0 items-center border-b border-border-default bg-bg-primary px-3 sm:px-6">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <MdImage className="text-xl sm:text-2xl text-text-secondary" />
-          <h2 className="text-lg sm:text-xl font-bold text-text-primary">Image Compare</h2>
-        </div>
-      </div>
-
       {!bothLoaded ? (
-        <div className="flex-1 flex flex-col overflow-auto custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-auto custom-scrollbar">
           <ImageUploadPanel />
         </div>
       ) : (

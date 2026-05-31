@@ -17,6 +17,8 @@ interface ImageUploadSlotProps {
 function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlotProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isOriginalSlot = label === "Original";
+  const dimensionsClassName = isOriginalSlot ? "text-danger" : "text-success";
 
   const processFile = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) return;
@@ -82,29 +84,37 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
 
   if (image) {
     return (
-      <div className="flex flex-col gap-2 flex-1 min-w-0">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{label}</span>
-          <Button variant="ghost" size="icon" onClick={onClear} className="text-text-secondary hover:text-danger">
-            <MdClose className="text-lg" />
-          </Button>
+      <div className="flex min-h-0 flex-1 min-w-0 flex-col gap-2">
+        <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{label}</span>
+            <span className={cn("text-xs font-bold shrink-0", dimensionsClassName)}>{`${image.width}x${image.height}`}</span>
+            <Button
+              variant="danger"
+              size="icon"
+              onClick={onClear}
+              title={`Clear ${label.toLowerCase()} image`}
+              className="ml-auto"
+            >
+              <MdClose className="text-lg" />
+            </Button>
+          </div>
+          <p className="text-xs text-text-secondary truncate" title={image.name}>{image.name}</p>
         </div>
-        <div className="relative rounded-lg border border-border-default bg-bg-secondary overflow-hidden flex items-center justify-center min-h-[120px]">
+        <div className="relative rounded-lg border border-border-default bg-bg-secondary overflow-hidden flex flex-1 items-center justify-center min-h-[120px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image.url}
             alt={image.name}
-            className="max-h-[180px] max-w-full object-contain"
+            className="h-full w-full object-contain"
           />
         </div>
-        <p className="text-xs text-text-secondary truncate" title={image.name}>{image.name}</p>
-        <p className="text-xs text-text-secondary">{image.width}×{image.height}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 flex-1 min-w-0">
+    <div className="flex min-h-0 flex-1 min-w-0 flex-col gap-2">
       <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{label}</span>
       <div
         role="button"
@@ -116,7 +126,7 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
         onPaste={handlePaste}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          "flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed min-h-[180px] cursor-pointer transition-all duration-(--duration-short)",
+          "flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed min-h-[180px] cursor-pointer transition-all duration-(--duration-short)",
           isDragging
             ? "border-accent-primary bg-accent-primary/10"
             : "border-border-default bg-bg-secondary hover:border-accent-primary hover:bg-hover-overlay"
@@ -177,7 +187,7 @@ export function ImageUploadPanel({ compact = false }: ImageUploadPanelProps) {
   }
 
   return (
-    <div className="flex gap-4 p-4 sm:p-6">
+    <div className="flex h-full min-h-full gap-4 p-4 sm:p-6">
       <ImageUploadSlot
         label="Original"
         image={originalImage}
