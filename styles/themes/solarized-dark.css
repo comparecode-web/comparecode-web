@@ -7,9 +7,9 @@
   --border-default: #1a4d5b;
   --accent-primary: #268bd2;
   --accent-hover: #3299e0;
-  --danger: #dc322f;
-  --danger-hover: #e64b48;
-  --danger-bg: rgba(220, 50, 47, 0.15);
+  --danger: #c33632;
+  --danger-hover: #d94742;
+  --danger-bg: rgba(195, 54, 50, 0.18);
   --success: #859900;
   --success-hover: #98af00;
   --history-merge-ltr-bg: rgba(133, 153, 0, 0.28);
