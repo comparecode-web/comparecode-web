@@ -65,7 +65,7 @@ export function MainNavHeader() {
   return (
     <header className="relative z-50 flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
       <div className="flex h-full items-center gap-3 sm:gap-8">
-        <Link href="/" className="flex items-center gap-2 rounded-md p-1 sm:gap-3 hover:bg-hover-overlay" title="Welcome">
+        <Link href="/" className="flex items-center gap-2 rounded-md p-1 sm:gap-3 hover:bg-hover-overlay">
           <Image
             src="/brand/comparecode-logo.png"
             alt="CompareCode"

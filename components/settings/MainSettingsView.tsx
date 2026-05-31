@@ -14,6 +14,7 @@ import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/sett
 
 const DATE_FORMAT_PATTERNS = [
   "yyyy-MM-dd",
+  "yyyy-MMM-dd",
   "dd-MM-yyyy",
   "MM-dd-yyyy",
   "dd-MMM-yyyy",

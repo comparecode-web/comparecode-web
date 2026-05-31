@@ -52,6 +52,7 @@ export class SettingsService {
     const normalized = legacyMap[value] ?? value;
     const supported = new Set([
       "yyyy-MM-dd",
+      "yyyy-MMM-dd",
       "dd-MM-yyyy",
       "MM-dd-yyyy",
       "dd-MMM-yyyy",
