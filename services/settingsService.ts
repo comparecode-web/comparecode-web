@@ -27,19 +27,38 @@ export class SettingsService {
     }
 
     const legacyMap: Record<string, string> = {
-      MonthDay: "MMMM d",
-      MonthDayShort: "MMM d",
-      MonthDayYear: "MMMM d, yyyy",
-      DayMonthYearText: "d MMMM yyyy",
-      YyyyMmDd: "yyyy.MM.dd",
+      MonthDay: "dd-MMM-yyyy",
+      MonthDayShort: "dd-MMM-yyyy",
+      MonthDayYear: "dd-MMM-yyyy",
+      DayMonthYearText: "dd-MMM-yyyy",
+      YyyyMmDd: "yyyy-MM-dd",
       YyyyDashMmDashDd: "yyyy-MM-dd",
-      DdMmYyyy: "dd.MM.yyyy",
-      DdSlashMmSlashYyyy: "dd/MM/yyyy",
-      MmDdYyyy: "MM.dd.yyyy",
-      MmSlashDdSlashYyyy: "MM/dd/yyyy"
+      DdMmYyyy: "dd-MM-yyyy",
+      DdSlashMmSlashYyyy: "dd-MM-yyyy",
+      MmDdYyyy: "MM-dd-yyyy",
+      MmSlashDdSlashYyyy: "MM-dd-yyyy",
+      "MMMM d": "dd-MMM-yyyy",
+      "MMM d": "dd-MMM-yyyy",
+      "MMMM d, yyyy": "dd-MMM-yyyy",
+      "MMM d, yyyy": "MMM-dd-yyyy",
+      "d MMMM yyyy": "dd-MMM-yyyy",
+      "yyyy.MM.dd": "yyyy-MM-dd",
+      "dd.MM.yyyy": "dd-MM-yyyy",
+      "MM.dd.yyyy": "MM-dd-yyyy",
+      "dd/MM/yyyy": "dd-MM-yyyy",
+      "MM/dd/yyyy": "MM-dd-yyyy"
     };
 
-    return legacyMap[value] ?? value;
+    const normalized = legacyMap[value] ?? value;
+    const supported = new Set([
+      "yyyy-MM-dd",
+      "dd-MM-yyyy",
+      "MM-dd-yyyy",
+      "dd-MMM-yyyy",
+      "MMM-dd-yyyy"
+    ]);
+
+    return supported.has(normalized) ? normalized : defaultSettings.dateFormat;
   }
 
   public static saveSettings(settings: AppSettings): void {

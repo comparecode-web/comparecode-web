@@ -12,12 +12,14 @@ import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { formatDateOnlyWithSettings } from "@/utils/formatters";
 import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
 
-const DATE_SEPARATORS = ["."];
+const DATE_FORMAT_PATTERNS = [
+  "yyyy-MM-dd",
+  "dd-MM-yyyy",
+  "MM-dd-yyyy",
+  "dd-MMM-yyyy",
+  "MMM-dd-yyyy"
+] as const;
 
-const NUMERIC_DATE_TOKENS = ["yyyy", "MM", "dd"];
-const TEXTUAL_LONG_DATE_TOKENS = ["yyyy", "MMMM", "dd"];
-const TEXTUAL_SHORT_DATE_TOKENS = ["yyyy", "MMM", "dd"];
-const TEXTUAL_MONTH_DAY_PATTERNS = ["MMMM d", "MMM d"];
 const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = [
   "theme",
   "useCustomHighlightColors",
@@ -27,26 +29,6 @@ const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = [
   "customDiffRemovedFg"
 ];
 const DATE_TIME_SECTION_KEYS: Array<keyof AppSettings> = ["dateFormat", "timeFormat"];
-
-function generatePermutations(tokens: Array<string>): Array<Array<string>> {
-  if (tokens.length === 1) {
-    return [tokens];
-  }
-
-  const permutations: Array<Array<string>> = [];
-
-  for (let i = 0; i < tokens.length; i++) {
-    const current = tokens[i];
-    const remaining = [...tokens.slice(0, i), ...tokens.slice(i + 1)];
-    const remainingPermutations = generatePermutations(remaining);
-
-    for (let j = 0; j < remainingPermutations.length; j++) {
-      permutations.push([current, ...remainingPermutations[j]]);
-    }
-  }
-
-  return permutations;
-}
 
 function normalizeColorForComparison(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, "");
@@ -58,28 +40,11 @@ export function MainSettingsView() {
   const isAppearanceSectionDirty = isSettingsSectionDirty(settings, APPEARANCE_SECTION_KEYS);
   const isDateTimeSectionDirty = isSettingsSectionDirty(settings, DATE_TIME_SECTION_KEYS);
   const dateFormatOptions = useMemo(() => {
-    const numericOrders = generatePermutations(NUMERIC_DATE_TOKENS);
-    const numericPatterns: Array<string> = [];
-
-    for (let i = 0; i < numericOrders.length; i++) {
-      const order = numericOrders[i];
-      for (let j = 0; j < DATE_SEPARATORS.length; j++) {
-        numericPatterns.push(order.join(DATE_SEPARATORS[j]));
-      }
-    }
-
-    const textualPatterns = [
-      ...TEXTUAL_MONTH_DAY_PATTERNS,
-      ...generatePermutations(TEXTUAL_LONG_DATE_TOKENS).map((pattern) => pattern.join(" ")),
-      ...generatePermutations(TEXTUAL_SHORT_DATE_TOKENS).map((pattern) => pattern.join(" "))
-    ];
-
-    const patterns = Array.from(new Set([...textualPatterns, ...numericPatterns]));
     const nowIso = new Date().toISOString();
 
-    return patterns.map((pattern) => ({
+    return DATE_FORMAT_PATTERNS.map((pattern) => ({
       value: pattern,
-      label: formatDateOnlyWithSettings(nowIso, pattern)
+      label: `${formatDateOnlyWithSettings(nowIso, pattern)} (${pattern})`
     }));
   }, []);
 

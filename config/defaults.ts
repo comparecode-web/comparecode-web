@@ -13,7 +13,7 @@ export const defaultSettings: AppSettings = {
   customDiffAddedFg: "#acf2bd",
   customDiffRemovedBg: "#ffeef0",
   customDiffRemovedFg: "#fdb8c0",
-  dateFormat: "MMMM d",
+  dateFormat: "yyyy-MM-dd",
   timeFormat: TimeFormat.TwentyFourHour,
   isContinuousMergeEnabled: true,
   isJumpButtonsVisible: true,
