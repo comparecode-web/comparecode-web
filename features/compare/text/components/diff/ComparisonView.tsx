@@ -126,7 +126,8 @@ export function ComparisonView() {
             if (result === "applied") {
               refs.pushToast({
                 message: shouldUndo ? "Undo applied" : "Redo applied",
-                tone: "success"
+                tone: "success",
+                icon: shouldUndo ? "undo" : "redo"
               });
               return;
             }
@@ -134,6 +135,7 @@ export function ComparisonView() {
             refs.pushToast({
               message: shouldUndo ? "Nothing to undo" : "Nothing to redo",
               tone: "info",
+              icon: shouldUndo ? "undo" : "redo",
               dedupeKey: shouldUndo ? "nothing-to-undo" : "nothing-to-redo"
             });
           } finally {

@@ -10,7 +10,7 @@ export function useTextCompareActions() {
     const { setIsInputExpanded, setIsComparing, isInputExpanded } = useEditorUIStore.getState();
 
     setIsComparing(true);
-    compare(settings);
+    await compare(settings);
     setIsInputExpanded(preserveInputState ? isInputExpanded : false);
     setIsComparing(false);
 
