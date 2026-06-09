@@ -8,6 +8,7 @@ import { HistoryService } from "@/services/historyService";
 import { HistoryActionDirection } from "@/types/history";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/features/compare/text/utils/scrollHelpers";
+import { syncIdenticalDocumentsToast } from "@/features/compare/text/utils/identicalDocumentsToast";
 
 interface EditorState {
   leftText: string;
@@ -112,6 +113,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       totalSelectableBlocks: 0,
       currentBlockIndex: 0
     });
+    syncIdenticalDocumentsToast("", "");
   },
 
   compare: (settings: CompareSettings) => {
@@ -124,6 +126,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       totalSelectableBlocks: selectableBlocks.length,
       currentBlockIndex: 0
     });
+    syncIdenticalDocumentsToast(leftText, rightText);
   },
 
   selectBlock: (blockId: string | null) => {
@@ -208,6 +211,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
         }
       }
     }
+
+    const { leftText: afterLeftText, rightText: afterRightText } = get();
+    syncIdenticalDocumentsToast(afterLeftText, afterRightText);
   },
 
   undoMergeStep: async (settings: CompareSettings) => {
@@ -229,6 +235,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     get().compare(settings);
     get().selectBlock(null);
     get().bumpHistoryRefreshKey();
+    syncIdenticalDocumentsToast(snapshot.originalText, snapshot.modifiedText);
     return "applied";
   },
 
@@ -251,6 +258,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     get().compare(settings);
     get().selectBlock(null);
     get().bumpHistoryRefreshKey();
+    syncIdenticalDocumentsToast(snapshot.originalText, snapshot.modifiedText);
     return "applied";
   },
 
@@ -258,6 +266,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     invalidatePendingHistorySession();
     set({ leftText: left, rightText: right, historySessionId: sessionId });
     get().compare(settings);
+    syncIdenticalDocumentsToast(left, right);
   },
 
   jumpToNextBlock: () => {
