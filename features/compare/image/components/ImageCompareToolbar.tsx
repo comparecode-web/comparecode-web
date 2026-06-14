@@ -2,6 +2,7 @@
 
 import {
   MdDelete,
+  MdTune,
 } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 import { SelectionBar } from "@/components/ui/SelectionBar";
@@ -40,8 +41,10 @@ export function ImageCompareToolbar() {
   const clearAll = useImageCompareStore((s) => s.clearAll);
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
+  const openAlignmentPanel = useImageCompareStore((s) => s.openAlignmentPanel);
 
   const hasImages = !!(originalImage || modifiedImage);
+  const hasBothImages = !!(originalImage && modifiedImage);
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border-default bg-bg-primary px-3 py-2 sm:px-4">
@@ -67,6 +70,17 @@ export function ImageCompareToolbar() {
       )}
 
       <div className="flex-1" />
+
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={openAlignmentPanel}
+        disabled={!hasBothImages}
+        leftIcon={<MdTune className="text-lg" />}
+        title="Align images"
+      >
+        Align images
+      </Button>
 
       <ClearButton onClear={clearAll} disabled={!hasImages} />
     </div>
