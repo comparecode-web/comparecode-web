@@ -362,6 +362,9 @@ export function ImageAlignmentPanel() {
 
   const displayWidth = modifiedImage.width * draftTransform.scaleX;
   const displayHeight = modifiedImage.height * draftTransform.scaleY;
+  const handleScaleX = 1 / Math.max(0.001, draftTransform.scaleX);
+  const handleScaleY = 1 / Math.max(0.001, draftTransform.scaleY);
+  const rotateHandleOffset = -34 * handleScaleY;
   const transformStyle = {
     left: `${draftTransform.x * stageSize.scale}px`,
     top: `${draftTransform.y * stageSize.scale}px`,
@@ -421,41 +424,36 @@ export function ImageAlignmentPanel() {
               style={{ ...transformStyle, opacity: 1 }}
             >
               {[
-                "left-0 top-0 -translate-x-1/2 -translate-y-1/2 cursor-nwse-resize",
-                "right-0 top-0 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize",
-                "right-0 bottom-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize",
-                "left-0 bottom-0 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize"
-              ].map((className) => (
+                { className: "left-0 top-0 cursor-nwse-resize", transform: "translate(-50%, -50%)" },
+                { className: "right-0 top-0 cursor-nesw-resize", transform: "translate(50%, -50%)" },
+                { className: "right-0 bottom-0 cursor-nwse-resize", transform: "translate(50%, 50%)" },
+                { className: "left-0 bottom-0 cursor-nesw-resize", transform: "translate(-50%, 50%)" }
+              ].map((handle) => (
                 <button
-                  key={className}
+                  key={handle.className}
                   type="button"
-                  className={cn("pointer-events-auto absolute h-3 w-3 border border-accent-primary bg-bg-primary shadow-sm", className)}
+                  className={cn("pointer-events-auto absolute h-3 w-3 border border-accent-primary bg-bg-primary shadow-sm", handle.className)}
+                  style={{ transform: `${handle.transform} scale(${handleScaleX}, ${handleScaleY})` }}
                   onPointerDown={handleResizePointerDown}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerUp}
                   onPointerCancel={handlePointerUp}
-                  title="Resize"
                 />
               ))}
-              {[
-                "left-0 top-0 -translate-x-8 -translate-y-8 cursor-nwse-resize",
-                "right-0 top-0 translate-x-8 -translate-y-8 cursor-nesw-resize",
-                "right-0 bottom-0 translate-x-8 translate-y-8 cursor-nwse-resize",
-                "left-0 bottom-0 -translate-x-8 translate-y-8 cursor-nesw-resize"
-              ].map((className) => (
-                <button
-                  key={className}
-                  type="button"
-                  className={cn("pointer-events-auto absolute flex h-7 w-7 items-center justify-center rounded-full text-accent-primary hover:bg-hover-overlay", className)}
-                  onPointerDown={handleRotatePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onPointerCancel={handlePointerUp}
-                  title="Rotate"
-                >
-                  <MdRotateRight className="text-xl" />
-                </button>
-              ))}
+              <button
+                type="button"
+                className="pointer-events-auto absolute left-1/2 top-0 flex h-7 w-7 cursor-grab items-center justify-center rounded-full text-accent-primary hover:bg-hover-overlay active:cursor-grabbing"
+                style={{
+                  top: `${rotateHandleOffset}px`,
+                  transform: `translateX(-50%) scale(${handleScaleX}, ${handleScaleY})`
+                }}
+                onPointerDown={handleRotatePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+              >
+                <MdRotateRight className="text-xl" />
+              </button>
             </div>
             {alignment.snappingEnabled && (
               <>
