@@ -1,7 +1,8 @@
-"use client";
+import { imageMetadata } from "@/config/seo";
+import { ImageToolSection } from "./ImageToolSection";
 
-import { ImageView } from "@/features/compare/image";
+export const metadata = imageMetadata;
 
 export default function ImagePage() {
-  return <ImageView />;
+  return <ImageToolSection />;
 }
