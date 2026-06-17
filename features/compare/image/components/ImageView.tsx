@@ -10,15 +10,27 @@ import { ImageCompareToolbar } from "./ImageCompareToolbar";
 import { ImageCompareCanvas } from "./ImageCompareCanvas";
 import { ImageMetadataPanel } from "./ImageMetadataPanel";
 import { createImageDataUrl, createImageThumbnailDataUrl } from "../utils/thumbnail";
+import { AlignmentPrompt } from "./alignment/AlignmentPrompt";
+import { ImageAlignmentPanel } from "./alignment/ImageAlignmentPanel";
+import { getPairKey, imagesNeedAlignmentPrompt } from "../services/alignment/transformUtils";
 
 export function ImageView() {
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const isMetadataPanelOpen = useImageCompareStore((s) => s.isMetadataPanelOpen);
   const toggleMetadataPanel = useImageCompareStore((s) => s.toggleMetadataPanel);
+  const alignment = useImageCompareStore((s) => s.alignment);
+  const openAlignmentPrompt = useImageCompareStore((s) => s.openAlignmentPrompt);
   const lastSavedImagePairKeyRef = useRef<string | null>(null);
 
   const bothLoaded = !!(originalImage && modifiedImage);
+
+  useEffect(() => {
+    const pairKey = getPairKey(originalImage, modifiedImage);
+    if (!pairKey || !imagesNeedAlignmentPrompt(originalImage, modifiedImage)) return;
+    if (alignment.appliedTransform || alignment.isPromptOpen || alignment.skippedPairKey === pairKey || alignment.promptPairKey === pairKey) return;
+    openAlignmentPrompt(pairKey);
+  }, [alignment.appliedTransform, alignment.isPromptOpen, alignment.promptPairKey, alignment.skippedPairKey, modifiedImage, openAlignmentPrompt, originalImage]);
 
   useEffect(() => {
     if (!bothLoaded || !originalImage || !modifiedImage) {
@@ -34,7 +46,8 @@ export function ImageView() {
       originalImage.height,
       modifiedImage.url,
       modifiedImage.width,
-      modifiedImage.height
+      modifiedImage.height,
+      alignment.appliedTransform ? JSON.stringify(alignment.appliedTransform) : "no-alignment"
     ].join("|");
 
     if (lastSavedImagePairKeyRef.current === pairKey) {
@@ -90,7 +103,9 @@ export function ImageView() {
         modifiedImageWidth: modifiedImage.width,
         modifiedImageHeight: modifiedImage.height,
         originalThumbnailDataUrl,
-        modifiedThumbnailDataUrl
+        modifiedThumbnailDataUrl,
+        imageAlignmentTransform: currentState.alignment.appliedTransform,
+        imageAlignmentMetadata: currentState.alignment.metadata
       });
     };
 
@@ -99,7 +114,7 @@ export function ImageView() {
     return () => {
       isActive = false;
     };
-  }, [bothLoaded, modifiedImage, originalImage]);
+  }, [alignment.appliedTransform, bothLoaded, modifiedImage, originalImage]);
 
   return (
     <div className="flex h-full w-full flex-col bg-bg-secondary overflow-hidden">
@@ -110,6 +125,8 @@ export function ImageView() {
       ) : (
         <>
           <ImageCompareToolbar />
+          <AlignmentPrompt />
+          <ImageAlignmentPanel />
 
           <div className="flex-1 min-h-0 flex flex-col">
             <ImageCompareCanvas />

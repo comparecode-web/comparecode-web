@@ -5,6 +5,7 @@ import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { GlobalTooltip } from "@/components/layout/GlobalTooltip";
 import { ToastViewport } from "@/components/layout/ToastViewport";
+import { defaultDescription, SITE_LOGO_PATH, SITE_NAME, SITE_URL } from "@/config/seo";
 
 const THEME_INIT_SCRIPT = `
   (function () {
@@ -41,12 +42,41 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CompareCode",
-  description: "A fast and robust code comparison tool",
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
+  title: {
+    default: "CompareCode - Free Online Code and Image Comparison Tool",
+    template: "%s"
+  },
+  description: defaultDescription,
+  alternates: {
+    canonical: SITE_URL
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: "CompareCode - Free Online Code and Image Comparison Tool",
+    description: defaultDescription,
+    url: SITE_URL,
+    images: [
+      {
+        url: SITE_LOGO_PATH,
+        width: 512,
+        height: 512,
+        alt: SITE_NAME
+      }
+    ]
+  },
+  twitter: {
+    card: "summary",
+    title: "CompareCode - Free Online Code and Image Comparison Tool",
+    description: defaultDescription,
+    images: [SITE_LOGO_PATH]
+  },
   icons: {
-    icon: "/brand/comparecode-logo.png",
-    shortcut: "/brand/comparecode-logo.png",
-    apple: "/brand/comparecode-logo.png"
+    icon: SITE_LOGO_PATH,
+    shortcut: SITE_LOGO_PATH,
+    apple: SITE_LOGO_PATH
   }
 };
 

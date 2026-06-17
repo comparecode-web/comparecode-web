@@ -6,6 +6,7 @@ import { cn } from "@/utils/uiHelpers";
 import { getSectionResetButtonClass } from "@/utils/settingsReset";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import { renderDiff, renderFade, DiffStats } from "../services/ImageDiffService";
+import { buildAffineMatrix, getTransformedBounds } from "../services/alignment/transformUtils";
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.5;
@@ -315,14 +316,15 @@ function FadeView() {
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const fadeValue = useImageCompareStore((s) => s.fadeValue);
   const setFadeValue = useImageCompareStore((s) => s.setFadeValue);
+  const alignmentTransform = useImageCompareStore((s) => s.alignment.appliedTransform);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fadePercent = (fadeValue / 10).toFixed(0);
   const isFadeDirty = fadeValue !== DEFAULT_FADE_VALUE;
 
   useEffect(() => {
     if (!originalImage || !modifiedImage || !canvasRef.current) return;
-    renderFade(originalImage.url, modifiedImage.url, canvasRef.current, fadeValue / 1000);
-  }, [originalImage, modifiedImage, fadeValue]);
+    renderFade(originalImage.url, modifiedImage.url, canvasRef.current, fadeValue / 1000, alignmentTransform);
+  }, [alignmentTransform, originalImage, modifiedImage, fadeValue]);
 
   return (
     <div className="flex flex-col gap-3 h-full">
@@ -368,6 +370,7 @@ function SliderView() {
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const sliderPosition = useImageCompareStore((s) => s.sliderPosition);
   const setSliderPosition = useImageCompareStore((s) => s.setSliderPosition);
+  const alignmentTransform = useImageCompareStore((s) => s.alignment.appliedTransform);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -387,6 +390,69 @@ function SliderView() {
     const orig = origImgEl.current;
     const mod = modImgEl.current;
     if (!orig || !mod) return;
+
+    if (alignmentTransform) {
+      const bounds = getTransformedBounds(alignmentTransform, mod.naturalWidth, mod.naturalHeight);
+      const minX = Math.min(0, bounds.x);
+      const minY = Math.min(0, bounds.y);
+      const maxX = Math.max(orig.naturalWidth, bounds.x + bounds.width);
+      const maxY = Math.max(orig.naturalHeight, bounds.y + bounds.height);
+      const alignedWidth = Math.max(1, maxX - minX);
+      const alignedHeight = Math.max(1, maxY - minY);
+      const scale = Math.min(width / alignedWidth, height / alignedHeight);
+      const fitW = alignedWidth * scale;
+      const fitH = alignedHeight * scale;
+      const offX = (width - fitW) / 2;
+      const offY = (height - fitH) / 2;
+      const originOffsetX = -minX;
+      const originOffsetY = -minY;
+      const divX = offX + sliderRef.current * fitW;
+      const matrix = buildAffineMatrix(alignmentTransform, mod.naturalWidth, mod.naturalHeight);
+
+      ctx.save();
+      ctx.translate(offX, offY);
+      ctx.scale(scale, scale);
+      ctx.translate(originOffsetX, originOffsetY);
+      ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
+      ctx.drawImage(mod, 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, divX, height);
+      ctx.clip();
+      ctx.translate(offX, offY);
+      ctx.scale(scale, scale);
+      ctx.drawImage(orig, originOffsetX, originOffsetY);
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(divX, offY);
+      ctx.lineTo(divX, offY + fitH);
+      ctx.strokeStyle = "rgba(255,255,255,0.95)";
+      ctx.lineWidth = 2;
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = 6;
+      ctx.stroke();
+      ctx.restore();
+
+      const handleY = offY + fitH / 2;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(divX, handleY, 16, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      ctx.strokeStyle = "#d1d5db";
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 0;
+      ctx.stroke();
+      ctx.restore();
+
+      return;
+    }
 
     const imgW = Math.max(orig.naturalWidth, mod.naturalWidth);
     const imgH = Math.max(orig.naturalHeight, mod.naturalHeight);
@@ -462,7 +528,7 @@ function SliderView() {
     const modLabel = "Modified";
     ctx.fillText(modLabel, offX + fitW - ctx.measureText(modLabel).width - lPad, offY + lPad + 13);
     ctx.restore();
-  }, []);
+  }, [alignmentTransform]);
 
   useEffect(() => {
     if (!originalImage) { origImgEl.current = null; drawFrame(); return; }
@@ -505,6 +571,20 @@ function SliderView() {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const canvasX = (clientX - rect.left) * scaleX;
+    if (alignmentTransform) {
+      const bounds = getTransformedBounds(alignmentTransform, mod.naturalWidth, mod.naturalHeight);
+      const minX = Math.min(0, bounds.x);
+      const maxX = Math.max(orig.naturalWidth, bounds.x + bounds.width);
+      const alignedWidth = Math.max(1, maxX - minX);
+      const maxY = Math.max(orig.naturalHeight, bounds.y + bounds.height);
+      const minY = Math.min(0, bounds.y);
+      const alignedHeight = Math.max(1, maxY - minY);
+      const scale = Math.min(canvas.width / alignedWidth, canvas.height / alignedHeight);
+      const fitW = alignedWidth * scale;
+      const offX = (canvas.width - fitW) / 2;
+      setSliderPosition(clampNumber((canvasX - offX) / fitW, 0, 1));
+      return;
+    }
     const imgW = Math.max(orig.naturalWidth, mod.naturalWidth);
     const imgH = Math.max(orig.naturalHeight, mod.naturalHeight);
     const scale = Math.min(canvas.width / imgW, canvas.height / imgH);
@@ -512,7 +592,7 @@ function SliderView() {
     if (fitW <= 0) return;
     const offX = (canvas.width - fitW) / 2;
     setSliderPosition(clampNumber((canvasX - offX) / fitW, 0, 1));
-  }, [setSliderPosition]);
+  }, [alignmentTransform, setSliderPosition]);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => { if (isDragging.current) updateFromClientX(e.clientX); };
@@ -550,6 +630,7 @@ function DiffView() {
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const diffAlgorithm = useImageCompareStore((s) => s.diffAlgorithm);
+  const alignmentTransform = useImageCompareStore((s) => s.alignment.appliedTransform);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stats, setStats] = useState<DiffStats | null>(null);
   const latestRenderRequestIdRef = useRef(0);
@@ -564,7 +645,7 @@ function DiffView() {
     const visibleCanvas = canvasRef.current;
     const offscreenCanvas = document.createElement("canvas");
 
-    renderDiff(originalImage.url, modifiedImage.url, offscreenCanvas, diffAlgorithm)
+    renderDiff(originalImage.url, modifiedImage.url, offscreenCanvas, diffAlgorithm, alignmentTransform)
       .then((nextStats) => {
         if (cancelled || requestId !== latestRenderRequestIdRef.current) return;
         visibleCanvas.width = offscreenCanvas.width;
@@ -580,7 +661,7 @@ function DiffView() {
     return () => {
       cancelled = true;
     };
-  }, [ready, originalImage, modifiedImage, diffAlgorithm]);
+  }, [ready, originalImage, modifiedImage, diffAlgorithm, alignmentTransform]);
 
   return (
     <div className="flex flex-col gap-3 h-full">

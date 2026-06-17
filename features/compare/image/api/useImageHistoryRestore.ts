@@ -68,6 +68,7 @@ export function useImageHistoryRestore() {
   const setModifiedImage = useImageCompareStore((state) => state.setModifiedImage);
   const setCompareMode = useImageCompareStore((state) => state.setCompareMode);
   const setIsMetadataPanelOpen = useImageCompareStore((state) => state.setIsMetadataPanelOpen);
+  const restoreAlignmentTransform = useImageCompareStore((state) => state.restoreAlignmentTransform);
   const restoreRequestIdRef = useRef(0);
 
   const restoreImageHistoryItem = useCallback((item: DiffHistoryItem): boolean => {
@@ -104,6 +105,7 @@ export function useImageHistoryRestore() {
 
     setOriginalImage(originalImageMeta);
     setModifiedImage(modifiedImageMeta);
+    restoreAlignmentTransform(snapshot.imageAlignmentTransform ?? null, snapshot.imageAlignmentMetadata ?? null);
 
     setCompareMode("side-by-side");
     setIsMetadataPanelOpen(false);
@@ -193,7 +195,7 @@ export function useImageHistoryRestore() {
     }
 
     return true;
-  }, [setCompareMode, setIsMetadataPanelOpen, setModifiedImage, setOriginalImage]);
+  }, [restoreAlignmentTransform, setCompareMode, setIsMetadataPanelOpen, setModifiedImage, setOriginalImage]);
 
   return { restoreImageHistoryItem };
 }

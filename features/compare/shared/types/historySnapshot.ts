@@ -22,6 +22,21 @@ export interface ImageHistorySnapshot {
   modifiedImageHeight?: number;
   originalThumbnailDataUrl?: string;
   modifiedThumbnailDataUrl?: string;
+  imageAlignmentTransform?: {
+    x: number;
+    y: number;
+    scaleX: number;
+    scaleY: number;
+    rotationDeg: number;
+    flipX: boolean;
+    flipY: boolean;
+  } | null;
+  imageAlignmentMetadata?: {
+    method: "manual" | "auto";
+    confidence: number | null;
+    matchCount: number | null;
+    timestamp: number;
+  } | null;
 }
 
 export type CompareHistorySnapshot = TextHistorySnapshot | ImageHistorySnapshot;
