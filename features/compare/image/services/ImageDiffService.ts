@@ -1,4 +1,6 @@
 import { DiffAlgorithm } from "../store/useImageCompareStore";
+import { ImageAffineTransform } from "./alignment/types";
+import { buildAffineMatrix, getTransformedBounds } from "./alignment/transformUtils";
 
 export interface DiffStats {
   totalPixels: number;
@@ -92,46 +94,135 @@ function drawCheckerboard(ctx: CanvasRenderingContext2D, width: number, height: 
   }
 }
 
+function createAlignedPair(
+  original: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
+  modified: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
+  transform: ImageAffineTransform | null | undefined
+): {
+  width: number;
+  height: number;
+  originalData: Uint8ClampedArray;
+  modifiedData: Uint8ClampedArray;
+} {
+  if (!transform) {
+    const width = Math.max(original.canvas.width, modified.canvas.width);
+    const height = Math.max(original.canvas.height, modified.canvas.height);
+    const totalPixels = width * height;
+    const originalData = original.ctx.getImageData(0, 0, original.canvas.width, original.canvas.height).data;
+    const modifiedData = modified.ctx.getImageData(0, 0, modified.canvas.width, modified.canvas.height).data;
+    const o = new Uint8ClampedArray(totalPixels * 4);
+    const m = new Uint8ClampedArray(totalPixels * 4);
+
+    for (let y = 0; y < original.canvas.height; y++) {
+      const srcStart = y * original.canvas.width * 4;
+      const srcEnd = srcStart + original.canvas.width * 4;
+      const dstStart = y * width * 4;
+      o.set(originalData.subarray(srcStart, srcEnd), dstStart);
+    }
+
+    for (let y = 0; y < modified.canvas.height; y++) {
+      const srcStart = y * modified.canvas.width * 4;
+      const srcEnd = srcStart + modified.canvas.width * 4;
+      const dstStart = y * width * 4;
+      m.set(modifiedData.subarray(srcStart, srcEnd), dstStart);
+    }
+
+    return { width, height, originalData: o, modifiedData: m };
+  }
+
+  const modifiedBounds = getTransformedBounds(transform, modified.canvas.width, modified.canvas.height);
+  const minX = Math.min(0, modifiedBounds.x);
+  const minY = Math.min(0, modifiedBounds.y);
+  const maxX = Math.max(original.canvas.width, modifiedBounds.x + modifiedBounds.width);
+  const maxY = Math.max(original.canvas.height, modifiedBounds.y + modifiedBounds.height);
+  const width = Math.max(1, Math.ceil(maxX - minX));
+  const height = Math.max(1, Math.ceil(maxY - minY));
+  const offsetX = -minX;
+  const offsetY = -minY;
+  const originalCanvas = document.createElement("canvas");
+  const modifiedCanvas = document.createElement("canvas");
+  originalCanvas.width = width;
+  originalCanvas.height = height;
+  modifiedCanvas.width = width;
+  modifiedCanvas.height = height;
+  const originalCtx = originalCanvas.getContext("2d");
+  const modifiedCtx = modifiedCanvas.getContext("2d");
+  if (!originalCtx || !modifiedCtx) {
+    throw new Error("Could not create aligned canvas context");
+  }
+
+  originalCtx.drawImage(original.canvas, offsetX, offsetY);
+  const matrix = buildAffineMatrix(transform, modified.canvas.width, modified.canvas.height);
+  modifiedCtx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e + offsetX, matrix.f + offsetY);
+  modifiedCtx.drawImage(modified.canvas, 0, 0);
+  modifiedCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+  return {
+    width,
+    height,
+    originalData: originalCtx.getImageData(0, 0, width, height).data,
+    modifiedData: modifiedCtx.getImageData(0, 0, width, height).data
+  };
+}
+
+function drawAlignedPair(
+  original: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
+  modified: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
+  targetCanvas: HTMLCanvasElement,
+  transform: ImageAffineTransform | null | undefined,
+  alpha: number
+): void {
+  const pair = createAlignedPair(original, modified, transform);
+  targetCanvas.width = pair.width;
+  targetCanvas.height = pair.height;
+  const ctx = targetCanvas.getContext("2d");
+  if (!ctx) return;
+
+  const originalCanvas = document.createElement("canvas");
+  const modifiedCanvas = document.createElement("canvas");
+  originalCanvas.width = pair.width;
+  originalCanvas.height = pair.height;
+  modifiedCanvas.width = pair.width;
+  modifiedCanvas.height = pair.height;
+  const originalCtx = originalCanvas.getContext("2d");
+  const modifiedCtx = modifiedCanvas.getContext("2d");
+  if (!originalCtx || !modifiedCtx) return;
+  const originalImageData = originalCtx.createImageData(pair.width, pair.height);
+  const modifiedImageData = modifiedCtx.createImageData(pair.width, pair.height);
+  originalImageData.data.set(pair.originalData);
+  modifiedImageData.data.set(pair.modifiedData);
+  originalCtx.putImageData(originalImageData, 0, 0);
+  drawCheckerboard(modifiedCtx, pair.width, pair.height);
+  modifiedCtx.putImageData(modifiedImageData, 0, 0);
+
+  ctx.clearRect(0, 0, pair.width, pair.height);
+  ctx.globalAlpha = 1;
+  ctx.drawImage(originalCanvas, 0, 0);
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(modifiedCanvas, 0, 0);
+  ctx.globalAlpha = 1;
+}
+
 export async function renderDiff(
   originalUrl: string,
   modifiedUrl: string,
   targetCanvas: HTMLCanvasElement,
-  algorithm: DiffAlgorithm
+  algorithm: DiffAlgorithm,
+  alignmentTransform?: ImageAffineTransform | null
 ): Promise<DiffStats> {
   const [original, modified] = await Promise.all([
     loadImageToCanvas(originalUrl),
     loadImageToCanvas(modifiedUrl)
   ]);
 
-  const originalWidth = original.canvas.width;
-  const originalHeight = original.canvas.height;
-  const modifiedWidth = modified.canvas.width;
-  const modifiedHeight = modified.canvas.height;
-
-  const width = Math.max(originalWidth, modifiedWidth);
-  const height = Math.max(originalHeight, modifiedHeight);
+  const pair = createAlignedPair(original, modified, alignmentTransform);
+  const width = pair.width;
+  const height = pair.height;
   const totalPixels = width * height;
   let differentPixels = 0;
   const DIFF_THRESHOLD = 30;
-
-  const originalData = original.ctx.getImageData(0, 0, originalWidth, originalHeight).data;
-  const modifiedData = modified.ctx.getImageData(0, 0, modifiedWidth, modifiedHeight).data;
-  const o = new Uint8ClampedArray(totalPixels * 4);
-  const m = new Uint8ClampedArray(totalPixels * 4);
-
-  for (let y = 0; y < originalHeight; y++) {
-    const srcStart = y * originalWidth * 4;
-    const srcEnd = srcStart + originalWidth * 4;
-    const dstStart = y * width * 4;
-    o.set(originalData.subarray(srcStart, srcEnd), dstStart);
-  }
-
-  for (let y = 0; y < modifiedHeight; y++) {
-    const srcStart = y * modifiedWidth * 4;
-    const srcEnd = srcStart + modifiedWidth * 4;
-    const dstStart = y * width * 4;
-    m.set(modifiedData.subarray(srcStart, srcEnd), dstStart);
-  }
+  const o = pair.originalData;
+  const m = pair.modifiedData;
 
 
   if (algorithm === "channel-split") {
@@ -371,7 +462,8 @@ export async function renderFade(
   originalUrl: string,
   modifiedUrl: string,
   targetCanvas: HTMLCanvasElement,
-  alpha: number
+  alpha: number,
+  alignmentTransform?: ImageAffineTransform | null
 ): Promise<void> {
   const clampedAlpha = Math.min(1, Math.max(0, alpha));
 
@@ -379,6 +471,11 @@ export async function renderFade(
     loadImageToCanvas(originalUrl),
     loadImageToCanvas(modifiedUrl)
   ]);
+
+  if (alignmentTransform) {
+    drawAlignedPair(original, modified, targetCanvas, alignmentTransform, clampedAlpha);
+    return;
+  }
 
   const width = Math.max(original.canvas.width, modified.canvas.width);
   const height = Math.max(original.canvas.height, modified.canvas.height);

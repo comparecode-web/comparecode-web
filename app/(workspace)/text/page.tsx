@@ -1,7 +1,8 @@
-"use client";
+import { textMetadata } from "@/config/seo";
+import { TextToolSection } from "./TextToolSection";
 
-import { TextView } from "@/features/compare/text";
+export const metadata = textMetadata;
 
 export default function TextPage() {
-  return <TextView />;
+  return <TextToolSection />;
 }
