@@ -378,6 +378,7 @@ function SliderView() {
   const origImgEl = useRef<HTMLImageElement | null>(null);
   const modImgEl = useRef<HTMLImageElement | null>(null);
   const sliderRef = useRef(sliderPosition);
+  const handleRef = useRef<HTMLDivElement>(null);
 
   const drawFrame = useCallback(() => {
     const canvas = canvasRef.current;
@@ -430,26 +431,18 @@ function SliderView() {
       ctx.beginPath();
       ctx.moveTo(divX, offY);
       ctx.lineTo(divX, offY + fitH);
-      ctx.strokeStyle = "rgba(255,255,255,0.95)";
-      ctx.lineWidth = 2;
-      ctx.shadowColor = "rgba(0,0,0,0.55)";
-      ctx.shadowBlur = 6;
+      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.lineWidth = 1;
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
+      ctx.shadowBlur = 3;
       ctx.stroke();
       ctx.restore();
 
       const handleY = offY + fitH / 2;
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.25)";
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(divX, handleY, 16, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
-      ctx.fill();
-      ctx.strokeStyle = "#d1d5db";
-      ctx.lineWidth = 1;
-      ctx.shadowBlur = 0;
-      ctx.stroke();
-      ctx.restore();
+      if (handleRef.current) {
+        handleRef.current.style.left = `${divX}px`;
+        handleRef.current.style.top = `${handleY}px`;
+      }
 
       return;
     }
@@ -476,44 +469,18 @@ function SliderView() {
     ctx.beginPath();
     ctx.moveTo(divX, offY);
     ctx.lineTo(divX, offY + fitH);
-    ctx.strokeStyle = "rgba(255,255,255,0.95)";
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "rgba(0,0,0,0.55)";
-    ctx.shadowBlur = 6;
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 1;
+    ctx.shadowColor = "rgba(0,0,0,0.4)";
+    ctx.shadowBlur = 3;
     ctx.stroke();
     ctx.restore();
 
     const handleY = offY + fitH / 2;
-    ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.25)";
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.arc(divX, handleY, 16, 0, Math.PI * 2);
-    ctx.fillStyle = "white";
-    ctx.fill();
-    ctx.strokeStyle = "#d1d5db";
-    ctx.lineWidth = 1;
-    ctx.shadowBlur = 0;
-    ctx.stroke();
-    ctx.restore();
-
-    // Arrows inside handle
-    ctx.save();
-    ctx.strokeStyle = "#555";
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    ctx.moveTo(divX - 5, handleY - 4);
-    ctx.lineTo(divX - 9, handleY);
-    ctx.lineTo(divX - 5, handleY + 4);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(divX + 5, handleY - 4);
-    ctx.lineTo(divX + 9, handleY);
-    ctx.lineTo(divX + 5, handleY + 4);
-    ctx.stroke();
-    ctx.restore();
+    if (handleRef.current) {
+      handleRef.current.style.left = `${divX}px`;
+      handleRef.current.style.top = `${handleY}px`;
+    }
 
     // Labels with drop shadow for readability
     ctx.save();
@@ -614,6 +581,21 @@ function SliderView() {
         className="relative flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary overflow-hidden select-none cursor-col-resize"
       >
         <canvas ref={canvasRef} className="block w-full h-full" />
+        {ready && (
+          <div
+            ref={handleRef}
+            className="absolute pointer-events-none drop-shadow"
+            style={{ left: 0, top: 0, transform: "translate(-50%, -50%)" }}
+          >
+            <svg width="26" height="26" viewBox="0 0 26 26">
+              <circle cx="13" cy="13" r="11" fill="white" stroke="#cbd5e1" strokeWidth="1" />
+              <g fill="none" stroke="#555" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 8 L6 13 L9 18" />
+                <path d="M17 8 L20 13 L17 18" />
+              </g>
+            </svg>
+          </div>
+        )}
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="text-sm text-text-secondary">Load both images to use Slider mode</span>
