@@ -8,7 +8,6 @@ import { HistoryService } from "@/services/historyService";
 import { HistoryActionDirection } from "@/types/history";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/features/compare/text/utils/scrollHelpers";
-import { syncIdenticalDocumentsToast } from "@/features/compare/text/utils/identicalDocumentsToast";
 
 interface EditorState {
   leftText: string;
@@ -16,6 +15,7 @@ interface EditorState {
   historySessionId: string | null;
   historyRefreshKey: number;
   comparisonResult: ComparisonResult | null;
+  areComparedTextsIdentical: boolean;
   totalSelectableBlocks: number;
   currentBlockIndex: number;
   setHistorySessionId: (sessionId: string | null) => void;
@@ -84,6 +84,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
   historySessionId: null,
   historyRefreshKey: 0,
   comparisonResult: null,
+  areComparedTextsIdentical: false,
   totalSelectableBlocks: 0,
   currentBlockIndex: 0,
 
@@ -93,9 +94,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
   },
   bumpHistoryRefreshKey: () => set((state) => ({ historyRefreshKey: state.historyRefreshKey + 1 })),
 
-  setLeftText: (text: string) => set({ leftText: text }),
+  setLeftText: (text: string) => set({ leftText: text, areComparedTextsIdentical: false }),
 
-  setRightText: (text: string) => set({ rightText: text }),
+  setRightText: (text: string) => set({ rightText: text, areComparedTextsIdentical: false }),
 
   swapTexts: () => {
     const { leftText, rightText } = get();
@@ -110,10 +111,10 @@ export const useEditorStore = create<EditorState>((set, get) => {
       historySessionId: null,
       historyRefreshKey: 0,
       comparisonResult: null,
+      areComparedTextsIdentical: false,
       totalSelectableBlocks: 0,
       currentBlockIndex: 0
     });
-    syncIdenticalDocumentsToast("", "");
   },
 
   compare: (settings: CompareSettings) => {
@@ -123,10 +124,10 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     set({
       comparisonResult: result,
+      areComparedTextsIdentical: Boolean(leftText || rightText) && leftText === rightText,
       totalSelectableBlocks: selectableBlocks.length,
       currentBlockIndex: 0
     });
-    syncIdenticalDocumentsToast(leftText, rightText);
   },
 
   selectBlock: (blockId: string | null) => {
@@ -212,8 +213,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
       }
     }
 
-    const { leftText: afterLeftText, rightText: afterRightText } = get();
-    syncIdenticalDocumentsToast(afterLeftText, afterRightText);
   },
 
   undoMergeStep: async (settings: CompareSettings) => {
@@ -235,7 +234,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
     get().compare(settings);
     get().selectBlock(null);
     get().bumpHistoryRefreshKey();
-    syncIdenticalDocumentsToast(snapshot.originalText, snapshot.modifiedText);
     return "applied";
   },
 
@@ -258,7 +256,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
     get().compare(settings);
     get().selectBlock(null);
     get().bumpHistoryRefreshKey();
-    syncIdenticalDocumentsToast(snapshot.originalText, snapshot.modifiedText);
     return "applied";
   },
 
@@ -266,7 +263,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
     invalidatePendingHistorySession();
     set({ leftText: left, rightText: right, historySessionId: sessionId });
     get().compare(settings);
-    syncIdenticalDocumentsToast(left, right);
   },
 
   jumpToNextBlock: () => {

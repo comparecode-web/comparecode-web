@@ -19,7 +19,7 @@ function getToneClasses(tone: ToastItem["tone"]): string {
     return "border-amber-500/40 bg-amber-500/10 text-text-primary";
   }
 
-  return "border-blue-500/40 bg-blue-500/10 text-text-primary";
+  return "border-info-border bg-info-bg text-text-primary";
 }
 
 function getDefaultIcon(tone: ToastItem["tone"]): ToastItem["icon"] {
@@ -51,7 +51,7 @@ function getIconClasses(tone: ToastItem["tone"]): string {
     return "text-amber-500";
   }
 
-  return "text-blue-500";
+  return "text-info";
 }
 
 function ToastIcon({ toast }: { toast: ToastItem }) {

@@ -26,3 +26,5 @@ next-env.d.ts
 .vscode/
 .idea/
 .github/copilot-instructions.local.md
+.next-dev-server.*.log
+.next-start-server.*.log
