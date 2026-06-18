@@ -64,18 +64,18 @@ export interface AutoAlignResult {
   };
 }
 
-const WORK_SIZE = 170;
-const MIN_OVERLAP_RATIO = 0.32;
-const PREFERRED_MIN_OVERLAP_RATIO = 0.72;
-const ROTATION_SCAN_LIMIT = 3;
+const WORK_SIZE = 256;
+const MIN_OVERLAP_RATIO = 0.35;
+const PREFERRED_MIN_OVERLAP_RATIO = 0.70;
+const ROTATION_SCAN_LIMIT = 5;
 const SCALE_SCAN_LIMIT = 0.2;
 const OVERLAP_SCORE_PENALTY = 0.12;
 const PREFERRED_OVERLAP_SCORE_PENALTY = 0.85;
 const SCALE_PRIOR_PENALTY = 1.15;
 const CENTER_PRIOR_PENALTY = 0.18;
 const FEATURE_PATCH_RADIUS = 5;
-const FEATURE_MIN_MATCHES = 8;
-const FEATURE_INLIER_THRESHOLD = 6;
+const FEATURE_MIN_MATCHES = 10;
+const FEATURE_INLIER_THRESHOLD = 7;
 
 function loadImageCanvas(url: string): Promise<LoadedImageCanvas> {
   return new Promise((resolve, reject) => {
@@ -191,6 +191,7 @@ function scoreOffset(
   let edgeCrossSum = 0;
   let sameCount = 0;
   let count = 0;
+  let corrCount = 0;
   for (let y = startY; y < endY; y += sampleStep) {
     const modifiedY = y - offsetY;
     for (let x = startX; x < endX; x += sampleStep) {
@@ -206,20 +207,26 @@ function scoreOffset(
       const modifiedLuma = modified.values[modifiedIndex];
       const originalEdge = original.edges[originalIndex];
       const modifiedEdge = modified.edges[modifiedIndex];
-      lumaOriginalSum += originalLuma;
-      lumaModifiedSum += modifiedLuma;
-      lumaOriginalSquareSum += originalLuma * originalLuma;
-      lumaModifiedSquareSum += modifiedLuma * modifiedLuma;
-      lumaCrossSum += originalLuma * modifiedLuma;
-      edgeOriginalSum += originalEdge;
-      edgeModifiedSum += modifiedEdge;
-      edgeOriginalSquareSum += originalEdge * originalEdge;
-      edgeModifiedSquareSum += modifiedEdge * modifiedEdge;
-      edgeCrossSum += originalEdge * modifiedEdge;
       const redDifference = original.colors[originalColorIndex] - modified.colors[modifiedColorIndex];
       const greenDifference = original.colors[originalColorIndex + 1] - modified.colors[modifiedColorIndex + 1];
       const blueDifference = original.colors[originalColorIndex + 2] - modified.colors[modifiedColorIndex + 2];
-      if (Math.sqrt(redDifference * redDifference + greenDifference * greenDifference + blueDifference * blueDifference) <= 30) {
+      const colorDelta = Math.sqrt(redDifference * redDifference + greenDifference * greenDifference + blueDifference * blueDifference);
+      const lumaDelta = Math.abs(originalLuma - modifiedLuma);
+      const useForCorr = (lumaDelta <= 0.20 && colorDelta <= 48);
+      if (useForCorr) {
+        lumaOriginalSum += originalLuma;
+        lumaModifiedSum += modifiedLuma;
+        lumaOriginalSquareSum += originalLuma * originalLuma;
+        lumaModifiedSquareSum += modifiedLuma * modifiedLuma;
+        lumaCrossSum += originalLuma * modifiedLuma;
+        edgeOriginalSum += originalEdge;
+        edgeModifiedSum += modifiedEdge;
+        edgeOriginalSquareSum += originalEdge * originalEdge;
+        edgeModifiedSquareSum += modifiedEdge * modifiedEdge;
+        edgeCrossSum += originalEdge * modifiedEdge;
+        corrCount++;
+      }
+      if (colorDelta <= 30) {
         sameCount++;
       }
       count++;
@@ -235,13 +242,14 @@ function scoreOffset(
     return { score: Number.POSITIVE_INFINITY, overlap };
   }
 
+  const effCount = corrCount > 3 ? corrCount : count;
   const lumaCorrelation = getNormalizedCorrelation(
     lumaOriginalSum,
     lumaModifiedSum,
     lumaOriginalSquareSum,
     lumaModifiedSquareSum,
     lumaCrossSum,
-    count
+    effCount
   );
   const edgeCorrelation = getNormalizedCorrelation(
     edgeOriginalSum,
@@ -249,7 +257,7 @@ function scoreOffset(
     edgeOriginalSquareSum,
     edgeModifiedSquareSum,
     edgeCrossSum,
-    count
+    effCount
   );
   const correlationScore = (1 - lumaCorrelation) * 0.35 + (1 - edgeCorrelation) * 0.65;
   const rgbDifferenceScore = 1 - sameCount / count;
@@ -479,14 +487,16 @@ function refineSeed(seed: SimilaritySeed, matches: FeatureMatch[], options: Imag
 }
 
 function estimateFeatureSeed(originalLuma: LumaData, modifiedLuma: LumaData, originalWidth: number, originalHeight: number, modifiedWidth: number, modifiedHeight: number, options: ImageAlignmentOptions): SimilaritySeed | null {
-  const originalKeypoints = detectKeypoints(originalLuma, originalWidth, originalHeight, 110);
-  const modifiedKeypoints = detectKeypoints(modifiedLuma, modifiedWidth, modifiedHeight, 130);
-  const matches = matchKeypoints(originalKeypoints, modifiedKeypoints).slice(0, 80);
+  const originalKeypoints = detectKeypoints(originalLuma, originalWidth, originalHeight, 140);
+  const modifiedKeypoints = detectKeypoints(modifiedLuma, modifiedWidth, modifiedHeight, 160);
+  const matches = matchKeypoints(originalKeypoints, modifiedKeypoints).slice(0, 90);
   if (matches.length < FEATURE_MIN_MATCHES) return null;
 
   let best: SimilaritySeed | null = null;
-  for (let a = 0; a < matches.length; a++) {
-    for (let b = a + 1; b < matches.length; b++) {
+  const trialLimit = 220;
+  let trials = 0;
+  for (let a = 0; a < matches.length && trials < trialLimit; a++) {
+    for (let b = a + 1; b < matches.length && trials < trialLimit; b++) {
       const seed = createPairSeed(matches[a], matches[b], options);
       if (!seed) continue;
       const scored = scoreSeed(seed, matches);
@@ -494,6 +504,7 @@ function estimateFeatureSeed(originalLuma: LumaData, modifiedLuma: LumaData, ori
       if (!best || scored.inliers > best.inliers || (scored.inliers === best.inliers && scored.error < best.error)) {
         best = scored;
       }
+      trials++;
     }
   }
 
@@ -694,11 +705,11 @@ function getCoarseRotationCandidates(options: ImageAlignmentOptions): Array<numb
 function getRefinedRotationCandidates(rotations: Array<number>, options: ImageAlignmentOptions): Array<number> {
   if (!options.rotate) return [0];
 
-  const candidates = rotations.flatMap((rotation) => createRotationRange(
-    Math.max(-ROTATION_SCAN_LIMIT, rotation - 0.6),
-    Math.min(ROTATION_SCAN_LIMIT, rotation + 0.6),
-    0.2
-  ));
+  const candidates = rotations.flatMap((rotation) => {
+    const span = Math.abs(rotation) > ROTATION_SCAN_LIMIT ? 2.8 : 0.8;
+    const step = Math.abs(rotation) > ROTATION_SCAN_LIMIT ? 0.35 : 0.2;
+    return createRotationRange(rotation - span, rotation + span, step);
+  });
 
   return [...new Set(candidates)];
 }
@@ -792,9 +803,6 @@ export async function estimateAutoAlignment(
 ): Promise<AutoAlignResult> {
   try {
     const openCvResult = await estimateOpenCvAutoAlignment(original, modified, options);
-    if (openCvResult.success) {
-      return openCvResult;
-    }
 
     const [originalCanvas, modifiedCanvas] = await Promise.all([
       loadImageCanvas(original.url),
@@ -807,6 +815,15 @@ export async function estimateAutoAlignment(
     const modifiedBaseLuma = toLuma(modifiedWorkBase.ctx, modifiedWorkBase.width, modifiedWorkBase.height);
     const scaleCandidates = getScaleCandidates(original, modified, options);
     const preferredScale = getPreferredDimensionScale(original, modified, options);
+    const centerCandidate = evaluateCandidate(originalWork, modifiedCanvas, sourceScale, 1, 0, originalLuma, preferredScale);
+    if (centerCandidate && centerCandidate.score < 0.08 && centerCandidate.overlap > 0.82) {
+      return {
+        success: true,
+        transform: regularizeNearIdentityScale(original, modified, centerCandidate.transform),
+        confidence: Math.max(0, Math.min(1, (1 - centerCandidate.score) * centerCandidate.overlap)),
+        matchCount: Math.round(centerCandidate.overlap * originalWork.width * originalWork.height)
+      };
+    }
     const featureSeed = estimateFeatureSeed(
       originalLuma,
       modifiedBaseLuma,
@@ -825,6 +842,17 @@ export async function estimateAutoAlignment(
       modifiedWorkBase.height,
       options
     );
+    const cvCandidate = (openCvResult.success && openCvResult.transform)
+      ? evaluateCandidate(
+        originalWork,
+        modifiedCanvas,
+        sourceScale,
+        openCvResult.transform.scaleX,
+        openCvResult.transform.rotationDeg,
+        originalLuma,
+        preferredScale
+      )
+      : null;
     const featureCandidate = featureSeed
       ? evaluateCandidate(
         originalWork,
@@ -854,7 +882,7 @@ export async function estimateAutoAlignment(
       .flatMap((scale) => coarseRotationCandidates.map((rotation) => evaluateCandidate(originalWork, modifiedCanvas, sourceScale, scale, rotation, originalLuma, preferredScale)))
       .filter((candidate): candidate is AutoAlignCandidate => candidate !== null)
       .sort((a, b) => a.score - b.score);
-    const modelCandidates = [featureCandidate, momentCandidate].filter((candidate): candidate is AutoAlignCandidate => candidate !== null);
+    const modelCandidates = [cvCandidate, featureCandidate, momentCandidate].filter((candidate): candidate is AutoAlignCandidate => candidate !== null);
     const refinementSeeds = [...modelCandidates, ...coarseResults].slice(0, 5);
     const refinedResults = refinementSeeds
       .flatMap((candidate) => getRefinedScaleCandidates([candidate.transform.scaleX], options)

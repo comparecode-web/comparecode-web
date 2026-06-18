@@ -25,9 +25,9 @@ interface WorkerFailure {
 
 type WorkerResult = WorkerSuccess | WorkerFailure;
 
-const OPENCV_WORK_SIZE = 320;
+const OPENCV_WORK_SIZE = 400;
 const OPENCV_TIMEOUT_MS = 12000;
-const MIN_INLIERS = 5;
+const MIN_INLIERS = 8;
 
 function loadWorkImage(image: ImageFileMeta): Promise<WorkImage> {
   return new Promise((resolve, reject) => {
@@ -113,12 +113,12 @@ export async function estimateOpenCvAutoAlignment(
   modified: ImageFileMeta,
   options: ImageAlignmentOptions
 ): Promise<AutoAlignResult> {
-  if (!options.rotate || !options.scale || typeof Worker === "undefined") {
+  if (typeof Worker === "undefined") {
     return {
       success: false,
       error: {
         code: "alignment/opencv-disabled",
-        message: "OpenCV alignment requires rotate and scale transformations."
+        message: "OpenCV alignment requires Web Workers."
       }
     };
   }
@@ -136,7 +136,7 @@ export async function estimateOpenCvAutoAlignment(
       };
     }
 
-    const transform = matToTransform(result.matrix, original, modified, originalWork.scale);
+    let transform = matToTransform(result.matrix, original, modified, originalWork.scale);
     if (!transform) {
       return {
         success: false,
@@ -145,6 +145,12 @@ export async function estimateOpenCvAutoAlignment(
           message: "OpenCV transform failed."
         }
       };
+    }
+    if (!options.rotate) {
+      transform = { ...transform, rotationDeg: 0 };
+    }
+    if (!options.scale) {
+      transform = { ...transform, scaleX: 1, scaleY: 1 };
     }
 
     return {
