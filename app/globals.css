@@ -22,6 +22,10 @@
   --color-danger-bg: var(--danger-bg);
   --color-success: var(--success);
   --color-success-hover: var(--success-hover);
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+  --color-info-bg: var(--info-bg);
+  --color-info-border: var(--info-border);
   --color-diff-added-bg: var(--diff-added-bg);
   --color-diff-added-fg: var(--diff-added-fg);
   --color-diff-removed-bg: var(--diff-removed-bg);

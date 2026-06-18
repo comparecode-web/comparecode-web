@@ -9,6 +9,7 @@ import { useTextCompareActions } from "@/features/compare/text/hooks/useTextComp
 import { ViewMode } from "@/types/settings";
 import { MergeDirection } from "@/types/ui";
 import { ComparisonToolbar } from "./ComparisonToolbar";
+import { IdenticalTextInfoBar } from "./IdenticalTextInfoBar";
 import { SplitView } from "./SplitView";
 import { UnifiedView } from "./UnifiedView";
 import { DiffMinimap } from "./DiffMinimap";
@@ -28,6 +29,7 @@ function isMacPlatform(): boolean {
 export function ComparisonView() {
   const {
     comparisonResult,
+    areComparedTextsIdentical,
     leftText,
     rightText,
     selectBlock,
@@ -215,6 +217,7 @@ export function ComparisonView() {
   return (
     <div className={cn("flex w-full min-h-0 flex-col bg-bg-primary relative", !hideBody && "h-full")}>
       {!hideBody && <ComparisonToolbar />}
+      {!hideBody && <IdenticalTextInfoBar isVisible={areComparedTextsIdentical} />}
 
       {!hideBody && (
         <div id="diff-container" className="flex flex-1 min-h-0 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>

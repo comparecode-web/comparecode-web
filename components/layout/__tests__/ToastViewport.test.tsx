@@ -20,7 +20,7 @@ describe("ToastViewport", () => {
   it("renders a dismissible icon toast and closes it from the X button", async () => {
     const user = userEvent.setup();
     useToastStore.getState().pushToast({
-      message: "The two documents are completely identical.",
+      message: "Information saved.",
       tone: "info",
       durationMs: null,
       icon: "info",
@@ -31,6 +31,7 @@ describe("ToastViewport", () => {
 
     const toast = screen.getByRole("status");
     expect(toast).toHaveClass("pointer-events-auto");
+    expect(toast).toHaveClass("border-info-border", "bg-info-bg");
     expect(toast.querySelector("svg")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Dismiss notification" }));
