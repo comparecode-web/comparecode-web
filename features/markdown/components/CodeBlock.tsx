@@ -111,7 +111,7 @@ export function CodeBlock({ children, language, inline = false }: CodeBlockProps
 
   return (
     <div className="min-w-0 max-w-full overflow-hidden rounded-md bg-slate-50">
-      <pre className="min-w-0 max-w-full overflow-auto p-4 text-sm leading-7 custom-scrollbar">
+      <pre className="min-w-0 max-w-full overflow-auto p-4 text-sm leading-5 custom-scrollbar">
         <code className={cn("font-mono text-slate-950", language && `language-${language}`)}>
           {renderHighlightedCode(children, language)}
         </code>
