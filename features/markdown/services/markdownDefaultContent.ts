@@ -1,8 +1,8 @@
 export const markdownDefaultContent = `---
 title: CompareCode Markdown Preview
-description: A local GitHub-style Markdown renderer with live preview, math, diagrams, and safe draft persistence.
+description: A local GitHub-style Markdown renderer with live preview, KaTeX math, diagrams, and safe draft persistence.
 author: CompareCode
-tags: ["markdown", "preview", "mermaid", "latex", "local-first"]
+tags: ["markdown", "preview", "mermaid", "katex", "local-first"]
 ---
 
 # CompareCode Markdown Preview
@@ -52,7 +52,7 @@ It can represent removed notes or outdated draft content.~~
 - [x] Support GitHub Flavored Markdown
 - [x] Render emoji shortcodes like :joy:
 - [x] Support Mermaid diagrams
-- [x] Support KaTeX math
+- [x] Support KaTeX-rendered LaTeX-style math
 - [ ] Finalize your own document
 
 ## Quotes and Alerts
@@ -92,7 +92,7 @@ Right aligned content is supported too.
 | GitHub Flavored Markdown | Supported | Tables, task lists, autolinks, and strikethrough |
 | Emoji shortcodes | Supported | Try :joy:, :rocket:, or :memo: |
 | Mermaid | Supported | Diagrams render automatically when visible |
-| KaTeX | Supported | Inline and block math |
+| KaTeX | Supported | Inline and block LaTeX-style math |
 | Local persistence | Supported | Draft content is restored on reopen |
 
 ## Code Blocks
@@ -111,6 +111,16 @@ function getToolTitle(tool: CompareCodeTool): string {
 }
 \`\`\`
 
+## Links and References
+
+Inline links can point to project resources without leaving the editor flow.
+
+[CompareCode repository](https://github.com/comparecode-web/comparecode-web)
+
+Reference links keep long URLs out of the sentence text.[comparecode-docs]
+
+[comparecode-docs]: https://github.com/comparecode-web/comparecode-web
+
 ## Mermaid Diagram
 
 \`\`\`mermaid
@@ -121,7 +131,7 @@ flowchart LR
   Preview --> Persist[Restore Latest Draft]
 \`\`\`
 
-## Math with KaTeX
+## KaTeX-rendered LaTeX-style Math
 
 Inline math: $E = mc^2$
 

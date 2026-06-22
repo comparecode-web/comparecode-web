@@ -14,6 +14,7 @@ import { MarkdownFrontmatterTable } from "./MarkdownFrontmatterTable";
 import { parseMarkdownFrontmatter } from "@/features/markdown/services/markdownFrontmatter";
 import { normalizeMultilineStyleMarkers } from "@/features/markdown/services/markdownPreprocess";
 import { markdownSanitizeSchema } from "@/features/markdown/services/markdownSanitizeSchema";
+import { remarkSoftLineBreaks } from "@/features/markdown/services/markdownSoftBreaks";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 import { cn } from "@/utils/uiHelpers";
 
@@ -90,7 +91,7 @@ export function MarkdownPreviewPane({ value, previewRef }: MarkdownPreviewPanePr
       >
         <MarkdownFrontmatterTable fields={frontmatter.fields} />
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkGemoji, remarkMath]}
+          remarkPlugins={[remarkGfm, remarkGemoji, remarkMath, remarkSoftLineBreaks]}
           rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema], rehypeKatex]}
           components={markdownComponents}
         >

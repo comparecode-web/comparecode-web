@@ -4,13 +4,15 @@ import { MdRestartAlt } from "react-icons/md";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/Slider";
+import { SelectionBar } from "@/components/ui/SelectionBar";
 import { OptionsSection } from "@/components/settings/OptionsSection";
 import { useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { type MarkdownUISettingKey, useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 import { isMarkdownSettingsSectionDirty } from "@/features/markdown/utils/markdownSettingsReset";
+import type { MarkdownViewMode } from "@/features/markdown/types/markdown";
 
 const PREVIEW_SECTION_KEYS: Array<MarkdownUISettingKey> = ["isSyncScrollEnabled", "isWordWrapEnabled", "fontSize"];
-const LAYOUT_SECTION_KEYS: Array<MarkdownUISettingKey> = ["editorPaneWidthPercent"];
+const LAYOUT_SECTION_KEYS: Array<MarkdownUISettingKey> = ["viewMode", "editorPaneWidthPercent"];
 
 export function MarkdownOptionsView() {
   const resetMarkdownText = useMarkdownStore((state) => state.resetMarkdownText);
@@ -20,10 +22,12 @@ export function MarkdownOptionsView() {
   const setIsWordWrapEnabled = useMarkdownUIStore((state) => state.setIsWordWrapEnabled);
   const editorPaneWidthPercent = useMarkdownUIStore((state) => state.editorPaneWidthPercent);
   const setEditorPaneWidthPercent = useMarkdownUIStore((state) => state.setEditorPaneWidthPercent);
+  const viewMode = useMarkdownUIStore((state) => state.viewMode);
+  const setViewMode = useMarkdownUIStore((state) => state.setViewMode);
   const fontSize = useMarkdownUIStore((state) => state.fontSize);
   const setFontSize = useMarkdownUIStore((state) => state.setFontSize);
   const resetSectionToDefaults = useMarkdownUIStore((state) => state.resetSectionToDefaults);
-  const previewSettings = { isSyncScrollEnabled, isWordWrapEnabled, fontSize, editorPaneWidthPercent };
+  const previewSettings = { isSyncScrollEnabled, isWordWrapEnabled, fontSize, editorPaneWidthPercent, viewMode };
   const isPreviewSectionDirty = isMarkdownSettingsSectionDirty(previewSettings, PREVIEW_SECTION_KEYS);
   const isLayoutSectionDirty = isMarkdownSettingsSectionDirty(previewSettings, LAYOUT_SECTION_KEYS);
 
@@ -60,6 +64,16 @@ export function MarkdownOptionsView() {
         isDirty={isLayoutSectionDirty}
         onReset={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
       >
+        <SelectionBar<MarkdownViewMode>
+          options={[
+            { label: "Editor", value: "editor" },
+            { label: "Split", value: "split" },
+            { label: "Preview", value: "preview" }
+          ]}
+          value={viewMode}
+          onChange={setViewMode}
+          className="mt-1"
+        />
         <Slider
           min={30}
           max={70}
@@ -68,6 +82,7 @@ export function MarkdownOptionsView() {
           onChange={(event) => setEditorPaneWidthPercent(parseInt(event.target.value, 10))}
           label="Editor width"
           displayValue={`${Math.round(editorPaneWidthPercent)}%`}
+          containerClassName={viewMode === "split" ? "mt-2" : "hidden"}
         />
       </OptionsSection>
 

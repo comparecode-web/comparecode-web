@@ -18,6 +18,7 @@ export function MarkdownSplitView({ value, onChange, textareaRef }: MarkdownSpli
   const previewRef = useRef<HTMLDivElement>(null);
   const isSyncScrollEnabled = useMarkdownUIStore((state) => state.isSyncScrollEnabled);
   const editorPaneWidthPercent = useMarkdownUIStore((state) => state.editorPaneWidthPercent);
+  const viewMode = useMarkdownUIStore((state) => state.viewMode);
   const setEditorPaneWidthPercent = useMarkdownUIStore((state) => state.setEditorPaneWidthPercent);
 
   const resizeHandlers = useResizableMarkdownSplit({
@@ -30,6 +31,36 @@ export function MarkdownSplitView({ value, onChange, textareaRef }: MarkdownSpli
     previewRef,
     isEnabled: isSyncScrollEnabled
   });
+
+  if (viewMode === "editor") {
+    return (
+      <div ref={containerRef} className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-primary">
+        <section className="min-h-0 min-w-0 flex-1 overflow-hidden">
+          <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+            <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold uppercase tracking-wider text-text-secondary">
+              Markdown
+            </div>
+            <MarkdownEditorPane value={value} onChange={onChange} textareaRef={textareaRef} />
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (viewMode === "preview") {
+    return (
+      <div ref={containerRef} className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-primary">
+        <section className="min-h-0 min-w-0 flex-1 overflow-hidden">
+          <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+            <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold uppercase tracking-wider text-text-secondary">
+              Preview
+            </div>
+            <MarkdownPreviewPane value={value} previewRef={previewRef} />
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div

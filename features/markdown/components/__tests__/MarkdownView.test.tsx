@@ -20,7 +20,8 @@ function resetMarkdownState() {
     isSyncScrollEnabled: true,
     editorPaneWidthPercent: 50,
     isWordWrapEnabled: true,
-    fontSize: 16
+    fontSize: 16,
+    viewMode: "split"
   });
 }
 

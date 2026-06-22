@@ -1,7 +1,7 @@
 import { defaultMarkdownUISettings, type MarkdownUISettingKey } from "@/features/markdown/store/useMarkdownUIStore";
 
 export function isMarkdownSettingsSectionDirty(
-  settings: Record<MarkdownUISettingKey, boolean | number>,
+  settings: Record<MarkdownUISettingKey, boolean | number | string>,
   keys: Array<MarkdownUISettingKey>
 ): boolean {
   for (let index = 0; index < keys.length; index++) {

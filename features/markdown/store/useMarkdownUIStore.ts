@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { loadMarkdownUIState, saveMarkdownUIState } from "@/features/markdown/services/markdownStorage";
+import type { MarkdownViewMode } from "@/features/markdown/types/markdown";
 
 export const defaultMarkdownUISettings = {
   isSyncScrollEnabled: true,
   editorPaneWidthPercent: 50,
   isWordWrapEnabled: true,
-  fontSize: 16
+  fontSize: 16,
+  viewMode: "split" as MarkdownViewMode
 };
 
 export type MarkdownUISettingKey = keyof typeof defaultMarkdownUISettings;
@@ -17,20 +19,23 @@ interface MarkdownUIState {
   editorPaneWidthPercent: number;
   isWordWrapEnabled: boolean;
   fontSize: number;
+  viewMode: MarkdownViewMode;
   setIsOptionsPanelOpen: (value: boolean) => void;
   setIsSyncScrollEnabled: (value: boolean) => void;
   setEditorPaneWidthPercent: (value: number) => void;
   setIsWordWrapEnabled: (value: boolean) => void;
   setFontSize: (value: number) => void;
+  setViewMode: (value: MarkdownViewMode) => void;
   resetSectionToDefaults: (keys: Array<MarkdownUISettingKey>) => void;
   loadPersistedMarkdownUIState: () => void;
 }
 
-function persistPartial(state: Pick<MarkdownUIState, "editorPaneWidthPercent" | "isSyncScrollEnabled" | "fontSize">): void {
+function persistPartial(state: Pick<MarkdownUIState, "editorPaneWidthPercent" | "isSyncScrollEnabled" | "fontSize" | "viewMode">): void {
   saveMarkdownUIState({
     editorPaneWidthPercent: state.editorPaneWidthPercent,
     isSyncScrollEnabled: state.isSyncScrollEnabled,
-    fontSize: state.fontSize
+    fontSize: state.fontSize,
+    viewMode: state.viewMode
   });
 }
 
@@ -54,6 +59,10 @@ export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
     set({ fontSize: nextValue });
     persistPartial(get());
   },
+  setViewMode: (value) => {
+    set({ viewMode: value });
+    persistPartial(get());
+  },
   resetSectionToDefaults: (keys) => {
     set((state) => {
       const nextState = { ...state };
@@ -74,7 +83,8 @@ export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
       editorPaneWidthPercent: loaded.editorPaneWidthPercent
         ? Math.min(70, Math.max(30, loaded.editorPaneWidthPercent))
         : state.editorPaneWidthPercent,
-      fontSize: loaded.fontSize ? Math.min(24, Math.max(12, loaded.fontSize)) : state.fontSize
+      fontSize: loaded.fontSize ? Math.min(24, Math.max(12, loaded.fontSize)) : state.fontSize,
+      viewMode: loaded.viewMode ?? state.viewMode
     }));
   }
 }));

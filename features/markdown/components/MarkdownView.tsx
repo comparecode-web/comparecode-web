@@ -22,7 +22,6 @@ export function MarkdownView() {
 
   const { applyFormat } = useMarkdownFormattingActions({
     textareaRef,
-    value: markdownText,
     onChange: setMarkdownText
   });
 

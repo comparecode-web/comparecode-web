@@ -1,4 +1,5 @@
 import { markdownDefaultContent } from "./markdownDefaultContent";
+import type { MarkdownViewMode } from "@/features/markdown/types/markdown";
 
 const CONTENT_KEY = "comparecode.markdownPreview.content.v1";
 const UI_KEY = "comparecode.markdownPreview.ui.v1";
@@ -7,6 +8,7 @@ export interface PersistedMarkdownUIState {
   editorPaneWidthPercent: number;
   isSyncScrollEnabled: boolean;
   fontSize: number;
+  viewMode: MarkdownViewMode;
 }
 
 export function loadMarkdownContent(): string {

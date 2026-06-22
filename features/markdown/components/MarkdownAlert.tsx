@@ -95,6 +95,28 @@ function trimAlertMarkerFromNode(node: ReactNode, marker: string): ReactNode | n
   return node;
 }
 
+function isLeadingSpacingNode(node: ReactNode): boolean {
+  if (typeof node === "string") {
+    return node.trim() === "";
+  }
+
+  if (isValidElement(node)) {
+    return node.type === "br";
+  }
+
+  return false;
+}
+
+function removeLeadingSpacingNodes(nodes: Array<ReactNode>): Array<ReactNode> {
+  let firstContentIndex = 0;
+
+  while (firstContentIndex < nodes.length && isLeadingSpacingNode(nodes[firstContentIndex])) {
+    firstContentIndex += 1;
+  }
+
+  return nodes.slice(firstContentIndex);
+}
+
 function trimAlertMarkerFromNodes(nodes: Array<ReactNode>, marker: string): Array<ReactNode> {
   let markerRemoved = false;
 
@@ -110,7 +132,21 @@ function trimAlertMarkerFromNodes(nodes: Array<ReactNode>, marker: string): Arra
       }
 
       markerRemoved = true;
-      return trimAlertMarkerFromNode(node, marker);
+      const trimmedNode = trimAlertMarkerFromNode(node, marker);
+
+      if (isValidElement<{ children?: ReactNode }>(trimmedNode)) {
+        const nextChildren = removeLeadingSpacingNodes(Children.toArray(trimmedNode.props.children));
+
+        return {
+          ...trimmedNode,
+          props: {
+            ...trimmedNode.props,
+            children: nextChildren.length === 0 ? null : nextChildren
+          }
+        };
+      }
+
+      return trimmedNode;
     })
     .filter(Boolean);
 }

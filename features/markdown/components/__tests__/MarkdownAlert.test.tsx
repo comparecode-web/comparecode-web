@@ -27,6 +27,24 @@ describe("MarkdownAlert", () => {
     expect(screen.queryByText("[!WARNING]")).not.toBeInTheDocument();
   });
 
+  it("removes the leading break left after an alert marker", () => {
+    const { container } = render(
+      <MarkdownAlert>
+        <p>
+          {"[!IMPORTANT]"}
+          <br />
+          {"Key information users need to know."}
+        </p>
+      </MarkdownAlert>
+    );
+
+    const contentParagraph = screen.getByText("Key information users need to know.").closest("p");
+
+    expect(screen.getByText("Important").parentElement).toHaveClass("text-violet-700");
+    expect(contentParagraph?.querySelector("br")).not.toBeInTheDocument();
+    expect(container.querySelector("p")?.textContent).toBe("Key information users need to know.");
+  });
+
   it("keeps normal blockquotes when no alert marker is present", () => {
     render(
       <MarkdownAlert>

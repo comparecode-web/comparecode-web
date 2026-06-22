@@ -8,7 +8,8 @@ function resetMarkdownUIStore() {
       isSyncScrollEnabled: true,
       editorPaneWidthPercent: 50,
       isWordWrapEnabled: true,
-      fontSize: 16
+      fontSize: 16,
+      viewMode: "split"
     });
 }
 
@@ -22,13 +23,15 @@ describe("useMarkdownUIStore", () => {
     useMarkdownUIStore.getState().setIsSyncScrollEnabled(false);
     useMarkdownUIStore.getState().setEditorPaneWidthPercent(64);
     useMarkdownUIStore.getState().setFontSize(18);
+    useMarkdownUIStore.getState().setViewMode("preview");
 
     const stored = JSON.parse(window.localStorage.getItem("comparecode.markdownPreview.ui.v1") ?? "{}");
 
     expect(stored).toMatchObject({
       isSyncScrollEnabled: false,
       editorPaneWidthPercent: 64,
-      fontSize: 18
+      fontSize: 18,
+      viewMode: "preview"
     });
   });
 
@@ -42,7 +45,8 @@ describe("useMarkdownUIStore", () => {
     window.localStorage.setItem("comparecode.markdownPreview.ui.v1", JSON.stringify({
       isSyncScrollEnabled: false,
       editorPaneWidthPercent: 35,
-      fontSize: 19
+      fontSize: 19,
+      viewMode: "editor"
     }));
 
     useMarkdownUIStore.getState().loadPersistedMarkdownUIState();
@@ -51,25 +55,29 @@ describe("useMarkdownUIStore", () => {
       isLoaded: true,
       isSyncScrollEnabled: false,
       editorPaneWidthPercent: 35,
-      fontSize: 19
+      fontSize: 19,
+      viewMode: "editor"
     });
   });
 
   it("resets selected markdown UI sections to defaults and persists them", () => {
     useMarkdownUIStore.getState().setIsSyncScrollEnabled(false);
     useMarkdownUIStore.getState().setFontSize(20);
+    useMarkdownUIStore.getState().setViewMode("preview");
 
-    useMarkdownUIStore.getState().resetSectionToDefaults(["isSyncScrollEnabled", "fontSize"]);
+    useMarkdownUIStore.getState().resetSectionToDefaults(["isSyncScrollEnabled", "fontSize", "viewMode"]);
 
     expect(useMarkdownUIStore.getState()).toMatchObject({
       isSyncScrollEnabled: true,
-      fontSize: 16
+      fontSize: 16,
+      viewMode: "split"
     });
 
     const stored = JSON.parse(window.localStorage.getItem("comparecode.markdownPreview.ui.v1") ?? "{}");
     expect(stored).toMatchObject({
       isSyncScrollEnabled: true,
-      fontSize: 16
+      fontSize: 16,
+      viewMode: "split"
     });
   });
 });
