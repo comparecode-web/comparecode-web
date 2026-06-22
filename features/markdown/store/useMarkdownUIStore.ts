@@ -1,6 +1,15 @@
 import { create } from "zustand";
 import { loadMarkdownUIState, saveMarkdownUIState } from "@/features/markdown/services/markdownStorage";
 
+export const defaultMarkdownUISettings = {
+  isSyncScrollEnabled: true,
+  editorPaneWidthPercent: 50,
+  isWordWrapEnabled: true,
+  fontSize: 16
+};
+
+export type MarkdownUISettingKey = keyof typeof defaultMarkdownUISettings;
+
 interface MarkdownUIState {
   isLoaded: boolean;
   isOptionsPanelOpen: boolean;
@@ -13,6 +22,7 @@ interface MarkdownUIState {
   setEditorPaneWidthPercent: (value: number) => void;
   setIsWordWrapEnabled: (value: boolean) => void;
   setFontSize: (value: number) => void;
+  resetSectionToDefaults: (keys: Array<MarkdownUISettingKey>) => void;
   loadPersistedMarkdownUIState: () => void;
 }
 
@@ -27,10 +37,7 @@ function persistPartial(state: Pick<MarkdownUIState, "editorPaneWidthPercent" | 
 export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
   isLoaded: false,
   isOptionsPanelOpen: true,
-  isSyncScrollEnabled: true,
-  editorPaneWidthPercent: 50,
-  isWordWrapEnabled: true,
-  fontSize: 16,
+  ...defaultMarkdownUISettings,
   setIsOptionsPanelOpen: (value) => set({ isOptionsPanelOpen: value }),
   setIsSyncScrollEnabled: (value) => {
     set({ isSyncScrollEnabled: value });
@@ -46,6 +53,18 @@ export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
     const nextValue = Math.min(24, Math.max(12, value));
     set({ fontSize: nextValue });
     persistPartial(get());
+  },
+  resetSectionToDefaults: (keys) => {
+    set((state) => {
+      const nextState = { ...state };
+      for (let index = 0; index < keys.length; index++) {
+        const key = keys[index];
+        Reflect.set(nextState, key, defaultMarkdownUISettings[key]);
+      }
+
+      persistPartial(nextState);
+      return nextState;
+    });
   },
   loadPersistedMarkdownUIState: () => {
     const loaded = loadMarkdownUIState();

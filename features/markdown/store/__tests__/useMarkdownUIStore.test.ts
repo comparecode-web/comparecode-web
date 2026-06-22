@@ -54,4 +54,22 @@ describe("useMarkdownUIStore", () => {
       fontSize: 19
     });
   });
+
+  it("resets selected markdown UI sections to defaults and persists them", () => {
+    useMarkdownUIStore.getState().setIsSyncScrollEnabled(false);
+    useMarkdownUIStore.getState().setFontSize(20);
+
+    useMarkdownUIStore.getState().resetSectionToDefaults(["isSyncScrollEnabled", "fontSize"]);
+
+    expect(useMarkdownUIStore.getState()).toMatchObject({
+      isSyncScrollEnabled: true,
+      fontSize: 16
+    });
+
+    const stored = JSON.parse(window.localStorage.getItem("comparecode.markdownPreview.ui.v1") ?? "{}");
+    expect(stored).toMatchObject({
+      isSyncScrollEnabled: true,
+      fontSize: 16
+    });
+  });
 });

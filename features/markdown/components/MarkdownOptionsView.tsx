@@ -4,8 +4,13 @@ import { MdRestartAlt } from "react-icons/md";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/Slider";
+import { OptionsSection } from "@/components/settings/OptionsSection";
 import { useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
-import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
+import { type MarkdownUISettingKey, useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
+import { isMarkdownSettingsSectionDirty } from "@/features/markdown/utils/markdownSettingsReset";
+
+const PREVIEW_SECTION_KEYS: Array<MarkdownUISettingKey> = ["isSyncScrollEnabled", "isWordWrapEnabled", "fontSize"];
+const LAYOUT_SECTION_KEYS: Array<MarkdownUISettingKey> = ["editorPaneWidthPercent"];
 
 export function MarkdownOptionsView() {
   const resetMarkdownText = useMarkdownStore((state) => state.resetMarkdownText);
@@ -17,11 +22,18 @@ export function MarkdownOptionsView() {
   const setEditorPaneWidthPercent = useMarkdownUIStore((state) => state.setEditorPaneWidthPercent);
   const fontSize = useMarkdownUIStore((state) => state.fontSize);
   const setFontSize = useMarkdownUIStore((state) => state.setFontSize);
+  const resetSectionToDefaults = useMarkdownUIStore((state) => state.resetSectionToDefaults);
+  const previewSettings = { isSyncScrollEnabled, isWordWrapEnabled, fontSize, editorPaneWidthPercent };
+  const isPreviewSectionDirty = isMarkdownSettingsSectionDirty(previewSettings, PREVIEW_SECTION_KEYS);
+  const isLayoutSectionDirty = isMarkdownSettingsSectionDirty(previewSettings, LAYOUT_SECTION_KEYS);
 
   return (
     <div className="flex min-h-full flex-col gap-2 bg-hover-overlay p-2">
-      <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">Preview</h3>
+      <OptionsSection
+        title="Preview"
+        isDirty={isPreviewSectionDirty}
+        onReset={() => resetSectionToDefaults(PREVIEW_SECTION_KEYS)}
+      >
         <Switch
           checked={isSyncScrollEnabled}
           onChange={(event) => setIsSyncScrollEnabled(event.target.checked)}
@@ -41,10 +53,13 @@ export function MarkdownOptionsView() {
           label="Font size"
           displayValue={`${fontSize}px`}
         />
-      </div>
+      </OptionsSection>
 
-      <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">Layout</h3>
+      <OptionsSection
+        title="Layout"
+        isDirty={isLayoutSectionDirty}
+        onReset={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
+      >
         <Slider
           min={30}
           max={70}
@@ -54,7 +69,7 @@ export function MarkdownOptionsView() {
           label="Editor width"
           displayValue={`${Math.round(editorPaneWidthPercent)}%`}
         />
-      </div>
+      </OptionsSection>
 
       <div className="mt-1 flex flex-col gap-2 pt-1">
         <Button
