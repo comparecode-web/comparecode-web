@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef } from "react";
-import { MdCode, MdHistory, MdSettings, MdImage, MdHome } from "react-icons/md";
+import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
 import { cn } from "@/utils/uiHelpers";
 
@@ -14,8 +14,9 @@ export function MainNavHeader() {
 
   const navItems = [
     { href: "/", label: "Home", icon: MdHome },
-    { href: "/text", label: "Text", icon: MdCode },
-    { href: "/image", label: "Image", icon: MdImage },
+    { href: "/text", label: "Text compare", icon: MdCode },
+    { href: "/image", label: "Image compare", icon: MdImage },
+    { href: "/markdown", label: "Markdown preview", icon: MdArticle },
     { href: "/history", label: "History", icon: MdHistory },
     { href: "/settings", label: "Settings", icon: MdSettings }
   ];

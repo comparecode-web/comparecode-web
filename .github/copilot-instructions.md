@@ -38,6 +38,7 @@
 - Use existing Zustand stores for global state.
 - Write all program code content in English (identifiers, code strings, and developer-facing messages).
 - Do not add comments in program code.
+- Dependency licensing policy: new direct runtime dependencies must be MIT or Apache-2.0 licensed. Do not propose or add LGPL, GPL, AGPL, or other copyleft licenses for runtime dependencies. When adding dependencies, review direct licenses first and call out notable transitive license findings.
 - Keep module boundaries strict:
   - Text module: handle only text-diff related logic/UI.
   - Image module: handle only image-diff related logic/UI.

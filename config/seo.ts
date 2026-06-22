@@ -71,6 +71,12 @@ export const imageMetadata = createPageMetadata({
   description: "Compare screenshots and images visually with side-by-side, fade, slider, heatmap, perceptual, threshold, and alignment tools."
 });
 
+export const markdownMetadata = createPageMetadata({
+  path: "/markdown",
+  title: "Markdown Preview Tool - Live Markdown Renderer | CompareCode",
+  description: "Write Markdown with a live preview, local draft persistence, GitHub-style formatting, emoji shortcodes, Mermaid diagrams, and KaTeX formulas."
+});
+
 export const settingsMetadata = createPageMetadata({
   path: "/settings",
   title: "Settings | CompareCode",
@@ -95,6 +101,7 @@ export const softwareApplicationJsonLd = {
     "Text comparison",
     "Code diff",
     "Image comparison",
+    "Markdown preview",
     "Local comparison history",
     "Merge controls",
     "Image alignment"
