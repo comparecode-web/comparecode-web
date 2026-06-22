@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { IoMdCodeWorking } from "react-icons/io";
 import type { MarkdownFormatAction } from "@/features/markdown/types/markdown";
 import { MarkdownStatsBar } from "./MarkdownStatsBar";
 import { type MarkdownFormatOptions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
@@ -21,6 +22,7 @@ import {
   MdChecklist,
   MdCode,
   MdLink,
+  MdAddLink,
   MdImage,
   MdTableChart,
   MdHorizontalRule,
@@ -67,10 +69,10 @@ const toolbarGroups: Array<Array<{ action: MarkdownFormatAction; title: string; 
   ],
   [
     { action: "inlineCode", title: "Inline code", icon: <MdCode /> },
-    { action: "codeBlock", title: "Code block", icon: <MdCode />, label: "{}" },
+    { action: "codeBlock", title: "Code block", icon: <IoMdCodeWorking /> },
     { action: "horizontalRule", title: "Horizontal rule", icon: <MdHorizontalRule /> },
     { action: "link", title: "Link", icon: <MdLink /> },
-    { action: "reference", title: "Reference link", icon: <MdLink />, label: "[]" },
+    { action: "reference", title: "Reference link", icon: <MdAddLink /> },
     { action: "image", title: "Image", icon: <MdImage /> }
   ]
 ];

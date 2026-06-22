@@ -1,14 +1,16 @@
 export const markdownDefaultContent = `---
 title: CompareCode Markdown Preview
-description: A local GitHub-style Markdown renderer with live preview, KaTeX math, diagrams, and safe draft persistence.
+description: A local Markdown workspace for CompareCode notes, open-source docs, diagrams, formulas, and safe draft persistence.
 author: CompareCode
-tags: ["markdown", "preview", "mermaid", "katex", "local-first"]
+tags: ["markdown", "preview", "comparecode", "open-source", "local-first"]
 ---
 
 # CompareCode Markdown Preview
 
+<img src="/brand/comparecode-logo.png" alt="CompareCode logo" width="120">
+
 > [!NOTE]
-> This tab is a local Markdown workspace for drafting technical notes, issue descriptions, pull request text, release notes, and documentation snippets. Your latest draft is stored locally in this browser and is not added to CompareCode history.
+> This tab is a local Markdown workspace for drafting comparison notes, issue descriptions, pull request text, release notes, and documentation snippets. Your latest draft is stored locally in this browser and is not added to CompareCode history.
 
 ## Formatting Essentials
 
@@ -40,20 +42,21 @@ It can represent removed notes or outdated draft content.~~
 - Live preview
 - GitHub-style Markdown support
 - Mermaid diagrams and KaTeX formulas
+- Open project notes without account-first friction
 
 ### Numbered List
 
 1. Write the Markdown draft.
 2. Review the preview.
-3. Copy the final content where you need it.
+3. Copy the final content to the place where it belongs.
 
 ### Task List
 
-- [x] Support GitHub Flavored Markdown
+- [x] Keep drafts local to the browser
 - [x] Render emoji shortcodes like :joy:
-- [x] Support Mermaid diagrams
-- [x] Support KaTeX-rendered LaTeX-style math
-- [ ] Finalize your own document
+- [x] Preview diagrams and KaTeX notes
+- [x] Keep the writing flow focused and lightweight
+- [ ] Copy the polished note into your final destination
 
 ## Quotes and Alerts
 
@@ -89,11 +92,51 @@ Right aligned content is supported too.
 
 | Feature | Status | Notes |
 | --- | --- | --- |
+| Local drafting | Supported | Work stays in this browser while you shape the note |
 | GitHub Flavored Markdown | Supported | Tables, task lists, autolinks, and strikethrough |
 | Emoji shortcodes | Supported | Try :joy:, :rocket:, or :memo: |
-| Mermaid | Supported | Diagrams render automatically when visible |
-| KaTeX | Supported | Inline and block LaTeX-style math |
-| Local persistence | Supported | Draft content is restored on reopen |
+| Mermaid diagrams | Supported | Flow notes render automatically in the preview |
+| KaTeX formulas | Supported | Inline and block math for technical documentation |
+| Open workflow | Supported | Practical examples without ad-driven distractions |
+
+### Aligned Columns
+
+| Feature | CompareCode | Basic Editor |
+|:---|:---:|:---:|
+| Live Preview | Instant | Partial |
+| Local Draft Restore | Browser-only | Varies |
+| Diagram Notes | Automatic | Limited |
+
+### HTML Table Spans
+
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Document Type</th>
+      <th colspan="2">Support</th>
+    </tr>
+    <tr>
+      <th>CompareCode</th>
+      <th>Basic Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Technical Docs</td>
+      <td>Docs + diagrams</td>
+      <td>Limited</td>
+    </tr>
+    <tr>
+      <td>Review Notes</td>
+      <td>Markdown + math</td>
+      <td>Partial</td>
+    </tr>
+  </tbody>
+</table>
+
+## Inline HTML Helpers
+
+Mark a <mark>review-ready decision</mark>, underline a <u>follow-up detail</u>, or document shortcuts like <kbd>Ctrl</kbd> + <kbd>B</kbd> while preparing CompareCode notes.
 
 ## Code Blocks
 
@@ -125,7 +168,7 @@ Reference links keep long URLs out of the sentence text.[comparecode-docs]
 
 \`\`\`mermaid
 flowchart LR
-  Start[Write Markdown] --> Preview[Live Preview]
+  Start[Write CompareCode Note] --> Preview[Live Preview]
   Preview --> Refine[Refine Draft]
   Refine --> Copy[Use Final Text]
   Preview --> Persist[Restore Latest Draft]

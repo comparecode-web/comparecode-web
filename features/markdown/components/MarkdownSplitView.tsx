@@ -79,8 +79,7 @@ export function MarkdownSplitView({ value, onChange, textareaRef }: MarkdownSpli
 
       <button
         type="button"
-        title="Resize panels"
-        className="hidden min-h-0 cursor-col-resize bg-border-default transition-colors hover:bg-accent-primary sm:block"
+        className="hidden min-h-0 cursor-ew-resize bg-border-default/35 transition-colors hover:bg-accent-primary/75 sm:block"
         {...resizeHandlers}
       />
 

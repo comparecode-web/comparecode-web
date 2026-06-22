@@ -9,8 +9,33 @@ describe("markdownSanitizeSchema", () => {
     expect(markdownSanitizeSchema.attributes?.p).toContainEqual(["align", "left", "center", "right"]);
   });
 
+  it("allows safe table span attributes and inline formatting tags", () => {
+    expect(markdownSanitizeSchema.tagNames).toEqual(expect.arrayContaining(["kbd", "mark", "u"]));
+    expect(markdownSanitizeSchema.attributes?.th).toEqual(expect.arrayContaining([
+      ["align", "left", "center", "right"],
+      "colSpan",
+      "rowSpan",
+      "colspan",
+      "rowspan"
+    ]));
+    expect(markdownSanitizeSchema.attributes?.td).toEqual(expect.arrayContaining([
+      ["align", "left", "center", "right"],
+      "colSpan",
+      "rowSpan",
+      "colspan",
+      "rowspan"
+    ]));
+  });
+
   it("keeps link and image protocols constrained", () => {
     expect(markdownSanitizeSchema.protocols?.href).toEqual(["http", "https", "mailto"]);
     expect(markdownSanitizeSchema.protocols?.src).toEqual(["http", "https"]);
+  });
+
+  it("allows safe image sizing attributes", () => {
+    expect(markdownSanitizeSchema.attributes?.img).toEqual(expect.arrayContaining([
+      "height",
+      "width"
+    ]));
   });
 });

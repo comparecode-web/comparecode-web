@@ -7,7 +7,10 @@ export const markdownSanitizeSchema = {
   tagNames: [
     ...(defaultSchema.tagNames ?? []),
     "div",
-    "p"
+    "kbd",
+    "mark",
+    "p",
+    "u"
   ],
   attributes: {
     ...defaultAttributes,
@@ -15,9 +18,30 @@ export const markdownSanitizeSchema = {
       ...(defaultAttributes.div ?? []),
       ["align", "left", "center", "right"]
     ],
+    img: [
+      ...(defaultAttributes.img ?? []),
+      "height",
+      "width"
+    ],
     p: [
       ...(defaultAttributes.p ?? []),
       ["align", "left", "center", "right"]
+    ],
+    th: [
+      ...(defaultAttributes.th ?? []),
+      ["align", "left", "center", "right"],
+      "colSpan",
+      "rowSpan",
+      "colspan",
+      "rowspan"
+    ],
+    td: [
+      ...(defaultAttributes.td ?? []),
+      ["align", "left", "center", "right"],
+      "colSpan",
+      "rowSpan",
+      "colspan",
+      "rowspan"
     ]
   },
   protocols: {

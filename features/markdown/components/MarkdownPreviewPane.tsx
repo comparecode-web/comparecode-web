@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
+import { Component, type CSSProperties, type ReactNode } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkGemoji from "remark-gemoji";
@@ -31,6 +31,16 @@ interface MarkdownRenderBoundaryProps {
 
 interface MarkdownRenderBoundaryState {
   hasError: boolean;
+}
+
+function getCellStyle(style: CSSProperties | undefined, align: string | undefined): CSSProperties | undefined {
+  const nextStyle: CSSProperties = { ...style };
+
+  if (align === "left" || align === "center" || align === "right") {
+    nextStyle.textAlign = align;
+  }
+
+  return Object.keys(nextStyle).length > 0 ? nextStyle : undefined;
 }
 
 class MarkdownRenderBoundary extends Component<MarkdownRenderBoundaryProps, MarkdownRenderBoundaryState> {
@@ -77,17 +87,40 @@ const markdownComponents: Components = {
   table({ children }) {
     return (
       <div className="max-w-full overflow-auto custom-scrollbar">
-        <table className="w-full table-fixed border-collapse text-sm">
+        <table className="w-auto max-w-full table-auto border-collapse text-sm">
           {children}
         </table>
       </div>
     );
   },
-  th({ children }) {
-    return <th className="break-words border border-border-default bg-bg-secondary px-3 py-2 text-left font-semibold">{children}</th>;
+  li({ children, className }) {
+    const isTaskItem = className?.includes("task-list-item");
+
+    return <li className={cn(className, "my-0.5", isTaskItem && "list-none pl-0")}>{children}</li>;
   },
-  td({ children }) {
-    return <td className="break-words border border-border-default px-3 py-2 align-top">{children}</td>;
+  th({ children, align, colSpan, rowSpan, style }) {
+    return (
+      <th
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        className="break-words border border-border-default bg-bg-secondary px-3 py-2 text-left font-semibold"
+        style={getCellStyle(style, align)}
+      >
+        {children}
+      </th>
+    );
+  },
+  td({ children, align, colSpan, rowSpan, style }) {
+    return (
+      <td
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        className="break-words border border-border-default px-3 py-2 align-top"
+        style={getCellStyle(style, align)}
+      >
+        {children}
+      </td>
+    );
   },
   code({ children, className }) {
     const code = String(children).replace(/\n$/, "");
@@ -102,8 +135,25 @@ const markdownComponents: Components = {
   pre({ children }) {
     return <>{children}</>;
   },
-  input(props) {
-    return <input {...props} className="mr-2 align-middle accent-accent-primary" />;
+  mark({ children }) {
+    return <mark className="rounded bg-yellow-200 px-1 text-slate-950">{children}</mark>;
+  },
+  u({ children }) {
+    return <u className="underline">{children}</u>;
+  },
+  kbd({ children }) {
+    return (
+      <kbd className="rounded border border-border-default bg-bg-secondary px-1.5 py-0.5 font-mono text-xs font-semibold text-text-primary shadow-sm">
+        {children}
+      </kbd>
+    );
+  },
+  input({ type, checked, disabled, ...props }) {
+    if (type === "checkbox") {
+      return <input {...props} type="checkbox" checked={Boolean(checked)} disabled={disabled} readOnly className="mr-2 align-middle accent-accent-primary" />;
+    }
+
+    return <input {...props} type={type} disabled={disabled} className="mr-2 align-middle accent-accent-primary" />;
   }
 };
 
