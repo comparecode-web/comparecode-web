@@ -45,6 +45,19 @@ Line two
     expect(result.value).toBe(value);
   });
 
+  it("wraps selected text with italic, strikethrough, and inline code markers", () => {
+    expect(runCommand("Use italic text", "italic", "italic").value).toBe("Use *italic* text");
+    expect(runCommand("Use removed text", "strikethrough", "removed").value).toBe("Use ~~removed~~ text");
+    expect(runCommand("Use code text", "inlineCode", "code").value).toBe("Use `code` text");
+  });
+
+  it("inserts selected placeholders when no inline text is selected", () => {
+    expect(runCommand("", "bold").value).toBe("**bold text**");
+    expect(runCommand("", "italic").value).toBe("*italic text*");
+    expect(runCommand("", "strikethrough").value).toBe("~~struck text~~");
+    expect(runCommand("", "inlineCode").value).toBe("`code`");
+  });
+
   it("toggles heading levels across touched lines", () => {
     const first = runCommand("Heading", "h4", "Heading");
     const second = applyMarkdownEditorCommand({
@@ -56,6 +69,21 @@ Line two
 
     expect(first.value).toBe("#### Heading");
     expect(second.value).toBe("Heading");
+  });
+
+  it("applies every heading level", () => {
+    const actions: Array<[MarkdownFormatAction, string]> = [
+      ["h1", "# Heading"],
+      ["h2", "## Heading"],
+      ["h3", "### Heading"],
+      ["h4", "#### Heading"],
+      ["h5", "##### Heading"],
+      ["h6", "###### Heading"]
+    ];
+
+    for (const [command, expected] of actions) {
+      expect(runCommand("Heading", command, "Heading").value).toBe(expected);
+    }
   });
 
   it("replaces an existing heading level", () => {
@@ -95,6 +123,24 @@ Line two
     expect(second.value).toBe("First\nSecond");
   });
 
+  it("toggles quote and task lists for selected lines", () => {
+    const quoted = applyMarkdownEditorCommand({
+      value: "First\nSecond",
+      selectionStart: 0,
+      selectionEnd: "First\nSecond".length,
+      command: "quote"
+    });
+    const tasks = applyMarkdownEditorCommand({
+      value: "First\nSecond",
+      selectionStart: 0,
+      selectionEnd: "First\nSecond".length,
+      command: "taskList"
+    });
+
+    expect(quoted.value).toBe("> First\n> Second");
+    expect(tasks.value).toBe("- [ ] First\n- [ ] Second");
+  });
+
   it("renumbers ordered lists for selected lines", () => {
     const value = "Alpha\nBeta\nGamma";
     const result = applyMarkdownEditorCommand({
@@ -116,6 +162,26 @@ Line two
     });
 
     expect(result.value).toBe("Before\n\n---\n\nAfter");
+  });
+
+  it("wraps selected text in alignment blocks", () => {
+    expect(runCommand("Left", "alignLeft", "Left").value).toBe("<div align=\"left\">\nLeft\n</div>");
+    expect(runCommand("Center", "alignCenter", "Center").value).toBe("<div align=\"center\">\nCenter\n</div>");
+    expect(runCommand("Right", "alignRight", "Right").value).toBe("<div align=\"right\">\nRight\n</div>");
+  });
+
+  it("inserts code blocks around selected text", () => {
+    const result = runCommand("const value = true;", "codeBlock", "const value = true;");
+
+    expect(result.value).toBe("```ts\nconst value = true;\n```");
+    expect(result.value.slice(result.selectionStart, result.selectionEnd)).toBe("const value = true;");
+  });
+
+  it("builds links from selected text", () => {
+    const result = runCommand("Docs", "link", "Docs");
+
+    expect(result.value).toBe("[Docs](https://example.com)");
+    expect(result.value.slice(result.selectionStart, result.selectionEnd)).toBe("https://example.com");
   });
 
   it("uses selected text as image alt text", () => {
@@ -156,19 +222,27 @@ Line two
       selectionStart: 0,
       selectionEnd: 0,
       command: "table",
-      tableRows: 99,
-      tableColumns: 99
+      tableRows: 999,
+      tableColumns: 999
     });
     const lines = result.value.split("\n");
 
-    expect(lines).toHaveLength(22);
-    expect(lines[0].split("|").filter(Boolean)).toHaveLength(10);
+    expect(lines).toHaveLength(102);
+    expect(lines[0].split("|").filter(Boolean)).toHaveLength(50);
   });
 
   it("builds typed alert snippets", () => {
-    const result = runCommand("Check this", "alertWarning", "Check this");
+    const actions: Array<[MarkdownFormatAction, string]> = [
+      ["alertNote", "NOTE"],
+      ["alertTip", "TIP"],
+      ["alertImportant", "IMPORTANT"],
+      ["alertWarning", "WARNING"],
+      ["alertCaution", "CAUTION"]
+    ];
 
-    expect(result.value).toBe("> [!WARNING]\n> Check this");
+    for (const [command, label] of actions) {
+      expect(runCommand("Check this", command, "Check this").value).toBe(`> [!${label}]\n> Check this`);
+    }
   });
 
   it("transforms selected text casing", () => {
@@ -186,5 +260,22 @@ Line two
 
     expect(result.value).toContain("$$");
     expect(result.value).toContain("\\Delta");
+  });
+
+  it("keeps hidden toolbar commands available for alternate entry points", () => {
+    expect(runCommand("", "emoji").value).toBe(":joy:");
+    expect(runCommand("", "symbol").value).toBe("&copy;");
+    expect(runCommand("x + y", "math", "x + y").value).toBe("$x + y$");
+  });
+
+  it("clamps invalid selections without throwing", () => {
+    const result = applyMarkdownEditorCommand({
+      value: "Text",
+      selectionStart: -50,
+      selectionEnd: 500,
+      command: "bold"
+    });
+
+    expect(result.value).toBe("**Text**");
   });
 });

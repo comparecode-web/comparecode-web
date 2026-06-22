@@ -88,9 +88,11 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
 
   if (error) {
     return (
-      <pre className="overflow-auto rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger custom-scrollbar">
-        {error}
-      </pre>
+      <div className="rounded-md border border-border-default bg-bg-secondary p-3 text-sm text-text-primary">
+        <pre className="overflow-auto whitespace-pre-wrap font-mono text-xs leading-5 custom-scrollbar">
+          {chart}
+        </pre>
+      </div>
     );
   }
 

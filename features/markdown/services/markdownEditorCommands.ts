@@ -37,9 +37,9 @@ const alertLabels = {
 
 export const markdownTableLimits = {
   minRows: 1,
-  maxRows: 20,
+  maxRows: 100,
   minColumns: 1,
-  maxColumns: 10
+  maxColumns: 50
 };
 
 function clampSelection(value: string, start: number, end: number): TextRange {

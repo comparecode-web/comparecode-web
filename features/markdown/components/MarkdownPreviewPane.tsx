@@ -1,5 +1,6 @@
 "use client";
 
+import { Component, type ReactNode } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkGemoji from "remark-gemoji";
@@ -21,6 +22,45 @@ import { cn } from "@/utils/uiHelpers";
 interface MarkdownPreviewPaneProps {
   value: string;
   previewRef: React.RefObject<HTMLDivElement | null>;
+}
+
+interface MarkdownRenderBoundaryProps {
+  fallback: string;
+  children: ReactNode;
+}
+
+interface MarkdownRenderBoundaryState {
+  hasError: boolean;
+}
+
+class MarkdownRenderBoundary extends Component<MarkdownRenderBoundaryProps, MarkdownRenderBoundaryState> {
+  state: MarkdownRenderBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): MarkdownRenderBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch() {
+    return;
+  }
+
+  componentDidUpdate(previousProps: MarkdownRenderBoundaryProps) {
+    if (previousProps.fallback !== this.props.fallback && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <pre className="whitespace-pre-wrap break-words font-sans text-text-primary">
+          {this.props.fallback}
+        </pre>
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 const markdownComponents: Components = {
@@ -90,13 +130,15 @@ export function MarkdownPreviewPane({ value, previewRef }: MarkdownPreviewPanePr
         style={{ fontSize: `${fontSize}px` }}
       >
         <MarkdownFrontmatterTable fields={frontmatter.fields} />
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkGemoji, remarkMath, remarkSoftLineBreaks]}
-          rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema], rehypeKatex]}
-          components={markdownComponents}
-        >
-          {markdownContent}
-        </ReactMarkdown>
+        <MarkdownRenderBoundary fallback={markdownContent}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkGemoji, remarkMath, remarkSoftLineBreaks]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema], [rehypeKatex, { throwOnError: false, strict: false }]]}
+            components={markdownComponents}
+          >
+            {markdownContent}
+          </ReactMarkdown>
+        </MarkdownRenderBoundary>
       </article>
     </div>
   );
