@@ -133,10 +133,10 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
   };
 
   return (
-    <div className="flex min-w-0 shrink-0 flex-col gap-2 overflow-visible border-b border-border-default bg-bg-secondary px-2 py-2 sm:px-3">
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 overflow-visible">
-          <div className="flex min-w-0 items-center gap-1 border-r border-border-default pr-1">
+    <div className="flex w-full min-w-0 max-w-full shrink-0 flex-col gap-2 overflow-hidden border-b border-border-default bg-bg-secondary px-2 py-2 sm:overflow-visible sm:px-3">
+      <div className="flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-x-auto overflow-y-hidden custom-scrollbar sm:overflow-visible">
+        <div className="flex w-max flex-nowrap items-center gap-1 overflow-visible sm:w-auto sm:flex-1 sm:flex-wrap">
+          <div className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1">
             <button
               type="button"
               onClick={onUndo}
@@ -157,7 +157,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
             </button>
           </div>
           {toolbarGroups.map((group, groupIndex) => (
-            <div key={groupIndex} className="flex min-w-0 items-center gap-1 border-r border-border-default pr-1 last:border-r-0 last:pr-0">
+            <div key={groupIndex} className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1 last:border-r-0 last:pr-0">
               {group.map((item) => (
                 <button
                   key={item.action}
@@ -172,7 +172,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
               ))}
             </div>
           ))}
-          <div ref={tableMenuRef} className="relative flex min-w-0 items-center border-r border-border-default pr-1">
+          <div ref={tableMenuRef} className="relative flex shrink-0 items-center border-r border-border-default pr-1">
             <button
               type="button"
               onClick={() => setIsTableMenuOpen((current) => !current)}
@@ -226,7 +226,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
               </div>
             )}
           </div>
-          <div ref={alertMenuRef} className="relative flex min-w-0 items-center">
+          <div ref={alertMenuRef} className="relative flex shrink-0 items-center">
             <button
               type="button"
               onClick={() => setIsAlertMenuOpen((current) => !current)}

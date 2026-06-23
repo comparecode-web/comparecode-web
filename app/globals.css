@@ -208,6 +208,15 @@ button:not(:disabled) {
   background-color: var(--text-secondary);
 }
 
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .custom-checkbox {
   appearance: none;
   background-color: var(--bg-primary);

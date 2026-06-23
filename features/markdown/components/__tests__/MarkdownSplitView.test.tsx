@@ -45,6 +45,6 @@ describe("MarkdownSplitView", () => {
 
     expect(container.querySelectorAll(".tabular-nums")).toHaveLength(2);
     expect(screen.getByText("3 Words")).toBeInTheDocument();
-    expect(screen.getByText("13 Chars")).toBeInTheDocument();
+    expect(screen.getByText("13 Characters")).toBeInTheDocument();
   });
 });

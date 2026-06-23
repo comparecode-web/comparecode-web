@@ -59,6 +59,26 @@ export function EditorView() {
     };
   }, [isInputEditorToggleDisabled, toggleInputPanel]);
 
+  useEffect(() => {
+    if (!window.matchMedia) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const closePanelOnMobile = () => {
+      if (mediaQuery.matches) {
+        setIsOptionsPanelOpen(false);
+      }
+    };
+
+    closePanelOnMobile();
+    mediaQuery.addEventListener("change", closePanelOnMobile);
+
+    return () => {
+      mediaQuery.removeEventListener("change", closePanelOnMobile);
+    };
+  }, [setIsOptionsPanelOpen]);
+
   return (
     <div className="flex h-full min-h-0 w-full overflow-hidden bg-bg-primary relative">
       <div

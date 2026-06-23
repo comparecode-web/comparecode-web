@@ -15,7 +15,7 @@ export function MarkdownStatsBar({ value, compact = false }: MarkdownStatsBarPro
   if (compact) {
     return (
       <span className="shrink-0 text-xs font-semibold normal-case tracking-normal text-text-secondary">
-        {words} Words · {chars} Chars
+        {words} Words / {chars} Characters
       </span>
     );
   }
@@ -23,7 +23,7 @@ export function MarkdownStatsBar({ value, compact = false }: MarkdownStatsBarPro
   return (
     <div className="flex shrink-0 items-center gap-1 text-xs font-semibold normal-case tracking-normal text-text-secondary">
       <span className="rounded border border-border-default bg-bg-primary px-2 py-0.5">{words} Words</span>
-      <span className="rounded border border-border-default bg-bg-primary px-2 py-0.5">{chars} Chars</span>
+      <span className="rounded border border-border-default bg-bg-primary px-2 py-0.5">{chars} Characters</span>
     </div>
   );
 }

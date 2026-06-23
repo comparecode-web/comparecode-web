@@ -41,16 +41,20 @@ export function MainNavHeader() {
 
     const navRect = nav.getBoundingClientRect();
     const rect = activeEl.getBoundingClientRect();
-    indicator.style.left = `${rect.left - navRect.left}px`;
+    indicator.style.left = `${rect.left - navRect.left + nav.scrollLeft}px`;
     indicator.style.width = `${rect.width}px`;
     indicator.style.opacity = "1";
   }, [pathname]);
 
   useLayoutEffect(() => {
+    const nav = navRef.current;
+
     updateIndicator();
     window.addEventListener("resize", updateIndicator);
+    nav?.addEventListener("scroll", updateIndicator);
     return () => {
       window.removeEventListener("resize", updateIndicator);
+      nav?.removeEventListener("scroll", updateIndicator);
     };
   }, [updateIndicator]);
 
@@ -64,9 +68,9 @@ export function MainNavHeader() {
   };
 
   return (
-    <header className="relative z-50 flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6">
-      <div className="flex h-full items-center gap-3 sm:gap-8">
-        <Link href="/" className="flex items-center gap-2 rounded-md p-1 sm:gap-3 hover:bg-hover-overlay">
+    <header className="relative z-50 flex h-(--header-height) shrink-0 items-center justify-between gap-2 border-b border-border-default bg-bg-primary px-2 sm:px-6">
+      <div className="flex h-full min-w-0 flex-1 items-center gap-2 sm:gap-8">
+        <Link href="/" className="flex shrink-0 items-center gap-2 rounded-md p-1 sm:gap-3 hover:bg-hover-overlay">
           <Image
             src="/brand/comparecode-logo.png"
             alt="CompareCode"
@@ -77,7 +81,7 @@ export function MainNavHeader() {
           />
           <h1 className="bg-linear-to-r from-text-primary to-accent-primary bg-clip-text text-sm font-bold text-transparent sm:text-lg">CompareCode</h1>
         </Link>
-        <nav ref={navRef} className="relative flex h-full items-center gap-1 sm:gap-2">
+        <nav ref={navRef} className="hide-scrollbar relative flex h-full min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden sm:flex-none sm:overflow-visible sm:gap-2">
           <div
             ref={indicatorRef}
             aria-hidden
@@ -95,7 +99,7 @@ export function MainNavHeader() {
                 type="button"
                 onClick={() => navigateTo(href)}
                 className={cn(
-                  "group relative z-10 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium) active:scale-95",
+                  "group relative z-10 flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium) active:scale-95",
                   isActive ? "text-white" : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
                 )}
                 title={label}
@@ -113,7 +117,7 @@ export function MainNavHeader() {
         </nav>
       </div>
 
-      <div className="flex h-full items-center">
+      <div className="flex h-full shrink-0 items-center">
         <a
           href="https://github.com/comparecode-web/comparecode-web"
           target="_blank"

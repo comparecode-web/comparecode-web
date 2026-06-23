@@ -85,7 +85,7 @@ export function MarkdownEditorPane({
   };
 
   return (
-    <div className="flex h-full min-w-0 bg-bg-primary">
+    <div className="flex h-full w-full min-w-0 max-w-full overflow-hidden bg-bg-primary">
       <div
         ref={gutterRef}
         className="min-h-0 w-12 shrink-0 overflow-hidden border-r border-border-default bg-bg-secondary/70 px-2 py-4 text-right font-mono text-text-secondary select-none sm:py-6"
@@ -106,7 +106,7 @@ export function MarkdownEditorPane({
         onKeyDown={handleKeyDown}
         spellCheck={false}
         className={cn(
-          "h-full min-w-0 w-full max-w-full resize-none border-0 bg-bg-primary p-4 font-mono text-text-primary outline-none custom-scrollbar sm:p-6",
+          "h-full min-w-0 flex-1 resize-none border-0 bg-bg-primary p-4 font-mono text-text-primary outline-none custom-scrollbar sm:p-6",
           isWordWrapEnabled ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto"
         )}
         style={editorStyle}

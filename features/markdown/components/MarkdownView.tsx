@@ -38,6 +38,26 @@ export function MarkdownView() {
   }, [loadPersistedMarkdownText, loadPersistedMarkdownUIState]);
 
   useEffect(() => {
+    if (!window.matchMedia) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const closePanelOnMobile = () => {
+      if (mediaQuery.matches) {
+        setIsOptionsPanelOpen(false);
+      }
+    };
+
+    closePanelOnMobile();
+    mediaQuery.addEventListener("change", closePanelOnMobile);
+
+    return () => {
+      mediaQuery.removeEventListener("change", closePanelOnMobile);
+    };
+  }, [setIsOptionsPanelOpen]);
+
+  useEffect(() => {
     if (!isMarkdownLoaded) {
       return;
     }
@@ -124,7 +144,7 @@ export function MarkdownView() {
         </button>
       </div>
 
-      <div className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative z-0 flex w-full min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden max-sm:w-[100dvw] max-sm:max-w-[100dvw]">
         <MarkdownToolbar
           onFormat={applyFormat}
           onUndo={undoMarkdownText}
