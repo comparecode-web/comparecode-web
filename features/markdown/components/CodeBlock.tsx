@@ -37,30 +37,30 @@ function isHighlightable(language?: string): boolean {
 
 function getTokenClass(token: string, previousToken: string | null): string {
   if (token.startsWith("//") || token.startsWith("/*")) {
-    return "text-slate-500";
+    return "text-[var(--markdown-token-comment)]";
   }
 
   if (token.startsWith("\"") || token.startsWith("'") || token.startsWith("`")) {
-    return "text-blue-700";
+    return "text-[var(--markdown-token-string)]";
   }
 
   if (/^\d/.test(token)) {
-    return "text-emerald-700";
+    return "text-[var(--markdown-token-number)]";
   }
 
   if (KEYWORDS.has(token)) {
-    return token === "string" ? "text-orange-600" : "text-rose-600";
+    return token === "string" ? "text-[var(--markdown-token-type)]" : "text-[var(--markdown-token-keyword)]";
   }
 
   if (previousToken === "function" || previousToken === "type" || previousToken === "interface") {
-    return "text-violet-700";
+    return "text-[var(--markdown-token-type)]";
   }
 
   if (/^[{}()[\]:;,.?=|<>+-]$/.test(token)) {
-    return "text-slate-700";
+    return "text-[var(--markdown-token-punctuation)]";
   }
 
-  return "text-slate-950";
+  return "text-[var(--markdown-token-name)]";
 }
 
 function renderHighlightedCode(value: string, language?: string) {
@@ -103,16 +103,16 @@ function renderHighlightedCode(value: string, language?: string) {
 export function CodeBlock({ children, language, inline = false }: CodeBlockProps) {
   if (inline) {
     return (
-      <code className="max-w-full rounded border border-blue-100 bg-slate-50 px-1.5 py-0.5 font-mono text-[0.9em] text-blue-700">
+      <code className="max-w-full rounded border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--markdown-token-string)]">
         {renderHighlightedCode(children, "ts")}
       </code>
     );
   }
 
   return (
-    <div className="min-w-0 max-w-full overflow-hidden rounded-md bg-slate-50">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-md border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)]">
       <pre className="min-w-0 max-w-full overflow-auto p-4 text-sm leading-5 custom-scrollbar">
-        <code className={cn("font-mono text-slate-950", language && `language-${language}`)}>
+        <code className={cn("font-mono text-[var(--markdown-code-fg)]", language && `language-${language}`)}>
           {renderHighlightedCode(children, language)}
         </code>
       </pre>

@@ -10,7 +10,7 @@ describe("MarkdownAlert", () => {
       </MarkdownAlert>
     );
 
-    expect(screen.getByText("Note").parentElement).toHaveClass("text-blue-700");
+    expect(screen.getByText("Note").parentElement).toHaveClass("text-[var(--markdown-alert-note-fg)]");
     expect(screen.getByText("Useful information that users should know.")).toBeInTheDocument();
   });
 
@@ -22,7 +22,7 @@ describe("MarkdownAlert", () => {
       </MarkdownAlert>
     );
 
-    expect(screen.getByText("Warning").parentElement).toHaveClass("text-yellow-800");
+    expect(screen.getByText("Warning").parentElement).toHaveClass("text-[var(--markdown-alert-warning-fg)]");
     expect(screen.getByText("Urgent info that needs attention.")).toBeInTheDocument();
     expect(screen.queryByText("[!WARNING]")).not.toBeInTheDocument();
   });
@@ -40,7 +40,7 @@ describe("MarkdownAlert", () => {
 
     const contentParagraph = screen.getByText("Key information users need to know.").closest("p");
 
-    expect(screen.getByText("Important").parentElement).toHaveClass("text-violet-700");
+    expect(screen.getByText("Important").parentElement).toHaveClass("text-[var(--markdown-alert-important-fg)]");
     expect(contentParagraph?.querySelector("br")).not.toBeInTheDocument();
     expect(container.querySelector("p")?.textContent).toBe("Key information users need to know.");
   });

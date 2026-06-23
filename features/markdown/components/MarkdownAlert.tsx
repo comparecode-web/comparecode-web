@@ -13,32 +13,32 @@ const alertStyles: Record<AlertKind, { title: string; icon: ReactNode; className
   NOTE: {
     title: "Note",
     icon: <MdInfo />,
-    className: "border-blue-600 bg-blue-100 text-slate-950",
-    titleClassName: "text-blue-700"
+    className: "border-[var(--markdown-alert-note-border)] bg-[var(--markdown-alert-note-bg)] text-text-primary",
+    titleClassName: "text-[var(--markdown-alert-note-fg)]"
   },
   TIP: {
     title: "Tip",
     icon: <MdLightbulb />,
-    className: "border-green-700 bg-green-100 text-slate-950",
-    titleClassName: "text-green-700"
+    className: "border-[var(--markdown-alert-tip-border)] bg-[var(--markdown-alert-tip-bg)] text-text-primary",
+    titleClassName: "text-[var(--markdown-alert-tip-fg)]"
   },
   IMPORTANT: {
     title: "Important",
     icon: <MdError />,
-    className: "border-violet-600 bg-purple-100 text-slate-950",
-    titleClassName: "text-violet-700"
+    className: "border-[var(--markdown-alert-important-border)] bg-[var(--markdown-alert-important-bg)] text-text-primary",
+    titleClassName: "text-[var(--markdown-alert-important-fg)]"
   },
   WARNING: {
     title: "Warning",
     icon: <MdWarning />,
-    className: "border-yellow-700 bg-yellow-100 text-slate-950",
-    titleClassName: "text-yellow-800"
+    className: "border-[var(--markdown-alert-warning-border)] bg-[var(--markdown-alert-warning-bg)] text-text-primary",
+    titleClassName: "text-[var(--markdown-alert-warning-fg)]"
   },
   CAUTION: {
     title: "Caution",
     icon: <MdCancel />,
-    className: "border-red-600 bg-red-100 text-slate-950",
-    titleClassName: "text-red-700"
+    className: "border-[var(--markdown-alert-caution-border)] bg-[var(--markdown-alert-caution-bg)] text-text-primary",
+    titleClassName: "text-[var(--markdown-alert-caution-fg)]"
   }
 };
 
@@ -192,7 +192,7 @@ export function MarkdownAlert({ children }: MarkdownAlertProps) {
         <span className="text-base">{styles.icon}</span>
         <span>{styles.title}</span>
       </div>
-      <div className="[&_p]:!my-0 [&_p]:text-slate-950">
+      <div className="[&_p]:!my-0 [&_p]:text-text-primary">
         {alert.content}
       </div>
     </div>

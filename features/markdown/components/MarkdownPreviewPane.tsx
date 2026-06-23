@@ -274,14 +274,14 @@ const markdownComponents: Components = {
     return <>{children}</>;
   },
   mark({ children }) {
-    return <mark className="rounded bg-yellow-200 px-1 text-slate-950">{children}</mark>;
+    return <mark className="rounded bg-[var(--markdown-mark-bg)] px-1 text-[var(--markdown-mark-fg)]">{children}</mark>;
   },
   u({ children }) {
     return <u className="underline">{children}</u>;
   },
   kbd({ children }) {
     return (
-      <kbd className="rounded border border-border-default bg-bg-secondary px-1.5 py-0.5 font-mono text-xs font-semibold text-text-primary shadow-sm">
+      <kbd className="rounded border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)] px-1.5 py-0.5 font-mono text-xs font-semibold text-text-primary shadow-sm">
         {children}
       </kbd>
     );
