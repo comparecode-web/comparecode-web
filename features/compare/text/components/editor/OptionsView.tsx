@@ -11,8 +11,9 @@ import { Slider } from "@/components/ui/Slider";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { Button } from "@/components/ui/Button";
+import { OptionsSection } from "@/components/settings/OptionsSection";
 import { AVAILABLE_FONTS } from "@/config/fonts";
-import { getSectionResetButtonClass, isSettingsSectionDirty } from "@/utils/settingsReset";
+import { isSettingsSectionDirty } from "@/utils/settingsReset";
 import { MdRestartAlt } from "react-icons/md";
 
 const COMPARISON_SECTION_KEYS: Array<keyof AppSettings> = ["ignoreWhitespace", "precision"];
@@ -39,17 +40,11 @@ function ComparisonSection() {
   const isSectionDirty = isSettingsSectionDirty(settings, COMPARISON_SECTION_KEYS);
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Comparison</h3>
-        <button
-          onClick={() => resetSectionToDefaults(COMPARISON_SECTION_KEYS)}
-          className={getSectionResetButtonClass(isSectionDirty)}
-          title="Restore section defaults"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
-      </div>
+    <OptionsSection
+      title="Comparison"
+      isDirty={isSectionDirty}
+      onReset={() => resetSectionToDefaults(COMPARISON_SECTION_KEYS)}
+    >
       <Switch
         checked={settings.ignoreWhitespace}
         onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
@@ -64,7 +59,7 @@ function ComparisonSection() {
         onChange={(value) => updateSettings({ precision: value })}
         className="mt-2"
       />
-    </div>
+    </OptionsSection>
   );
 }
 
@@ -73,17 +68,11 @@ function AppearanceSection() {
   const isSectionDirty = isSettingsSectionDirty(settings, APPEARANCE_SECTION_KEYS);
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Appearance</h3>
-        <button
-          onClick={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}
-          className={getSectionResetButtonClass(isSectionDirty)}
-          title="Restore section defaults"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
-      </div>
+    <OptionsSection
+      title="Appearance"
+      isDirty={isSectionDirty}
+      onReset={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}
+    >
       <Switch
         checked={settings.isWordWrapEnabled}
         onChange={(e) => updateSettings({ isWordWrapEnabled: e.target.checked })}
@@ -109,7 +98,7 @@ function AppearanceSection() {
           triggerClassName="py-1.5"
         />
       </div>
-    </div>
+    </OptionsSection>
   );
 }
 
@@ -118,17 +107,11 @@ function LayoutSection() {
   const isSectionDirty = isSettingsSectionDirty(settings, LAYOUT_SECTION_KEYS);
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Layout</h3>
-        <button
-          onClick={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
-          className={getSectionResetButtonClass(isSectionDirty)}
-          title="Restore section defaults"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
-      </div>
+    <OptionsSection
+      title="Layout"
+      isDirty={isSectionDirty}
+      onReset={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
+    >
       <SelectionBar<ViewMode>
         options={[
           { label: "Split", value: ViewMode.Split },
@@ -138,7 +121,7 @@ function LayoutSection() {
         onChange={(value) => updateSettings({ viewMode: value })}
         className="mt-1"
       />
-    </div>
+    </OptionsSection>
   );
 }
 
@@ -147,17 +130,11 @@ function MergeSection() {
   const isSectionDirty = isSettingsSectionDirty(settings, MERGE_SECTION_KEYS);
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Merge</h3>
-        <button
-          onClick={() => resetSectionToDefaults(MERGE_SECTION_KEYS)}
-          className={getSectionResetButtonClass(isSectionDirty)}
-          title="Restore section defaults"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
-      </div>
+    <OptionsSection
+      title="Merge"
+      isDirty={isSectionDirty}
+      onReset={() => resetSectionToDefaults(MERGE_SECTION_KEYS)}
+    >
       <Switch
         checked={settings.isContinuousMergeEnabled}
         onChange={(e) => updateSettings({ isContinuousMergeEnabled: e.target.checked })}
@@ -165,7 +142,7 @@ function MergeSection() {
         title="If enabled, merging will automatically jump to the next merge block."
         containerClassName="mt-1"
       />
-    </div>
+    </OptionsSection>
   );
 }
 
@@ -174,17 +151,11 @@ function ButtonVisibilitySection() {
   const isSectionDirty = isSettingsSectionDirty(settings, BUTTON_VISIBILITY_SECTION_KEYS);
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-secondary p-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Button visibility</h3>
-        <button
-          onClick={() => resetSectionToDefaults(BUTTON_VISIBILITY_SECTION_KEYS)}
-          className={getSectionResetButtonClass(isSectionDirty)}
-          title="Restore section defaults"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
-      </div>
+    <OptionsSection
+      title="Button visibility"
+      isDirty={isSectionDirty}
+      onReset={() => resetSectionToDefaults(BUTTON_VISIBILITY_SECTION_KEYS)}
+    >
       <Switch
         checked={settings.isJumpButtonsVisible}
         onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
@@ -198,7 +169,7 @@ function ButtonVisibilitySection() {
         label="Jump to next/previous"
         title="Shows floating merge jump buttons in the top-right corner so you can quickly jump to previous or next merge block."
       />
-    </div>
+    </OptionsSection>
   );
 }
 
@@ -219,7 +190,7 @@ function ActionSection() {
         onClick={handleLoadTestData}
         className="w-full py-2 bg-accent-primary text-white hover:bg-accent-hover rounded text-sm font-semibold transition-all shadow-sm"
       >
-        Debug: TestText
+        Test text
       </button>
       <Button
         variant="danger"

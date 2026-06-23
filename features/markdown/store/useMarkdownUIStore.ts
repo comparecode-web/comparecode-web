@@ -1,0 +1,94 @@
+import { create } from "zustand";
+import { loadMarkdownUIState, saveMarkdownUIState } from "@/features/markdown/services/markdownStorage";
+import type { MarkdownViewMode } from "@/features/markdown/types/markdown";
+
+export const defaultMarkdownUISettings = {
+  isSyncScrollEnabled: true,
+  editorPaneWidthPercent: 50,
+  isWordWrapEnabled: true,
+  fontSize: 16,
+  viewMode: "split" as MarkdownViewMode
+};
+
+export type MarkdownUISettingKey = keyof typeof defaultMarkdownUISettings;
+
+interface MarkdownUIState {
+  isLoaded: boolean;
+  isOptionsPanelOpen: boolean;
+  optionsPanelTab: "options" | "history";
+  isSyncScrollEnabled: boolean;
+  editorPaneWidthPercent: number;
+  isWordWrapEnabled: boolean;
+  fontSize: number;
+  viewMode: MarkdownViewMode;
+  setIsOptionsPanelOpen: (value: boolean) => void;
+  setOptionsPanelTab: (tab: "options" | "history") => void;
+  setIsSyncScrollEnabled: (value: boolean) => void;
+  setEditorPaneWidthPercent: (value: number) => void;
+  setIsWordWrapEnabled: (value: boolean) => void;
+  setFontSize: (value: number) => void;
+  setViewMode: (value: MarkdownViewMode) => void;
+  resetSectionToDefaults: (keys: Array<MarkdownUISettingKey>) => void;
+  loadPersistedMarkdownUIState: () => void;
+}
+
+function persistPartial(state: Pick<MarkdownUIState, "editorPaneWidthPercent" | "isSyncScrollEnabled" | "fontSize" | "viewMode">): void {
+  saveMarkdownUIState({
+    editorPaneWidthPercent: state.editorPaneWidthPercent,
+    isSyncScrollEnabled: state.isSyncScrollEnabled,
+    fontSize: state.fontSize,
+    viewMode: state.viewMode
+  });
+}
+
+export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
+  isLoaded: false,
+  isOptionsPanelOpen: true,
+  optionsPanelTab: "options",
+  ...defaultMarkdownUISettings,
+  setIsOptionsPanelOpen: (value) => set({ isOptionsPanelOpen: value }),
+  setOptionsPanelTab: (tab) => set({ optionsPanelTab: tab }),
+  setIsSyncScrollEnabled: (value) => {
+    set({ isSyncScrollEnabled: value });
+    persistPartial(get());
+  },
+  setEditorPaneWidthPercent: (value) => {
+    const nextValue = Math.min(70, Math.max(30, value));
+    set({ editorPaneWidthPercent: nextValue });
+    persistPartial(get());
+  },
+  setIsWordWrapEnabled: (value) => set({ isWordWrapEnabled: value }),
+  setFontSize: (value) => {
+    const nextValue = Math.min(24, Math.max(12, value));
+    set({ fontSize: nextValue });
+    persistPartial(get());
+  },
+  setViewMode: (value) => {
+    set({ viewMode: value });
+    persistPartial(get());
+  },
+  resetSectionToDefaults: (keys) => {
+    set((state) => {
+      const nextState = { ...state };
+      for (let index = 0; index < keys.length; index++) {
+        const key = keys[index];
+        Reflect.set(nextState, key, defaultMarkdownUISettings[key]);
+      }
+
+      persistPartial(nextState);
+      return nextState;
+    });
+  },
+  loadPersistedMarkdownUIState: () => {
+    const loaded = loadMarkdownUIState();
+    set((state) => ({
+      isLoaded: true,
+      isSyncScrollEnabled: loaded.isSyncScrollEnabled ?? state.isSyncScrollEnabled,
+      editorPaneWidthPercent: loaded.editorPaneWidthPercent
+        ? Math.min(70, Math.max(30, loaded.editorPaneWidthPercent))
+        : state.editorPaneWidthPercent,
+      fontSize: loaded.fontSize ? Math.min(24, Math.max(12, loaded.fontSize)) : state.fontSize,
+      viewMode: loaded.viewMode ?? state.viewMode
+    }));
+  }
+}));

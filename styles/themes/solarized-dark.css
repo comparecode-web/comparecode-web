@@ -33,4 +33,35 @@
   --minimap-removed-selected: #e64b48;
   --minimap-empty: #1a4d5b;
   --minimap-empty-selected: #586e75;
+
+  --markdown-code-bg: #073642;
+  --markdown-code-fg: #fdf6e3;
+  --markdown-code-border: #1a4d5b;
+  --markdown-token-comment: #93a1a1;
+  --markdown-token-string: #2aa198;
+  --markdown-token-number: #b58900;
+  --markdown-token-keyword: #dc322f;
+  --markdown-token-type: #6c71c4;
+  --markdown-token-punctuation: #eee8d5;
+  --markdown-token-name: #fdf6e3;
+  --markdown-mark-bg: rgba(181, 137, 0, 0.28);
+  --markdown-mark-fg: #fdf6e3;
+  --markdown-alert-note-bg: rgba(38, 139, 210, 0.16);
+  --markdown-alert-note-border: #268bd2;
+  --markdown-alert-note-fg: #8bd3ff;
+  --markdown-alert-tip-bg: rgba(133, 153, 0, 0.18);
+  --markdown-alert-tip-border: #859900;
+  --markdown-alert-tip-fg: #e0ec7c;
+  --markdown-alert-important-bg: rgba(108, 113, 196, 0.18);
+  --markdown-alert-important-border: #6c71c4;
+  --markdown-alert-important-fg: #c7cbff;
+  --markdown-alert-warning-bg: rgba(181, 137, 0, 0.2);
+  --markdown-alert-warning-border: #b58900;
+  --markdown-alert-warning-fg: #ffd86b;
+  --markdown-alert-caution-bg: rgba(220, 50, 47, 0.18);
+  --markdown-alert-caution-border: #dc322f;
+  --markdown-alert-caution-fg: #ffaaa6;
+  --markdown-mermaid-bg: #073642;
+  --markdown-mermaid-surface: #0b4554;
+  --markdown-mermaid-border: #2a6474;
 }
