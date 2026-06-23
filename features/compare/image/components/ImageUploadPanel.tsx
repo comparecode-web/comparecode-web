@@ -187,7 +187,7 @@ export function ImageUploadPanel({ compact = false }: ImageUploadPanelProps) {
   }
 
   return (
-    <div className="flex h-full min-h-full gap-4 p-4 sm:p-6">
+    <div className="flex h-full min-h-full flex-col gap-4 p-4 sm:flex-row sm:p-6">
       <ImageUploadSlot
         label="Original"
         image={originalImage}

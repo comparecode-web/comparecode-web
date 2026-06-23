@@ -22,6 +22,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "weekly",
       priority: 0.8
+    },
+    {
+      url: absoluteUrl("/markdown"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8
     }
   ];
 }
