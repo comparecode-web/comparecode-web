@@ -83,18 +83,19 @@ export function MarkdownOptionsView() {
           label="Editor width"
           displayValue={`${Math.round(editorPaneWidthPercent)}%`}
           containerClassName={viewMode === "split" ? "mt-2" : "hidden"}
+          className="cursor-col-resize"
         />
       </OptionsSection>
 
       <div className="mt-1 flex flex-col gap-2 pt-1">
         <Button
-          variant="danger"
+          variant="primary"
           size="md"
           onClick={resetMarkdownText}
           leftIcon={<MdRestartAlt className="text-lg" />}
           className="w-full"
         >
-          Reset markdown
+          Reset default text
         </Button>
       </div>
     </div>

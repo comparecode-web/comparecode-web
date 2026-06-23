@@ -16,6 +16,39 @@ describe("MarkdownPreviewPane", () => {
     expect(container.textContent).toContain("Still visible");
   });
 
+  it("renders invalid frontmatter as raw text instead of swallowing the preview", () => {
+    const { container } = renderPreview(`---
+fwws
+
+| Column 1 | Column 2 |
+etaewef
+aeraer--- | ---wr |
+| Value 1.1 | Value 1.2 |
+wtr
+aeraereraerlert content
+|aitation: Share irwet when it helps
+tags: ["compare-notes", "community", "open-source", "ad-free"]
+---`);
+
+    expect(container.textContent).toContain("fwws");
+    expect(container.textContent).toContain("aeraer--- | ---wr |");
+    expect(container.querySelector("pre")?.textContent).toContain("tags:");
+  });
+
+  it("keeps valid sections rendered when only a table-like block is malformed", () => {
+    const { container } = renderPreview(`# Good heading
+
+| Column 1 | Column 2 |
+bad row
+| Value 1 | Value 2 |
+
+## After`);
+
+    expect(screen.getByRole("heading", { name: "Good heading" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "After" })).toBeInTheDocument();
+    expect(container.querySelector("pre")?.textContent).toContain("bad row");
+  });
+
   it("renders malformed KaTeX input without throwing", () => {
     renderPreview("Broken math: $\\not_a_real_command{");
 
@@ -27,6 +60,17 @@ describe("MarkdownPreviewPane", () => {
 
     expect(screen.getByText(/flowchart LR/)).toBeInTheDocument();
     expect(screen.getByText(/A -->/)).toBeInTheDocument();
+  });
+
+  it("does not treat Mermaid edge labels with pipes as malformed tables", () => {
+    const { container } = renderPreview(`\`\`\`mermaid
+flowchart TD
+  UseApp[Use CompareCode for a real task] --> Helpful{Was it helpful?}
+  Helpful -->|Yes| Share[Share it with someone who may need it]
+\`\`\``);
+
+    expect(screen.getByText("Mermaid diagram")).toBeInTheDocument();
+    expect(container.querySelector("article > pre")).not.toBeInTheDocument();
   });
 
   it("keeps soft line breaks visible in preview", () => {
@@ -51,6 +95,52 @@ describe("MarkdownPreviewPane", () => {
     expect(cells[0]).not.toHaveStyle({ textAlign: "center" });
     expect(cells[1]).toHaveStyle({ textAlign: "center" });
     expect(cells[2]).toHaveStyle({ textAlign: "center" });
+  });
+
+  it("renders frontmatter table at marker position when marker is present", () => {
+    renderPreview(`---
+purpose: Friendly compare notes
+workspace: Local browser draft
+---
+
+## A Small Welcome
+
+Welcome text.
+
+<!-- comparecode-frontmatter-table -->
+
+## After Table`);
+
+    const welcomeHeading = screen.getByRole("heading", { name: "A Small Welcome" });
+    const purposeHeader = screen.getByText("purpose");
+    const afterHeading = screen.getByRole("heading", { name: "After Table" });
+
+    expect(welcomeHeading.compareDocumentPosition(purposeHeader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(purposeHeader.compareDocumentPosition(afterHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("renders marker-adjacent frontmatter as a table without moving the opening title", () => {
+    renderPreview(`# CompareCode Community Note
+
+## Frontmatter Example
+
+---
+purpose: Friendly compare notes
+workspace: Local browser draft
+---
+
+<!-- comparecode-frontmatter-table -->
+
+## After Table`);
+
+    const title = screen.getByRole("heading", { name: "CompareCode Community Note" });
+    const exampleHeading = screen.getByRole("heading", { name: "Frontmatter Example" });
+    const purposeHeader = screen.getByText("purpose");
+    const afterHeading = screen.getByRole("heading", { name: "After Table" });
+
+    expect(title.compareDocumentPosition(exampleHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(exampleHeading.compareDocumentPosition(purposeHeader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(purposeHeader.compareDocumentPosition(afterHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("preserves safe HTML table row and column spans", () => {

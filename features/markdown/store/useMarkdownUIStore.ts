@@ -15,12 +15,14 @@ export type MarkdownUISettingKey = keyof typeof defaultMarkdownUISettings;
 interface MarkdownUIState {
   isLoaded: boolean;
   isOptionsPanelOpen: boolean;
+  optionsPanelTab: "options" | "history";
   isSyncScrollEnabled: boolean;
   editorPaneWidthPercent: number;
   isWordWrapEnabled: boolean;
   fontSize: number;
   viewMode: MarkdownViewMode;
   setIsOptionsPanelOpen: (value: boolean) => void;
+  setOptionsPanelTab: (tab: "options" | "history") => void;
   setIsSyncScrollEnabled: (value: boolean) => void;
   setEditorPaneWidthPercent: (value: number) => void;
   setIsWordWrapEnabled: (value: boolean) => void;
@@ -42,8 +44,10 @@ function persistPartial(state: Pick<MarkdownUIState, "editorPaneWidthPercent" | 
 export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
   isLoaded: false,
   isOptionsPanelOpen: true,
+  optionsPanelTab: "options",
   ...defaultMarkdownUISettings,
   setIsOptionsPanelOpen: (value) => set({ isOptionsPanelOpen: value }),
+  setOptionsPanelTab: (tab) => set({ optionsPanelTab: tab }),
   setIsSyncScrollEnabled: (value) => {
     set({ isSyncScrollEnabled: value });
     persistPartial(get());

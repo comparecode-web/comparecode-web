@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { IoMdCodeWorking } from "react-icons/io";
 import type { MarkdownFormatAction } from "@/features/markdown/types/markdown";
-import { MarkdownStatsBar } from "./MarkdownStatsBar";
 import { type MarkdownFormatOptions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { markdownTableLimits } from "@/features/markdown/services/markdownEditorCommands";
 import {
@@ -31,12 +30,17 @@ import {
   MdLightbulb,
   MdError,
   MdWarning,
-  MdCancel
+  MdCancel,
+  MdUndo,
+  MdRedo
 } from "react-icons/md";
 
 interface MarkdownToolbarProps {
-  value: string;
   onFormat: (action: MarkdownFormatAction, options?: MarkdownFormatOptions) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const toolbarGroups: Array<Array<{ action: MarkdownFormatAction; title: string; icon: ReactNode; label?: string }>> = [
@@ -51,11 +55,7 @@ const toolbarGroups: Array<Array<{ action: MarkdownFormatAction; title: string; 
   ],
   [
     { action: "h1", title: "Heading 1", icon: null, label: "H1" },
-    { action: "h2", title: "Heading 2", icon: null, label: "H2" },
-    { action: "h3", title: "Heading 3", icon: null, label: "H3" },
-    { action: "h4", title: "Heading 4", icon: null, label: "H4" },
-    { action: "h5", title: "Heading 5", icon: null, label: "H5" },
-    { action: "h6", title: "Heading 6", icon: null, label: "H6" }
+    { action: "h2", title: "Heading 2", icon: null, label: "H2" }
   ],
   [
     { action: "alignLeft", title: "Align left", icon: <MdFormatAlignLeft /> },
@@ -96,7 +96,7 @@ function CaseTransformIcon({ letter, direction }: { letter: "A" | "a"; direction
   );
 }
 
-export function MarkdownToolbar({ value, onFormat }: MarkdownToolbarProps) {
+export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: MarkdownToolbarProps) {
   const alertMenuRef = useRef<HTMLDivElement>(null);
   const tableMenuRef = useRef<HTMLDivElement>(null);
   const [isAlertMenuOpen, setIsAlertMenuOpen] = useState(false);
@@ -136,6 +136,26 @@ export function MarkdownToolbar({ value, onFormat }: MarkdownToolbarProps) {
     <div className="flex min-w-0 shrink-0 flex-col gap-2 overflow-visible border-b border-border-default bg-bg-secondary px-2 py-2 sm:px-3">
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 overflow-visible">
+          <div className="flex min-w-0 items-center gap-1 border-r border-border-default pr-1">
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="Undo"
+              className="flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="text-lg"><MdUndo /></span>
+            </button>
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Redo"
+              className="flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="text-lg"><MdRedo /></span>
+            </button>
+          </div>
           {toolbarGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="flex min-w-0 items-center gap-1 border-r border-border-default pr-1 last:border-r-0 last:pr-0">
               {group.map((item) => (
@@ -235,7 +255,6 @@ export function MarkdownToolbar({ value, onFormat }: MarkdownToolbarProps) {
             )}
           </div>
         </div>
-        <MarkdownStatsBar value={value} />
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdTune } from "react-icons/md";
+import { MdHistory, MdKeyboardArrowLeft, MdKeyboardArrowRight, MdTune } from "react-icons/md";
+import { MarkdownHistoryView } from "./MarkdownHistoryView";
 import { MarkdownOptionsView } from "./MarkdownOptionsView";
 import { MarkdownSplitView } from "./MarkdownSplitView";
 import { MarkdownToolbar } from "./MarkdownToolbar";
@@ -14,10 +15,16 @@ export function MarkdownView() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const markdownText = useMarkdownStore((state) => state.markdownText);
   const setMarkdownText = useMarkdownStore((state) => state.setMarkdownText);
+  const undoMarkdownText = useMarkdownStore((state) => state.undoMarkdownText);
+  const redoMarkdownText = useMarkdownStore((state) => state.redoMarkdownText);
+  const canUndo = useMarkdownStore((state) => state.canUndo);
+  const canRedo = useMarkdownStore((state) => state.canRedo);
   const loadPersistedMarkdownText = useMarkdownStore((state) => state.loadPersistedMarkdownText);
   const isMarkdownLoaded = useMarkdownStore((state) => state.isLoaded);
   const isOptionsPanelOpen = useMarkdownUIStore((state) => state.isOptionsPanelOpen);
   const setIsOptionsPanelOpen = useMarkdownUIStore((state) => state.setIsOptionsPanelOpen);
+  const optionsPanelTab = useMarkdownUIStore((state) => state.optionsPanelTab);
+  const setOptionsPanelTab = useMarkdownUIStore((state) => state.setOptionsPanelTab);
   const loadPersistedMarkdownUIState = useMarkdownUIStore((state) => state.loadPersistedMarkdownUIState);
 
   const { applyFormat } = useMarkdownFormattingActions({
@@ -51,16 +58,37 @@ export function MarkdownView() {
       >
         <div className="flex h-full w-64 shrink-0 flex-col">
           <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-secondary px-4">
-            <button
-              type="button"
-              className="flex items-center justify-center rounded p-2 text-accent-primary transition-colors hover:bg-hover-overlay"
-              title="Options"
-            >
-              <MdTune className="text-xl" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setOptionsPanelTab("options")}
+                className={cn(
+                  "flex items-center justify-center rounded p-2 transition-colors",
+                  optionsPanelTab === "options"
+                    ? "bg-hover-overlay text-accent-primary"
+                    : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+                )}
+                title="Options"
+              >
+                <MdTune className="text-xl" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setOptionsPanelTab("history")}
+                className={cn(
+                  "flex items-center justify-center rounded p-2 transition-colors",
+                  optionsPanelTab === "history"
+                    ? "bg-hover-overlay text-accent-primary"
+                    : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+                )}
+                title="Markdown History"
+              >
+                <MdHistory className="text-xl" />
+              </button>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <MarkdownOptionsView />
+            {optionsPanelTab === "options" ? <MarkdownOptionsView /> : <MarkdownHistoryView />}
           </div>
         </div>
       </div>
@@ -97,8 +125,22 @@ export function MarkdownView() {
       </div>
 
       <div className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <MarkdownToolbar value={markdownText} onFormat={applyFormat} />
-        <MarkdownSplitView value={markdownText} onChange={setMarkdownText} textareaRef={textareaRef} />
+        <MarkdownToolbar
+          onFormat={applyFormat}
+          onUndo={undoMarkdownText}
+          onRedo={redoMarkdownText}
+          canUndo={canUndo}
+          canRedo={canRedo}
+        />
+        <MarkdownSplitView
+          value={markdownText}
+          onChange={setMarkdownText}
+          textareaRef={textareaRef}
+          onUndo={undoMarkdownText}
+          onRedo={redoMarkdownText}
+          canUndo={canUndo}
+          canRedo={canRedo}
+        />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ function resetMarkdownUIStore() {
     useMarkdownUIStore.setState({
       isLoaded: false,
       isOptionsPanelOpen: true,
+      optionsPanelTab: "options",
       isSyncScrollEnabled: true,
       editorPaneWidthPercent: 50,
       isWordWrapEnabled: true,

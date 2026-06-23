@@ -9,7 +9,7 @@ export interface MarkdownFormatOptions {
 
 interface FormattingActionsInput {
   textareaRef: RefObject<HTMLTextAreaElement | null>;
-  onChange: (value: string) => void;
+  onChange: (value: string, options?: { history?: "checkpoint" }) => void;
 }
 
 export function useMarkdownFormattingActions({ textareaRef, onChange }: FormattingActionsInput) {
@@ -27,7 +27,7 @@ export function useMarkdownFormattingActions({ textareaRef, onChange }: Formatti
       ...options
     });
 
-    onChange(result.value);
+    onChange(result.value, { history: "checkpoint" });
 
     window.requestAnimationFrame(() => {
       textarea.focus();

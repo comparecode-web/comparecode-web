@@ -7,16 +7,23 @@ import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore
 
 function resetMarkdownState() {
   window.localStorage.clear();
+  window.sessionStorage.clear();
 
   useMarkdownStore.setState({
     markdownText: markdownDefaultContent,
     isLoaded: false,
-    lastEditedAt: null
+    lastEditedAt: null,
+    past: [],
+    future: [],
+    pendingUndoValue: null,
+    canUndo: false,
+    canRedo: false
   });
 
   useMarkdownUIStore.setState({
     isLoaded: false,
     isOptionsPanelOpen: true,
+    optionsPanelTab: "options",
     isSyncScrollEnabled: true,
     editorPaneWidthPercent: 50,
     isWordWrapEnabled: true,
@@ -35,6 +42,6 @@ describe("MarkdownView", () => {
 
     expect(await screen.findByText("Markdown")).toBeInTheDocument();
     expect(screen.getAllByText("Preview").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("CompareCode Markdown Preview").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("CompareCode Community Note").length).toBeGreaterThan(0);
   });
 });

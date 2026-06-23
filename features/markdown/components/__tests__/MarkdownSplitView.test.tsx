@@ -9,6 +9,7 @@ describe("MarkdownSplitView", () => {
     useMarkdownUIStore.setState({
       isLoaded: true,
       isOptionsPanelOpen: true,
+      optionsPanelTab: "options",
       isSyncScrollEnabled: true,
       editorPaneWidthPercent: 50,
       isWordWrapEnabled: true,
@@ -31,5 +32,19 @@ describe("MarkdownSplitView", () => {
     expect(resizeHandle).toHaveClass("cursor-ew-resize");
     expect(resizeHandle).toHaveClass("bg-border-default/35");
     expect(resizeHandle).not.toHaveAttribute("title");
+  });
+
+  it("shows editor line numbers and moves summary stats to the preview header in split view", () => {
+    const { container } = render(
+      <MarkdownSplitView
+        value={"one two\nthree"}
+        onChange={() => undefined}
+        textareaRef={createRef<HTMLTextAreaElement>()}
+      />
+    );
+
+    expect(container.querySelectorAll(".tabular-nums")).toHaveLength(2);
+    expect(screen.getByText("3 Words")).toBeInTheDocument();
+    expect(screen.getByText("13 Chars")).toBeInTheDocument();
   });
 });

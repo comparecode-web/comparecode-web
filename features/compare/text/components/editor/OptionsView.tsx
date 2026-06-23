@@ -190,7 +190,7 @@ function ActionSection() {
         onClick={handleLoadTestData}
         className="w-full py-2 bg-accent-primary text-white hover:bg-accent-hover rounded text-sm font-semibold transition-all shadow-sm"
       >
-        Debug: TestText
+        Test text
       </button>
       <Button
         variant="danger"
