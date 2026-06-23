@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MdCode, MdImage, MdHistory, MdSettings, MdArrowOutward } from "react-icons/md";
+import { MdArticle, MdCode, MdImage, MdHistory, MdSettings, MdArrowOutward } from "react-icons/md";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HomeSeoContent } from "@/components/seo/SeoContent";
 import { homeMetadata, softwareApplicationJsonLd } from "@/config/seo";
@@ -21,6 +21,12 @@ const QUICK_LINKS = [
     icon: MdImage,
   },
   {
+    href: "/markdown",
+    title: "Markdown preview",
+    description: "Edit Markdown with live preview",
+    icon: MdArticle,
+  },
+  {
     href: "/history",
     title: "History",
     description: "Restore recent comparisons",
@@ -33,6 +39,10 @@ const QUICK_LINKS = [
     icon: MdSettings,
   },
 ] as const;
+
+function getQuickLinkClassName(href: string): string {
+  return href === "/settings" ? "sm:col-span-2" : "";
+}
 
 export default function Home() {
   return (
@@ -55,19 +65,18 @@ export default function Home() {
                   CompareCode
                 </h1>
                 <p className="text-sm text-text-secondary sm:text-base">
-                  Free and open-source diff checking tool for code, text, and images.
+                  Free and open-source diff checking tool for code, text, images, and Markdown.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-            {QUICK_LINKS.map(({ href, title, description, icon: Icon }, index) => (
+            {QUICK_LINKS.map(({ href, title, description, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                style={{ animationDelay: `${120 + index * 90}ms` }}
-                className="group cc-animate-fade-in-up relative flex min-h-38 flex-col justify-between overflow-hidden rounded-xl border border-border-default bg-bg-secondary p-4 transition-all duration-(--duration-medium) hover:-translate-y-1 hover:border-accent-primary hover:shadow-lg"
+                className={`group relative flex min-h-38 flex-col justify-between overflow-hidden rounded-xl border border-border-default bg-bg-secondary p-4 transition-all duration-(--duration-medium) hover:-translate-y-1 hover:border-accent-primary hover:shadow-lg ${getQuickLinkClassName(href)}`}
               >
                 <span
                   aria-hidden
