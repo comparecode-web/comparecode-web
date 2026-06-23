@@ -1,75 +1,91 @@
 # CompareCode
 
-CompareCode is a free and open-source text comparison utility built with **Next.js** and **React** (planned to be packaged with Electron).
+CompareCode is a free and open-source browser tool for comparing text, code, images, and Markdown.
 
-It is designed to provide high-precision text comparison and flexible merging capabilities, allowing developers to analyze and synchronize differences between two text sources with ease.
+It is designed for local, account-free review workflows: compare code snippets, inspect visual differences between images, draft Markdown notes with live preview, and keep recent work in browser storage.
 
 > [!NOTE]
-> 
-> This project is currently **under development**.
+> This project is currently under development.
 
 ## 🧱 Module Architecture
 
-The project is organized into three clear modules:
+The project is organized into clear modules:
 
--   **Text:** Text comparison logic and UI.
--   **Image:** Image comparison logic and UI.
--   **Shared:** Common types, utilities, and reusable building blocks used by multiple modules.
+- **Text:** Text and code comparison logic and UI.
+- **Image:** Image comparison logic and UI.
+- **Markdown:** Markdown editor, preview, formatting, paste handling, and session history.
+- **Shared:** Common types, utilities, and reusable building blocks used by multiple modules.
 
 When contributing, keep module boundaries strict: implement module-specific changes inside that module, and move reusable cross-module code to Shared.
 
 ## 🚀 Main Features
 
--   **Dual View Modes:** Switch between **Split (Side-by-Side)** and **Unified** views to visualize differences in the way that suits you best.
--   **High-Precision Highlighting:** Choose between **Word-level** or **Character-level** highlighting to spot even the smallest changes.
--   **Flexible Merging:** Interactively merge changes block-by-block from left-to-right or right-to-left to build the final result.
--   **Smart Comparison:** Optional "Ignore Whitespace" toggle to focus only on meaningful code or text changes.
--   **History Tracking:** Automatically saves comparison history locally so you can revisit previous diffs.
--   **Integrated Editor:** Edit original or modified texts on the fly and re-run comparisons instantly.
+- **Text and Code Diff:** Compare text or code side by side, with split and unified views.
+- **High-Precision Highlighting:** Choose word-level or character-level highlighting to spot small changes.
+- **Flexible Merging:** Move changes block-by-block from left to right or right to left.
+- **Image Comparison:** Compare screenshots and images with visual diff modes, alignment, threshold, heatmap, fade, and slider tools.
+- **Markdown Preview:** Write Markdown with live preview, line numbers, local draft persistence, GitHub-style formatting, Mermaid diagrams, KaTeX formulas, and rich paste support.
+- **Session Undo/Redo:** Use Markdown undo/redo during the current browser session, with a dedicated history panel.
+- **Local History:** Store recent comparison history locally in the browser.
+- **No Account Required:** Core workflows run directly in the browser.
 
 ## 🛠 Technology Stack
 
--   **Framework:** Next.js & React
--   **Language:** TypeScript
--   **Styling:** Tailwind CSS
--   **State Management:** Zustand
--   **Diff Engine:** `diff` (npm package)
--   **Local Database:** Dexie.js (IndexedDB)
--   **Icons:** React Icons (Material Design)
+- **Framework:** Next.js and React
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **State Management:** Zustand
+- **Diff Engine:** `diff`
+- **Local Database:** Dexie.js (IndexedDB)
+- **Markdown Rendering:** `react-markdown`, Remark/Rehype plugins, Mermaid, KaTeX
+- **Rich Paste Conversion:** Turndown
+- **Icons:** React Icons
 
 ## 📖 How to Use
 
-1.  **Input Text:** Paste or type your original text in the left panel and the modified version in the right panel.
-2.  **Compare:** Click the **Check it!** button to generate the visual comparison.
-3.  **Analyze & Merge:**
-    -   Select a difference block to reveal merge controls.
-    -   Use the arrow buttons to move changes between sides.
-    -   Toggle **Word Wrap** or **View Mode** in the Settings panel for better visibility.
-4.  **Export:** Copy the final result back to your clipboard using the quick-copy buttons.
+### Text Compare
+
+1. Paste or type the original text in the left panel and the modified text in the right panel.
+2. Click **Check it!** to generate the comparison.
+3. Review highlighted differences, adjust options, and use merge controls when needed.
+4. Copy the final text back to your clipboard.
+
+### Image Compare
+
+1. Load two images or screenshots.
+2. Choose a comparison mode such as side-by-side, slider, fade, heatmap, or threshold.
+3. Adjust alignment and visual settings to inspect differences clearly.
+
+### Markdown Preview
+
+1. Open the Markdown preview page.
+2. Write or paste Markdown in the editor.
+3. Use formatting tools, line-numbered editing, live preview, Mermaid diagrams, KaTeX formulas, and session undo/redo.
+4. Reset to the default text whenever you want a clean sample document.
 
 ## 💻 Local Development
 
 To run this project locally, you need Node.js installed on your machine.
 
-1.  Clone the repository.
-2.  Navigate to the project folder:
-    ```bash
-    cd comparecode-web
-    ```
-3.  Install dependencies:
-    ```bash
-    npm install
-    ```
-4.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-5.  Open `http://localhost:3000` in your browser.
+1. Clone the repository.
+2. Navigate to the project folder:
+   ```bash
+   cd comparecode-web
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open `http://localhost:3000` in your browser.
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for details on how to get started.
+We welcome contributions. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
+This project is licensed under the [MIT License](LICENSE). See the LICENSE file for details.

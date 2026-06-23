@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
+import { SiGithub } from "react-icons/si";
 import { cn } from "@/utils/uiHelpers";
 
 export interface FaqItem {
   question: string;
   answer: string;
+  links?: Array<{
+    href: string;
+    label: string;
+  }>;
 }
 
 interface FaqAccordionProps {
@@ -52,7 +57,23 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
             </button>
             {isOpen && (
               <div id={panelId} className="px-4 py-4 text-sm leading-6 text-text-secondary">
-                {item.answer}
+                <p>{item.answer}</p>
+                {item.links && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.links.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md border border-border-default bg-bg-secondary px-2.5 py-1.5 text-xs font-semibold text-accent-primary transition-colors hover:bg-hover-overlay hover:text-accent-hover"
+                      >
+                        <SiGithub className="text-base" />
+                        <span>{link.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

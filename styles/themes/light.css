@@ -35,4 +35,35 @@
   --minimap-removed-selected: #f07c7c;
   --minimap-empty: #e5e7eb;
   --minimap-empty-selected: #d1d5db;
+
+  --markdown-code-bg: #f6f8fa;
+  --markdown-code-fg: #24292e;
+  --markdown-code-border: #d1d5db;
+  --markdown-token-comment: #6b7280;
+  --markdown-token-string: #0969da;
+  --markdown-token-number: #116329;
+  --markdown-token-keyword: #cf222e;
+  --markdown-token-type: #8250df;
+  --markdown-token-punctuation: #57606a;
+  --markdown-token-name: #24292e;
+  --markdown-mark-bg: #fff3b0;
+  --markdown-mark-fg: #24292e;
+  --markdown-alert-note-bg: #dbeafe;
+  --markdown-alert-note-border: #2563eb;
+  --markdown-alert-note-fg: #1d4ed8;
+  --markdown-alert-tip-bg: #dcfce7;
+  --markdown-alert-tip-border: #16a34a;
+  --markdown-alert-tip-fg: #15803d;
+  --markdown-alert-important-bg: #ede9fe;
+  --markdown-alert-important-border: #7c3aed;
+  --markdown-alert-important-fg: #6d28d9;
+  --markdown-alert-warning-bg: #fef3c7;
+  --markdown-alert-warning-border: #d97706;
+  --markdown-alert-warning-fg: #92400e;
+  --markdown-alert-caution-bg: #fee2e2;
+  --markdown-alert-caution-border: #dc2626;
+  --markdown-alert-caution-fg: #b91c1c;
+  --markdown-mermaid-bg: #eef2f7;
+  --markdown-mermaid-surface: #ffffff;
+  --markdown-mermaid-border: #c7d0dc;
 }

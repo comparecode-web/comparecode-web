@@ -1,24 +1,41 @@
-import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
-import { MdCode, MdHistory, MdImage } from "react-icons/md";
+import { MdArticle, MdCode, MdHistory, MdImage } from "react-icons/md";
 import { FaqAccordion, type FaqItem } from "./FaqAccordion";
 
 const homeFaqItems: Array<FaqItem> = [
   {
-    question: "What can I compare with CompareCode?",
-    answer: "CompareCode supports text and code comparison, plus visual image comparison for screenshots, design exports, and common browser-supported image formats."
+    question: "What is this site for?",
+    answer: "You can compare text, code, and images, and you can preview and edit Markdown files."
   },
   {
     question: "Do I need an account?",
-    answer: "No. CompareCode is designed as a direct browser-based tool, so the main comparison workflows do not require an account."
+    answer: "No. CompareCode runs directly in your browser, so the main workflows do not require registration or sign-in."
   },
   {
-    question: "Is CompareCode free and open source?",
-    answer: "Yes. CompareCode is a free and open-source project, built as a practical comparison tool for developers and technical review workflows."
+    question: "Is the site free?",
+    answer: "Yes, and it will stay free. The open-source code is available on GitHub. If you have any suggestion, feedback is welcome."
   },
   {
     question: "Where is comparison history stored?",
-    answer: "Comparison history is stored locally in your browser, so recent work can be restored without an account-based sync workflow."
+    answer: "Comparison history is stored locally in your browser's IndexedDB storage. The current Markdown draft is stored in localStorage, and Markdown undo/redo session history is stored in sessionStorage."
+  },
+  {
+    question: "Are there ads?",
+    answer: "No, and there will not be ads. The goal is to keep the interface fast, calm, and user-friendly. This site is not where I am trying to get rich."
+  },
+  {
+    question: "I found a bug. What should I do?",
+    answer: "Please report it through the GitHub repository linked below.",
+    links: [
+      { href: "https://github.com/comparecode-web/comparecode-web", label: "comparecode-web/comparecode-web" }
+    ]
+  },
+  {
+    question: "How can I support the site?",
+    answer: "Reporting bugs or sharing ideas is already a big help. You can find more information on the GitHub repository.",
+    links: [
+      { href: "https://github.com/comparecode-web/comparecode-web", label: "comparecode-web/comparecode-web" }
+    ]
   }
 ];
 
@@ -73,8 +90,8 @@ export function HomeSeoContent() {
     <SeoBand>
       <SectionHeading
         eyebrow="Browser-based comparison"
-        title="Compare code, text, and images without switching tools"
-        body="CompareCode is built for developers who need fast visual review of text changes, code diffs, screenshots, and image differences. The core workflows run in the browser and do not require an account."
+        title="Compare code, text, images, and Markdown without switching tools"
+        body="CompareCode is built for developers who need fast visual review of text changes, code diffs, screenshots, image differences, and Markdown drafts. The core workflows run in the browser and do not require an account."
       />
 
       <FeatureGrid
@@ -90,8 +107,13 @@ export function HomeSeoContent() {
             icon: MdImage
           },
           {
+            title: "Markdown preview",
+            body: "Draft Markdown with live preview, GitHub-style formatting, rich paste support, Mermaid diagrams, KaTeX formulas, and session undo/redo.",
+            icon: MdArticle
+          },
+          {
             title: "Local workflow",
-            body: "Use local history and merge controls to move through comparison work without creating an account.",
+            body: "Use local comparison history, browser draft persistence, and session history tools without creating an account.",
             icon: MdHistory
           }
         ]}
@@ -101,14 +123,14 @@ export function HomeSeoContent() {
         <div>
           <h3 className="text-xl font-bold text-text-primary">How it works</h3>
           <ol className="mt-4 grid gap-3 text-sm leading-6 text-text-secondary">
-            <li><span className="font-bold text-text-primary">1.</span> Choose text comparison or image comparison.</li>
-            <li><span className="font-bold text-text-primary">2.</span> Paste text, drop images, or use the browser inputs for your files.</li>
-            <li><span className="font-bold text-text-primary">3.</span> Review highlighted differences, adjust options, and merge text changes when needed.</li>
+            <li><span className="font-bold text-text-primary">1.</span> Choose text comparison, image comparison, or Markdown preview.</li>
+            <li><span className="font-bold text-text-primary">2.</span> Paste text, drop images, write Markdown, or use the browser inputs for your files.</li>
+            <li><span className="font-bold text-text-primary">3.</span> Review highlighted differences, adjust options, merge text changes, or preview Markdown output.</li>
           </ol>
         </div>
         <div>
           <h3 className="text-xl font-bold text-text-primary">Supported comparison types</h3>
-          <TagList items={["Code", "Plain text", "JSON", "XML", "HTML", "CSS", "JavaScript", "TypeScript", "Markdown", "Logs", "Screenshots", "Images"]} />
+          <TagList items={["Code", "Plain text", "JSON", "XML", "HTML", "CSS", "JavaScript", "TypeScript", "Markdown", "Mermaid", "KaTeX", "Logs", "Screenshots", "Images"]} />
         </div>
       </div>
 
@@ -120,17 +142,6 @@ export function HomeSeoContent() {
         <div className="mt-5">
           <FaqAccordion items={homeFaqItems} />
         </div>
-      </div>
-
-      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        <Link href="/text" className="inline-flex items-center justify-center gap-2 rounded-md bg-accent-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-hover">
-          <MdCode className="text-lg" />
-          Compare text and code
-        </Link>
-        <Link href="/image" className="inline-flex items-center justify-center gap-2 rounded-md border border-border-default bg-bg-secondary px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-hover-overlay">
-          <MdImage className="text-lg" />
-          Compare images
-        </Link>
       </div>
     </SeoBand>
   );

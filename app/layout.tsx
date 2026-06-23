@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: "CompareCode - Free Online Code and Image Comparison Tool",
+    title: "CompareCode - Free Online Code, Image, and Markdown Tools",
     description: defaultDescription,
     url: SITE_URL,
     images: [
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "CompareCode - Free Online Code and Image Comparison Tool",
+    title: "CompareCode - Free Online Code, Image, and Markdown Tools",
     description: defaultDescription,
     images: [SITE_LOGO_PATH]
   },
