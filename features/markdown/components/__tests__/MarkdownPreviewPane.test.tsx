@@ -62,6 +62,25 @@ bad row
     expect(screen.getByText(/A -->/)).toBeInTheDocument();
   });
 
+  it("renders fenced code blocks without a language as multiline blocks", () => {
+    const { container } = renderPreview(`\`\`\`
+type ProjectNote = {
+  headline: string;
+  labels: string[];
+};
+
+function createThankYouLine(note: ProjectNote): string {
+  return note.headline;
+}
+\`\`\``);
+    const pre = container.querySelector("pre");
+
+    expect(pre).toBeInTheDocument();
+    expect(pre?.textContent).toContain("type ProjectNote = {\n  headline: string;");
+    expect(pre?.textContent).toContain("function createThankYouLine");
+    expect(container.querySelector("pre code")).toBeInTheDocument();
+  });
+
   it("does not treat Mermaid edge labels with pipes as malformed tables", () => {
     const { container } = renderPreview(`\`\`\`mermaid
 flowchart TD

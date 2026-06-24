@@ -4,6 +4,7 @@ interface ScrollSyncInput {
   editorRef: RefObject<HTMLElement | null>;
   previewRef: RefObject<HTMLElement | null>;
   isEnabled: boolean;
+  syncKey?: string;
 }
 
 function getScrollRatio(element: HTMLElement): number {
@@ -20,7 +21,7 @@ function setScrollRatio(element: HTMLElement, ratio: number): void {
   element.scrollTop = maxScroll * ratio;
 }
 
-export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled }: ScrollSyncInput): void {
+export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled, syncKey }: ScrollSyncInput): void {
   const activeSourceRef = useRef<"editor" | "preview" | null>(null);
   const frameRef = useRef<number | null>(null);
 
@@ -39,7 +40,7 @@ export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled }: Scro
 
       activeSourceRef.current = sourceName;
 
-      if (frameRef.current) {
+      if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
 
@@ -60,11 +61,12 @@ export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled }: Scro
     return () => {
       editor.removeEventListener("scroll", onEditorScroll);
       preview.removeEventListener("scroll", onPreviewScroll);
+      activeSourceRef.current = null;
 
-      if (frameRef.current) {
+      if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
         frameRef.current = null;
       }
     };
-  }, [editorRef, isEnabled, previewRef]);
+  }, [editorRef, isEnabled, previewRef, syncKey]);
 }
