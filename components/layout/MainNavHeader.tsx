@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
 import { cn } from "@/utils/uiHelpers";
@@ -24,6 +24,8 @@ export function MainNavHeader() {
   const navRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const indicatorReadyFrameRef = useRef<number | null>(null);
+  const [isIndicatorReady, setIsIndicatorReady] = useState(false);
 
   const updateIndicator = useCallback(() => {
     const nav = navRef.current;
@@ -50,13 +52,25 @@ export function MainNavHeader() {
     const nav = navRef.current;
 
     updateIndicator();
+
+    if (!isIndicatorReady && indicatorReadyFrameRef.current === null) {
+      indicatorReadyFrameRef.current = window.requestAnimationFrame(() => {
+        indicatorReadyFrameRef.current = null;
+        setIsIndicatorReady(true);
+      });
+    }
+
     window.addEventListener("resize", updateIndicator);
     nav?.addEventListener("scroll", updateIndicator);
     return () => {
+      if (indicatorReadyFrameRef.current !== null) {
+        window.cancelAnimationFrame(indicatorReadyFrameRef.current);
+        indicatorReadyFrameRef.current = null;
+      }
       window.removeEventListener("resize", updateIndicator);
       nav?.removeEventListener("scroll", updateIndicator);
     };
-  }, [updateIndicator]);
+  }, [isIndicatorReady, updateIndicator]);
 
   const navigateTo = (href: string) => {
     if (pathname === href) {
@@ -85,11 +99,15 @@ export function MainNavHeader() {
           <div
             ref={indicatorRef}
             aria-hidden
-            className="pointer-events-none absolute top-1/2 z-0 h-8 -translate-y-1/2 rounded-md bg-accent-primary shadow-sm ease-[cubic-bezier(0.16,1,0.3,1)] transition-all duration-(--duration-medium)"
+            className={cn(
+              "pointer-events-none absolute top-1/2 z-0 h-8 -translate-y-1/2 rounded-md bg-accent-primary shadow-sm ease-[cubic-bezier(0.16,1,0.3,1)]",
+              isIndicatorReady ? "transition-all duration-(--duration-medium)" : "transition-none"
+            )}
             style={{ left: 0, width: 0, opacity: 0 }}
           />
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
+            const isActiveIndicatorVisible = isActive && isIndicatorReady;
             return (
               <button
                 key={href}
@@ -97,17 +115,21 @@ export function MainNavHeader() {
                   itemRefs.current[href] = el;
                 }}
                 type="button"
+                aria-label={label}
                 onClick={() => navigateTo(href)}
                 className={cn(
                   "group relative z-10 flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium) active:scale-95",
-                  isActive ? "text-white" : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+                  isActiveIndicatorVisible
+                    ? "text-white"
+                    : isActive
+                      ? "text-accent-primary bg-hover-overlay"
+                      : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
                 )}
-                title={label}
               >
                 <Icon
                   className={cn(
                     "text-lg transition-transform duration-(--duration-medium) ease-out group-hover:scale-110",
-                    isActive ? "text-white" : "text-text-secondary"
+                    isActiveIndicatorVisible ? "text-white" : isActive ? "text-accent-primary" : "text-text-secondary"
                   )}
                 />
                 <span className="hidden sm:inline">{label}</span>
