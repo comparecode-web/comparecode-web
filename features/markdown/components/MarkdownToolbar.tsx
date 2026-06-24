@@ -44,6 +44,7 @@ interface MarkdownToolbarProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  isDisabled?: boolean;
 }
 
 const toolbarGroups: Array<Array<{ action: MarkdownFormatAction; title: string; icon: ReactNode; label?: string }>> = [
@@ -99,7 +100,7 @@ function CaseTransformIcon({ letter, direction }: { letter: "A" | "a"; direction
   );
 }
 
-export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: MarkdownToolbarProps) {
+export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, isDisabled = false }: MarkdownToolbarProps) {
   const alertTriggerRef = useRef<HTMLButtonElement | null>(null);
   const tableTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [isAlertMenuOpen, setIsAlertMenuOpen] = useState(false);
@@ -122,7 +123,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
               variant="toolbar"
               size="sm"
               onClick={onUndo}
-              disabled={!canUndo}
+              disabled={isDisabled || !canUndo}
               title="Undo"
             >
               <span className="text-lg"><MdUndo /></span>
@@ -131,7 +132,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
               variant="toolbar"
               size="sm"
               onClick={onRedo}
-              disabled={!canRedo}
+              disabled={isDisabled || !canRedo}
               title="Redo"
             >
               <span className="text-lg"><MdRedo /></span>
@@ -145,6 +146,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
                   variant="toolbar"
                   size="sm"
                   onClick={() => onFormat(item.action)}
+                  disabled={isDisabled}
                   title={item.title}
                 >
                   <span className="text-lg">{item.icon}</span>
@@ -159,6 +161,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
               variant="toolbar"
               size="sm"
               onClick={() => setIsTableMenuOpen((current) => !current)}
+              disabled={isDisabled}
               title="Table"
             >
               <span className="text-lg"><MdTableChart /></span>
@@ -212,6 +215,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
               variant="toolbar"
               size="sm"
               onClick={() => setIsAlertMenuOpen((current) => !current)}
+              disabled={isDisabled}
               title="Alert"
             >
               <span className="text-lg"><MdAddAlert /></span>

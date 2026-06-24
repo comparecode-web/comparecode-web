@@ -19,7 +19,7 @@ describe("MarkdownSplitView", () => {
   });
 
   it("uses a subtle horizontal resize handle without tooltip", () => {
-    render(
+    const { container } = render(
       <MarkdownSplitView
         value="Preview"
         onChange={() => undefined}
@@ -27,7 +27,7 @@ describe("MarkdownSplitView", () => {
       />
     );
 
-    const resizeHandle = screen.getByRole("button");
+    const resizeHandle = container.querySelector("button[class*='!cursor-ew-resize']");
 
     expect(resizeHandle).toHaveClass("!cursor-ew-resize");
     expect(resizeHandle).toHaveClass("bg-border-default/35");

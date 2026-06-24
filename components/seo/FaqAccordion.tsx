@@ -55,27 +55,35 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
                 )}
               />
             </button>
-            {isOpen && (
-              <div id={panelId} className="px-4 py-4 text-sm leading-6 text-text-secondary">
-                <p>{item.answer}</p>
-                {item.links && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {item.links.map((link) => (
-                      <a
-                        key={link.href}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md border border-border-default bg-bg-secondary px-2.5 py-1.5 text-xs font-semibold text-accent-primary transition-colors hover:bg-hover-overlay hover:text-accent-hover"
-                      >
-                        <SiGithub className="text-base" />
-                        <span>{link.label}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
+            <div
+              id={panelId}
+              className={cn(
+                "grid transition-[grid-template-rows,opacity] duration-(--duration-medium) ease-[cubic-bezier(0.16,1,0.3,1)]",
+                isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              )}
+            >
+              <div className="min-h-0 overflow-hidden">
+                <div className="px-4 py-4 text-sm leading-6 text-text-secondary">
+                  <p>{item.answer}</p>
+                  {item.links && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.links.map((link) => (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-md border border-border-default bg-bg-secondary px-2.5 py-1.5 text-xs font-semibold text-accent-primary transition-colors hover:bg-hover-overlay hover:text-accent-hover"
+                        >
+                          <SiGithub className="text-base" />
+                          <span>{link.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         );
       })}

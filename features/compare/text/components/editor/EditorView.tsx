@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdTune, MdBorderColor, MdHistory } from "react-icons/md";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
+import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { OptionsView } from "./OptionsView";
@@ -17,6 +18,12 @@ export function EditorView() {
   const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen, optionsPanelTab, setOptionsPanelTab } = useEditorUIStore();
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const isInputEditorToggleDisabled = !hasResult && isInputExpanded;
+  const toggleOptionsPanel = useCallback(() => {
+    const uiState = useEditorUIStore.getState();
+    uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
+  }, []);
+
+  useOptionsPanelShortcut(toggleOptionsPanel);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -30,7 +37,7 @@ export function EditorView() {
 
       const key = event.key.toLowerCase();
 
-      if (key !== "e" && key !== "o") {
+      if (key !== "e") {
         return;
       }
 
@@ -43,12 +50,6 @@ export function EditorView() {
       }
 
       event.preventDefault();
-
-      if (key === "o") {
-        const uiState = useEditorUIStore.getState();
-        uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
-        return;
-      }
 
       toggleInputPanel();
     };
