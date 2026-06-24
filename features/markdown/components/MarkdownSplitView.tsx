@@ -192,7 +192,7 @@ export function MarkdownSplitView({
 
       <button
         type="button"
-        className="min-h-0 cursor-ew-resize bg-border-default/35 transition-colors hover:bg-accent-primary/75"
+        className="min-h-0 !cursor-ew-resize bg-border-default/35 transition-colors hover:bg-accent-primary/75"
         {...resizeHandlers}
       />
 

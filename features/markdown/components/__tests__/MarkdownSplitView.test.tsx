@@ -29,7 +29,7 @@ describe("MarkdownSplitView", () => {
 
     const resizeHandle = screen.getByRole("button");
 
-    expect(resizeHandle).toHaveClass("cursor-ew-resize");
+    expect(resizeHandle).toHaveClass("!cursor-ew-resize");
     expect(resizeHandle).toHaveClass("bg-border-default/35");
     expect(resizeHandle).not.toHaveAttribute("title");
   });
