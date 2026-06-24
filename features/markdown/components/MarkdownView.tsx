@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { MdHistory, MdTune } from "react-icons/md";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
+import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { MarkdownHistoryView } from "./MarkdownHistoryView";
 import { MarkdownOptionsView } from "./MarkdownOptionsView";
 import { MarkdownSplitView } from "./MarkdownSplitView";
@@ -10,6 +11,32 @@ import { MarkdownToolbar } from "./MarkdownToolbar";
 import { useMarkdownFormattingActions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
+
+function MarkdownLoadingView() {
+  return (
+    <div className="grid min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-primary sm:grid-cols-[1fr_0.5rem_1fr]">
+      <section className="min-h-0 min-w-0 overflow-hidden border-r border-border-default max-sm:border-r-0">
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+          <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold uppercase tracking-wider text-text-secondary">
+            Markdown
+          </div>
+          <div className="flex min-h-0 flex-1 items-center justify-center bg-bg-primary text-sm font-semibold text-text-secondary">
+            Loading markdown...
+          </div>
+        </div>
+      </section>
+      <div className="min-h-0 bg-border-default/35 max-sm:hidden" />
+      <section className="min-h-0 min-w-0 overflow-hidden max-sm:hidden">
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+          <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold uppercase tracking-wider text-text-secondary">
+            Preview
+          </div>
+          <div className="min-h-0 flex-1 bg-bg-primary" />
+        </div>
+      </section>
+    </div>
+  );
+}
 
 export function MarkdownView() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -25,7 +52,15 @@ export function MarkdownView() {
   const setIsOptionsPanelOpen = useMarkdownUIStore((state) => state.setIsOptionsPanelOpen);
   const optionsPanelTab = useMarkdownUIStore((state) => state.optionsPanelTab);
   const setOptionsPanelTab = useMarkdownUIStore((state) => state.setOptionsPanelTab);
+  const isMarkdownUILoaded = useMarkdownUIStore((state) => state.isLoaded);
   const loadPersistedMarkdownUIState = useMarkdownUIStore((state) => state.loadPersistedMarkdownUIState);
+  const isMarkdownReady = isMarkdownLoaded && isMarkdownUILoaded;
+  const toggleOptionsPanel = useCallback(() => {
+    const uiState = useMarkdownUIStore.getState();
+    uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
+  }, []);
+
+  useOptionsPanelShortcut(toggleOptionsPanel);
 
   const { applyFormat } = useMarkdownFormattingActions({
     textareaRef,
@@ -63,16 +98,21 @@ export function MarkdownView() {
         onRedo={redoMarkdownText}
         canUndo={canUndo}
         canRedo={canRedo}
+        isDisabled={!isMarkdownReady}
       />
-      <MarkdownSplitView
-        value={markdownText}
-        onChange={setMarkdownText}
-        textareaRef={textareaRef}
-        onUndo={undoMarkdownText}
-        onRedo={redoMarkdownText}
-        canUndo={canUndo}
-        canRedo={canRedo}
-      />
+      {isMarkdownReady ? (
+        <MarkdownSplitView
+          value={markdownText}
+          onChange={setMarkdownText}
+          textareaRef={textareaRef}
+          onUndo={undoMarkdownText}
+          onRedo={redoMarkdownText}
+          canUndo={canUndo}
+          canRedo={canRedo}
+        />
+      ) : (
+        <MarkdownLoadingView />
+      )}
     </ToolWorkspaceShell>
   );
 }

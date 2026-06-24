@@ -13,9 +13,5 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoaded, loadSettings]);
 
-  if (!isLoaded) {
-    return null;
-  }
-
   return <>{children}</>;
 }
