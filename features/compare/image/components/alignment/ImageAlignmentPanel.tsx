@@ -3,12 +3,16 @@
 import { PointerEvent, WheelEvent, useEffect, useMemo, useRef, useState } from "react";
 import { MdClose, MdDelete, MdFlip, MdLock, MdLockOpen, MdRestartAlt, MdRotateRight } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { SelectionBar } from "@/components/ui/SelectionBar";
+import { Slider } from "@/components/ui/Slider";
+import { Switch } from "@/components/ui/Switch";
+import { getSectionResetButtonClass } from "@/utils/settingsReset";
 import { cn } from "@/utils/uiHelpers";
 import { useImageCompareStore } from "../../store/useImageCompareStore";
 import { estimateAutoAlignment } from "../../services/alignment/autoAlignService";
-import { ImageAffineTransform } from "../../services/alignment/types";
-import { clampNumber, createDefaultAlignmentTransform } from "../../services/alignment/transformUtils";
+import { DEFAULT_ALIGNMENT_STATE, ImageAffineTransform } from "../../services/alignment/types";
+import { clampNumber, createDefaultAlignmentTransform, normalizeTransform } from "../../services/alignment/transformUtils";
 
 type TransformOption = "rotate" | "scale";
 
@@ -40,6 +44,31 @@ function formatPercent(value: number): string {
 
 function getOptionValues(options: { rotate: boolean; scale: boolean; warp: boolean }): Array<TransformOption> {
   return (["rotate", "scale"] as Array<TransformOption>).filter((option) => options[option]);
+}
+
+function roundToTwoDecimals(value: number): number {
+  return Number(value.toFixed(2));
+}
+
+function areNumbersEqual(left: number, right: number): boolean {
+  return Math.abs(left - right) < 0.0001;
+}
+
+function areTransformsEqual(left: ImageAffineTransform | null, right: ImageAffineTransform | null): boolean {
+  if (!left || !right) {
+    return left === right;
+  }
+
+  const normalizedLeft = normalizeTransform(left);
+  const normalizedRight = normalizeTransform(right);
+
+  return areNumbersEqual(normalizedLeft.x, normalizedRight.x)
+    && areNumbersEqual(normalizedLeft.y, normalizedRight.y)
+    && areNumbersEqual(normalizedLeft.scaleX, normalizedRight.scaleX)
+    && areNumbersEqual(normalizedLeft.scaleY, normalizedRight.scaleY)
+    && areNumbersEqual(normalizedLeft.rotationDeg, normalizedRight.rotationDeg)
+    && normalizedLeft.flipX === normalizedRight.flipX
+    && normalizedLeft.flipY === normalizedRight.flipY;
 }
 
 function getSnapResult(
@@ -362,6 +391,14 @@ export function ImageAlignmentPanel() {
 
   const displayWidth = modifiedImage.width * draftTransform.scaleX;
   const displayHeight = modifiedImage.height * draftTransform.scaleY;
+  const widthPercent = roundToTwoDecimals(draftTransform.scaleX * 100);
+  const heightPercent = roundToTwoDecimals(draftTransform.scaleY * 100);
+  const defaultTransform = createDefaultAlignmentTransform(originalImage, modifiedImage);
+  const isZoomDirty = !areNumbersEqual(alignment.previewZoom, DEFAULT_ALIGNMENT_STATE.previewZoom);
+  const isManualAlignDirty =
+    !areTransformsEqual(draftTransform, defaultTransform)
+    || alignment.snappingEnabled !== DEFAULT_ALIGNMENT_STATE.snappingEnabled
+    || alignment.aspectRatioLocked !== DEFAULT_ALIGNMENT_STATE.aspectRatioLocked;
   const handleScaleX = 1 / Math.max(0.001, draftTransform.scaleX);
   const handleScaleY = 1 / Math.max(0.001, draftTransform.scaleY);
   const rotateHandleOffset = -34 * handleScaleY;
@@ -477,9 +514,9 @@ export function ImageAlignmentPanel() {
         <aside className="flex w-full max-w-sm flex-col border-l border-border-default bg-bg-primary max-lg:max-w-xs max-md:absolute max-md:inset-y-3 max-md:right-3 max-md:left-3 max-md:max-w-none max-md:rounded-lg max-md:border">
           <div className="flex items-center gap-2 border-b border-border-default px-4 py-3">
             <h2 className="text-base font-bold text-text-primary">Align Images</h2>
-            <button type="button" onClick={closeAlignmentPanel} className="ml-auto rounded p-1.5 text-text-secondary hover:bg-hover-overlay hover:text-text-primary">
+            <IconButton onClick={closeAlignmentPanel} size="sm" className="ml-auto" title="Close alignment panel">
               <MdClose className="text-xl" />
-            </button>
+            </IconButton>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
@@ -489,54 +526,30 @@ export function ImageAlignmentPanel() {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-2">
-              <Button variant="outline" size="sm" onClick={resetAlignmentDraft} leftIcon={<MdRestartAlt className="text-lg" />}>
-                Reset
-              </Button>
-              <Button variant="danger" size="sm" onClick={resetAlignment} leftIcon={<MdDelete className="text-lg" />}>
-                Clear alignment
-              </Button>
-            </div>
-
-            <div className="mt-5 flex items-center justify-between gap-3 rounded-md border border-border-default bg-bg-secondary px-3 py-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Zoom</span>
-              <span className="text-sm font-bold text-text-primary">{formatPercent(alignment.previewZoom)}</span>
-              <Button variant="outline" size="sm" onClick={() => setAlignmentPreviewZoom(1)} leftIcon={<MdRestartAlt className="text-lg" />}>
-                Reset
-              </Button>
-            </div>
-
-            <section className="mt-6 border-t border-border-default pt-5">
-              <h3 className="text-sm font-bold text-text-primary">Auto Align</h3>
-              <p className="mt-1 text-xs text-text-secondary">Allowed transformations</p>
-              <SelectionBar<TransformOption>
-                selectionMode="multiple"
-                value={selectedOptions}
-                options={TRANSFORM_OPTIONS}
-                onChange={(values) => updateAlignmentOptions({
-                  rotate: values.includes("rotate"),
-                  scale: values.includes("scale"),
-                  warp: false
-                })}
-                className="mt-3"
-                buttonClassName="px-2"
+            <div className="rounded-md border border-border-default bg-bg-secondary p-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Zoom</span>
+                <span className="text-sm font-bold text-text-primary">{formatPercent(alignment.previewZoom)}</span>
+                <IconButton size="sm" onClick={() => setAlignmentPreviewZoom(DEFAULT_ALIGNMENT_STATE.previewZoom)} className={getSectionResetButtonClass(isZoomDirty)} title="Restore zoom default">
+                  <MdRestartAlt className="text-lg" />
+                </IconButton>
+              </div>
+              <Slider
+                min={50}
+                max={500}
+                step="5"
+                value={Math.round(alignment.previewZoom * 100)}
+                onChange={(event) => setAlignmentPreviewZoom(parseInt(event.target.value, 10) / 100)}
+                containerClassName="mt-3"
               />
-              <Button className="mt-3 w-full" onClick={runAutoAlign} disabled={alignment.status === "aligning"}>
-                {alignment.status === "aligning" ? "Aligning..." : "Auto Align Images"}
-              </Button>
-            </section>
+            </div>
 
-            <section className="mt-6 border-t border-border-default pt-5">
+            <section className="mt-5 rounded-md border border-border-default bg-bg-secondary p-3">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-bold text-text-primary">Align Manually</h3>
-                <Button
-                  variant={alignment.snappingEnabled ? "primary" : "outline"}
-                  size="sm"
-                  onClick={() => setAlignmentSnappingEnabled(!alignment.snappingEnabled)}
-                  title="Hold Ctrl or Command while dragging to temporarily toggle"
-                >
-                  Snap: {alignment.snappingEnabled ? "on" : "off"}
-                </Button>
+                <h3 className="text-sm font-bold text-text-primary">Manual align</h3>
+                <IconButton size="sm" onClick={resetAlignmentDraft} className={getSectionResetButtonClass(isManualAlignDirty)} title="Restore manual alignment defaults">
+                  <MdRestartAlt className="text-lg" />
+                </IconButton>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -558,30 +571,36 @@ export function ImageAlignmentPanel() {
                 </Button>
               </div>
 
-              <div className="mt-4">
-                <NumberField
-                  label="Rotate"
-                  value={draftTransform.rotationDeg}
-                  step={0.1}
-                  suffix="deg"
-                  onChange={(value) => setAlignmentDraftTransform({ ...draftTransform, rotationDeg: value })}
+                <Switch
+                  checked={alignment.snappingEnabled}
+                  onChange={(event) => setAlignmentSnappingEnabled(event.target.checked)}
+                  label="Snap"
+                  title="Hold Ctrl or Command while dragging to temporarily toggle"
+                  containerClassName="mt-4"
                 />
-              </div>
 
-              <div className="mt-5 rounded-md border border-border-default bg-bg-secondary p-3">
+              <Slider
+                min={-180}
+                max={180}
+                step="0.1"
+                value={draftTransform.rotationDeg}
+                onChange={(event) => setAlignmentDraftTransform({ ...draftTransform, rotationDeg: parseFloat(event.target.value) })}
+                label="Rotate"
+                displayValue={`${Number(draftTransform.rotationDeg.toFixed(1))}deg`}
+                containerClassName="mt-4"
+              />
+
+              <div className="mt-5 rounded-md border border-border-default bg-bg-primary p-3">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs font-bold uppercase tracking-wide text-text-secondary">Transformation</h4>
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => setAlignmentAspectRatioLocked(!alignment.aspectRatioLocked)}
-                    className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-md border border-border-default bg-bg-primary text-text-secondary hover:bg-hover-overlay hover:text-text-primary",
-                      alignment.aspectRatioLocked && "text-accent-primary"
-                    )}
+                    size="sm"
+                    isActive={alignment.aspectRatioLocked}
                     title={alignment.aspectRatioLocked ? "Unlock proportional scale" : "Lock proportional scale"}
                   >
                     {alignment.aspectRatioLocked ? <MdLock className="text-lg" /> : <MdLockOpen className="text-lg" />}
-                  </button>
+                  </IconButton>
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -593,18 +612,18 @@ export function ImageAlignmentPanel() {
                     onChange={(value) => updateScale(value / modifiedImage.width, alignment.aspectRatioLocked ? value / modifiedImage.width : draftTransform.scaleY)}
                   />
                   <NumberField
-                    label="Width"
-                    value={draftTransform.scaleX * 100}
-                    step={0.5}
-                    suffix="%"
-                    onChange={(value) => updateScale(value / 100, alignment.aspectRatioLocked ? value / 100 : draftTransform.scaleY)}
-                  />
-                  <NumberField
                     label="Height"
                     value={displayHeight}
                     step={1}
                     suffix="px"
                     onChange={(value) => updateScale(alignment.aspectRatioLocked ? value / modifiedImage.height : draftTransform.scaleX, value / modifiedImage.height)}
+                  />
+                  <NumberField
+                    label="Width"
+                    value={draftTransform.scaleX * 100}
+                    step={0.5}
+                    suffix="%"
+                    onChange={(value) => updateScale(value / 100, alignment.aspectRatioLocked ? value / 100 : draftTransform.scaleY)}
                   />
                   <NumberField
                     label="Height"
@@ -614,24 +633,70 @@ export function ImageAlignmentPanel() {
                     onChange={(value) => updateScale(alignment.aspectRatioLocked ? value / 100 : draftTransform.scaleX, value / 100)}
                   />
                 </div>
+                <div className="mt-4 grid grid-cols-1 gap-3">
+                  <Slider
+                    min={1}
+                    max={300}
+                    step="0.01"
+                    value={widthPercent}
+                    onChange={(event) => updateScale(parseFloat(event.target.value) / 100, alignment.aspectRatioLocked ? parseFloat(event.target.value) / 100 : draftTransform.scaleY)}
+                    label="Width"
+                    displayValue={`${widthPercent.toFixed(2)}%`}
+                  />
+                  <Slider
+                    min={1}
+                    max={300}
+                    step="0.01"
+                    value={heightPercent}
+                    onChange={(event) => updateScale(alignment.aspectRatioLocked ? parseFloat(event.target.value) / 100 : draftTransform.scaleX, parseFloat(event.target.value) / 100)}
+                    label="Height"
+                    displayValue={`${heightPercent.toFixed(2)}%`}
+                  />
+                </div>
               </div>
+            </section>
+
+            <section className="mt-5 rounded-md border border-accent-primary/30 bg-accent-primary/10 p-3">
+              <h3 className="text-sm font-bold text-text-primary">Auto align</h3>
+              <p className="mt-1 text-xs text-text-secondary">Let CompareCode estimate the initial rotation and scale, then fine-tune manually if needed.</p>
+              <p className="mt-3 text-xs font-semibold text-text-secondary">Allowed transformations</p>
+              <SelectionBar<TransformOption>
+                selectionMode="multiple"
+                value={selectedOptions}
+                options={TRANSFORM_OPTIONS}
+                onChange={(values) => updateAlignmentOptions({
+                  rotate: values.includes("rotate"),
+                  scale: values.includes("scale"),
+                  warp: false
+                })}
+                className="mt-2"
+                buttonClassName="px-2"
+              />
+              <Button className="mt-3 w-full" onClick={runAutoAlign} disabled={alignment.status === "aligning"}>
+                {alignment.status === "aligning" ? "Aligning..." : "Auto Align Images"}
+              </Button>
             </section>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-border-default p-4">
-            <Button variant="ghost" onClick={closeAlignmentPanel}>
-              Cancel
+          <div className="flex items-center justify-between gap-2 border-t border-border-default p-4">
+            <Button variant="danger" onClick={resetAlignment} leftIcon={<MdDelete className="text-lg" />}>
+              Reset alignment
             </Button>
-            <Button
-              onClick={() => applyAlignmentTransform(draftTransform, {
-                method: "manual",
-                confidence: null,
-                matchCount: null,
-                timestamp: Date.now()
-              })}
-            >
-              Apply
-            </Button>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={closeAlignmentPanel}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => applyAlignmentTransform(draftTransform, {
+                  method: "manual",
+                  confidence: null,
+                  matchCount: null,
+                  timestamp: Date.now()
+                })}
+              >
+                Apply
+              </Button>
+            </div>
           </div>
         </aside>
       </div>

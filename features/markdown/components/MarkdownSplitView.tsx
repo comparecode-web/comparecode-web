@@ -87,7 +87,8 @@ export function MarkdownSplitView({
   useMarkdownScrollSync({
     editorRef: textareaRef,
     previewRef,
-    isEnabled: isSyncScrollEnabled
+    isEnabled: isSyncScrollEnabled,
+    syncKey: `${viewMode}:${mobileSplitPane}`
   });
 
   if (viewMode === "editor") {
@@ -191,7 +192,7 @@ export function MarkdownSplitView({
 
       <button
         type="button"
-        className="min-h-0 cursor-ew-resize bg-border-default/35 transition-colors hover:bg-accent-primary/75"
+        className="min-h-0 !cursor-ew-resize bg-border-default/35 transition-colors hover:bg-accent-primary/75"
         {...resizeHandlers}
       />
 

@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { IoMdCodeWorking } from "react-icons/io";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { MenuItem, PopoverMenu } from "@/components/ui/PopoverMenu";
 import type { MarkdownFormatAction } from "@/features/markdown/types/markdown";
 import { type MarkdownFormatOptions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { markdownTableLimits } from "@/features/markdown/services/markdownEditorCommands";
@@ -97,34 +100,12 @@ function CaseTransformIcon({ letter, direction }: { letter: "A" | "a"; direction
 }
 
 export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: MarkdownToolbarProps) {
-  const alertMenuRef = useRef<HTMLDivElement>(null);
-  const tableMenuRef = useRef<HTMLDivElement>(null);
+  const alertTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const tableTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [isAlertMenuOpen, setIsAlertMenuOpen] = useState(false);
   const [isTableMenuOpen, setIsTableMenuOpen] = useState(false);
   const [tableRows, setTableRows] = useState(2);
   const [tableColumns, setTableColumns] = useState(2);
-
-  useEffect(() => {
-    if (!isAlertMenuOpen && !isTableMenuOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!alertMenuRef.current?.contains(event.target as Node)) {
-        setIsAlertMenuOpen(false);
-      }
-
-      if (!tableMenuRef.current?.contains(event.target as Node)) {
-        setIsTableMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [isAlertMenuOpen, isTableMenuOpen]);
 
   const handleTableNumberChange = (value: string, min: number, max: number, setter: (value: number) => void) => {
     const parsed = parseInt(value, 10);
@@ -137,122 +118,119 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo }: 
       <div className="flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-x-auto overflow-y-hidden custom-scrollbar sm:overflow-visible">
         <div className="flex w-max flex-nowrap items-center gap-1 overflow-visible sm:w-auto sm:flex-1 sm:flex-wrap">
           <div className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1">
-            <button
-              type="button"
+            <IconButton
+              variant="toolbar"
+              size="sm"
               onClick={onUndo}
               disabled={!canUndo}
               title="Undo"
-              className="flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="text-lg"><MdUndo /></span>
-            </button>
-            <button
-              type="button"
+            </IconButton>
+            <IconButton
+              variant="toolbar"
+              size="sm"
               onClick={onRedo}
               disabled={!canRedo}
               title="Redo"
-              className="flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="text-lg"><MdRedo /></span>
-            </button>
+            </IconButton>
           </div>
           {toolbarGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1 last:border-r-0 last:pr-0">
               {group.map((item) => (
-                <button
+                <IconButton
                   key={item.action}
-                  type="button"
+                  variant="toolbar"
+                  size="sm"
                   onClick={() => onFormat(item.action)}
                   title={item.title}
-                  className="flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary"
                 >
                   <span className="text-lg">{item.icon}</span>
                   {item.label && <span className="text-xs">{item.label}</span>}
-                </button>
+                </IconButton>
               ))}
             </div>
           ))}
-          <div ref={tableMenuRef} className="relative flex shrink-0 items-center border-r border-border-default pr-1">
-            <button
-              type="button"
+          <div className="relative flex shrink-0 items-center border-r border-border-default pr-1">
+            <IconButton
+              ref={tableTriggerRef}
+              variant="toolbar"
+              size="sm"
               onClick={() => setIsTableMenuOpen((current) => !current)}
               title="Table"
-              className="flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary"
             >
               <span className="text-lg"><MdTableChart /></span>
-            </button>
-            {isTableMenuOpen && (
-              <div className="absolute left-0 top-9 z-20 w-52 rounded border border-border-default bg-bg-primary p-3 shadow-lg">
-                <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-secondary">
-                  Insert table
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
-                    Columns
-                    <input
-                      type="number"
-                      min={markdownTableLimits.minColumns}
-                      max={markdownTableLimits.maxColumns}
-                      value={tableColumns}
-                      onChange={(event) => handleTableNumberChange(event.target.value, markdownTableLimits.minColumns, markdownTableLimits.maxColumns, setTableColumns)}
-                      className="h-8 rounded border border-border-default bg-bg-secondary px-2 text-sm text-text-primary outline-none focus:border-accent-primary"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
-                    Rows
-                    <input
-                      type="number"
-                      min={markdownTableLimits.minRows}
-                      max={markdownTableLimits.maxRows}
-                      value={tableRows}
-                      onChange={(event) => handleTableNumberChange(event.target.value, markdownTableLimits.minRows, markdownTableLimits.maxRows, setTableRows)}
-                      className="h-8 rounded border border-border-default bg-bg-secondary px-2 text-sm text-text-primary outline-none focus:border-accent-primary"
-                    />
-                  </label>
-                </div>
-                <div className="mt-2 text-xs text-text-secondary">
-                  Max {markdownTableLimits.maxColumns} columns, {markdownTableLimits.maxRows} rows.
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onFormat("table", { tableRows, tableColumns });
-                    setIsTableMenuOpen(false);
-                  }}
-                  className="mt-3 h-8 w-full rounded bg-accent-primary px-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
-                >
-                  Insert
-                </button>
+            </IconButton>
+            <PopoverMenu isOpen={isTableMenuOpen} onOpenChange={setIsTableMenuOpen} triggerRef={tableTriggerRef} className="w-52 p-3">
+              <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-secondary">
+                Insert table
               </div>
-            )}
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
+                  Columns
+                  <input
+                    type="number"
+                    min={markdownTableLimits.minColumns}
+                    max={markdownTableLimits.maxColumns}
+                    value={tableColumns}
+                    onChange={(event) => handleTableNumberChange(event.target.value, markdownTableLimits.minColumns, markdownTableLimits.maxColumns, setTableColumns)}
+                    className="h-8 rounded border border-border-default bg-bg-secondary px-2 text-sm text-text-primary outline-none focus:border-accent-primary"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
+                  Rows
+                  <input
+                    type="number"
+                    min={markdownTableLimits.minRows}
+                    max={markdownTableLimits.maxRows}
+                    value={tableRows}
+                    onChange={(event) => handleTableNumberChange(event.target.value, markdownTableLimits.minRows, markdownTableLimits.maxRows, setTableRows)}
+                    className="h-8 rounded border border-border-default bg-bg-secondary px-2 text-sm text-text-primary outline-none focus:border-accent-primary"
+                  />
+                </label>
+              </div>
+              <div className="mt-2 text-xs text-text-secondary">
+                Max {markdownTableLimits.maxColumns} columns, {markdownTableLimits.maxRows} rows.
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  onFormat("table", { tableRows, tableColumns });
+                  setIsTableMenuOpen(false);
+                }}
+                className="mt-3 w-full"
+              >
+                Insert
+              </Button>
+            </PopoverMenu>
           </div>
-          <div ref={alertMenuRef} className="relative flex shrink-0 items-center">
-            <button
-              type="button"
+          <div className="relative flex shrink-0 items-center">
+            <IconButton
+              ref={alertTriggerRef}
+              variant="toolbar"
+              size="sm"
               onClick={() => setIsAlertMenuOpen((current) => !current)}
               title="Alert"
-              className="flex h-8 min-w-8 cursor-pointer list-none items-center justify-center rounded border border-transparent px-2 text-sm font-semibold text-text-secondary transition-colors hover:border-border-default hover:bg-hover-overlay hover:text-text-primary [&::-webkit-details-marker]:hidden"
             >
               <span className="text-lg"><MdAddAlert /></span>
-            </button>
-            {isAlertMenuOpen && (
-              <div className="absolute left-0 top-9 z-20 min-w-40 overflow-hidden rounded border border-border-default bg-bg-primary py-1 shadow-lg">
-                {alertOptions.map((item) => (
-                  <button
-                    key={item.action}
-                    type="button"
-                    onClick={() => {
-                      onFormat(item.action);
-                      setIsAlertMenuOpen(false);
-                    }}
-                    className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm font-semibold transition-colors ${item.className}`}
-                  >
-                    <span className="text-base">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            </IconButton>
+            <PopoverMenu isOpen={isAlertMenuOpen} onOpenChange={setIsAlertMenuOpen} triggerRef={alertTriggerRef} className="min-w-40 overflow-hidden py-1">
+              {alertOptions.map((item) => (
+                <MenuItem
+                  key={item.action}
+                  onClick={() => {
+                    onFormat(item.action);
+                    setIsAlertMenuOpen(false);
+                  }}
+                  className={item.className}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.label}</span>
+                </MenuItem>
+              ))}
+            </PopoverMenu>
           </div>
         </div>
       </div>
