@@ -250,6 +250,8 @@ export const useImageCompareStore = create<ImageCompareState>((set) => ({
       alignment: {
         ...alignment,
         draftTransform: originalImage && modifiedImage ? createDefaultAlignmentTransform(originalImage, modifiedImage) : null,
+        snappingEnabled: DEFAULT_ALIGNMENT_STATE.snappingEnabled,
+        aspectRatioLocked: DEFAULT_ALIGNMENT_STATE.aspectRatioLocked,
         error: null
       }
     };
