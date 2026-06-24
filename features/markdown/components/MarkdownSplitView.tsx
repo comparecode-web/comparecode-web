@@ -87,7 +87,8 @@ export function MarkdownSplitView({
   useMarkdownScrollSync({
     editorRef: textareaRef,
     previewRef,
-    isEnabled: isSyncScrollEnabled
+    isEnabled: isSyncScrollEnabled,
+    syncKey: `${viewMode}:${mobileSplitPane}`
   });
 
   if (viewMode === "editor") {

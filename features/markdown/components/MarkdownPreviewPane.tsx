@@ -88,6 +88,19 @@ interface MarkerFrontmatterSection {
   fields: ReturnType<typeof parseMarkdownFrontmatterDetailed>["fields"];
 }
 
+interface MarkdownNodePosition {
+  position?: {
+    start?: { line?: number };
+    end?: { line?: number };
+  };
+}
+
+function isBlockCodeNode(node: unknown, code: string, className: string | undefined): boolean {
+  const position = (node as MarkdownNodePosition | undefined)?.position;
+
+  return Boolean(className) || code.includes("\n") || Boolean(position?.start?.line && position?.end?.line && position.end.line > position.start.line);
+}
+
 function renderRawMarkdown(value: string, key?: string) {
   if (!value.trim()) {
     return null;
@@ -260,7 +273,7 @@ const markdownComponents: Components = {
       </td>
     );
   },
-  code({ children, className }) {
+  code({ children, className, node }) {
     const code = String(children).replace(/\n$/, "");
     const language = /language-([a-zA-Z0-9_-]+)/.exec(className ?? "")?.[1];
 
@@ -268,7 +281,7 @@ const markdownComponents: Components = {
       return <MermaidBlock chart={code} />;
     }
 
-    return <CodeBlock language={language} inline={!className}>{code}</CodeBlock>;
+    return <CodeBlock language={language} inline={!isBlockCodeNode(node, code, className)}>{code}</CodeBlock>;
   },
   pre({ children }) {
     return <>{children}</>;
