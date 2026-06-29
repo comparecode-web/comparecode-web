@@ -77,6 +77,12 @@ describe("MainNavHeader", () => {
     expect(textTab).not.toHaveAttribute("title");
   });
 
+  it("hides the GitHub shortcut on ultra narrow mobile layouts", () => {
+    render(<MainNavHeader />);
+
+    expect(screen.getByTitle("GitHub")).toHaveClass("hidden", "min-[360px]:flex");
+  });
+
   it("shows a mobile sidebar button when a workspace sidebar is registered", async () => {
     render(
       <WorkspaceSidebarProvider>

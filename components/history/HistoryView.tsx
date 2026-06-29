@@ -161,7 +161,7 @@ export function HistoryView() {
         <div className="flex items-center gap-2">
           {items.length > 0 && (
             <>
-              <span className="shrink-0 text-xs font-semibold text-text-secondary sm:text-sm">Filter:</span>
+              <span className="hidden shrink-0 text-xs font-semibold text-text-secondary min-[360px]:inline sm:text-sm">Filter:</span>
               <SelectDropdown
                 value={historyFilter}
                 onChange={handleHistoryFilterChange}
