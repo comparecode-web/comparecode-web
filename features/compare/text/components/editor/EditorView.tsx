@@ -1,23 +1,36 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdTune, MdBorderColor, MdHistory } from "react-icons/md";
+import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdTune, MdBorderColor, MdHistory, MdCode } from "react-icons/md";
+import { RiCharacterRecognitionLine } from "react-icons/ri";
+import { TbAbc } from "react-icons/tb";
+import { VscSplitHorizontal, VscSplitVertical } from "react-icons/vsc";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
 import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { defaultSettings } from "@/config/defaults";
 import { OptionsView } from "./OptionsView";
 import { MergeHistoryView } from "./MergeHistoryView";
 import { InputView } from "./InputView";
 import { ComparisonView } from "@/features/compare/text/components/diff/ComparisonView";
 import { cn } from "@/utils/uiHelpers";
 import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
+import { PrecisionLevel, ViewMode } from "@/types/settings";
 
 export function EditorView() {
   const { comparisonResult } = useEditorStore();
   const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen, optionsPanelTab, setOptionsPanelTab } = useEditorUIStore();
+  const { settings, updateSettings } = useSettingsStore();
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const isInputEditorToggleDisabled = !hasResult && isInputExpanded;
+  const isWordPrecision = settings.precision === PrecisionLevel.Word;
+  const nextPrecision = isWordPrecision ? PrecisionLevel.Character : PrecisionLevel.Word;
+  const PrecisionIcon = isWordPrecision ? TbAbc : RiCharacterRecognitionLine;
+  const isSplitLayout = settings.viewMode === ViewMode.Split;
+  const nextViewMode = isSplitLayout ? ViewMode.Unified : ViewMode.Split;
+  const LayoutIcon = isSplitLayout ? VscSplitHorizontal : VscSplitVertical;
   const toggleOptionsPanel = useCallback(() => {
     const uiState = useEditorUIStore.getState();
     uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
@@ -66,6 +79,26 @@ export function EditorView() {
       onPanelOpenChange={setIsOptionsPanelOpen}
       activePanelTab={optionsPanelTab}
       onPanelTabChange={setOptionsPanelTab}
+      quickActions={[
+        {
+          id: "precision",
+          title: `Precision: ${settings.precision} - switch to ${nextPrecision}`,
+          label: `Precision: ${settings.precision}`,
+          icon: PrecisionIcon,
+          onClick: () => updateSettings({ precision: nextPrecision }),
+          isActive: settings.precision !== defaultSettings.precision
+        },
+        {
+          id: "layout",
+          title: `Layout: ${settings.viewMode} - switch to ${nextViewMode}`,
+          label: `Layout: ${settings.viewMode}`,
+          icon: LayoutIcon,
+          onClick: () => updateSettings({ viewMode: nextViewMode }),
+          isActive: settings.viewMode !== defaultSettings.viewMode
+        }
+      ]}
+      toolTitle="Text compare"
+      toolIcon={MdCode}
       tabs={[
         { value: "options", title: "Options", icon: MdTune, content: <OptionsView /> },
         { value: "history", title: "Merge History", icon: MdHistory, content: <MergeHistoryView /> }
