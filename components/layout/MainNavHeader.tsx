@@ -6,11 +6,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
+import { RiSideBarFill, RiSideBarLine } from "react-icons/ri";
+import { useWorkspaceSidebar } from "@/components/layout/WorkspaceSidebarContext";
 import { cn } from "@/utils/uiHelpers";
 
 export function MainNavHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const { sidebar } = useWorkspaceSidebar();
+  const SidebarIcon = sidebar?.isOpen ? RiSideBarFill : RiSideBarLine;
 
   const navItems = [
     { href: "/", label: "Home", icon: MdHome },
@@ -84,6 +88,20 @@ export function MainNavHeader() {
   return (
     <header className="relative z-50 flex h-(--header-height) shrink-0 items-center justify-between gap-2 border-b border-border-default bg-bg-primary px-2 sm:px-6">
       <div className="flex h-full min-w-0 flex-1 items-center gap-2 sm:gap-8">
+        {sidebar && (
+          <button
+            type="button"
+            onClick={sidebar.toggleSidebar}
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-hover-overlay hover:text-text-primary sm:hidden",
+              sidebar.isOpen && "bg-hover-overlay text-accent-primary"
+            )}
+            aria-label={sidebar.isOpen ? "Close sidebar" : "Open sidebar"}
+            data-tooltip={sidebar.isOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            <SidebarIcon className="text-xl" />
+          </button>
+        )}
         <Link href="/" className="flex shrink-0 items-center gap-2 rounded-md p-1 sm:gap-3 hover:bg-hover-overlay">
           <Image
             src="/brand/comparecode-logo.png"
@@ -93,7 +111,7 @@ export function MainNavHeader() {
             className="rounded-sm"
             priority
           />
-          <h1 className="bg-linear-to-r from-text-primary to-accent-primary bg-clip-text text-sm font-bold text-transparent sm:text-lg">CompareCode</h1>
+          <h1 className="hidden bg-linear-to-r from-text-primary to-accent-primary bg-clip-text text-sm font-bold text-transparent sm:block sm:text-lg">CompareCode</h1>
         </Link>
         <nav ref={navRef} className="hide-scrollbar relative flex h-full min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden sm:flex-none sm:overflow-visible sm:gap-2">
           <div

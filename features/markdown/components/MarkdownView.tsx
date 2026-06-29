@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { MdHistory, MdTune } from "react-icons/md";
+import { MdArticle, MdBorderColor, MdHistory, MdTune } from "react-icons/md";
+import { VscPreview, VscSplitHorizontal } from "react-icons/vsc";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
 import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { MarkdownHistoryView } from "./MarkdownHistoryView";
@@ -10,7 +11,7 @@ import { MarkdownSplitView } from "./MarkdownSplitView";
 import { MarkdownToolbar } from "./MarkdownToolbar";
 import { useMarkdownFormattingActions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
-import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
+import { defaultMarkdownUISettings, useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 
 function MarkdownLoadingView() {
   return (
@@ -54,7 +55,13 @@ export function MarkdownView() {
   const setOptionsPanelTab = useMarkdownUIStore((state) => state.setOptionsPanelTab);
   const isMarkdownUILoaded = useMarkdownUIStore((state) => state.isLoaded);
   const loadPersistedMarkdownUIState = useMarkdownUIStore((state) => state.loadPersistedMarkdownUIState);
+  const viewMode = useMarkdownUIStore((state) => state.viewMode);
+  const setViewMode = useMarkdownUIStore((state) => state.setViewMode);
   const isMarkdownReady = isMarkdownLoaded && isMarkdownUILoaded;
+  const nextViewMode = viewMode === "editor" ? "split" : viewMode === "split" ? "preview" : "editor";
+  const viewModeLabel = viewMode === "editor" ? "Editor" : viewMode === "split" ? "Split" : "Preview";
+  const nextViewModeLabel = nextViewMode === "editor" ? "Editor" : nextViewMode === "split" ? "Split" : "Preview";
+  const LayoutIcon = viewMode === "editor" ? MdBorderColor : viewMode === "split" ? VscSplitHorizontal : VscPreview;
   const toggleOptionsPanel = useCallback(() => {
     const uiState = useMarkdownUIStore.getState();
     uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
@@ -87,6 +94,18 @@ export function MarkdownView() {
       activePanelTab={optionsPanelTab}
       onPanelTabChange={setOptionsPanelTab}
       contentClassName="max-sm:w-[100dvw] max-sm:max-w-[100dvw]"
+      quickActions={[
+        {
+          id: "layout",
+          title: `Layout: ${viewModeLabel} - switch to ${nextViewModeLabel}`,
+          label: `Layout: ${viewModeLabel}`,
+          icon: LayoutIcon,
+          onClick: () => setViewMode(nextViewMode),
+          isActive: viewMode !== defaultMarkdownUISettings.viewMode
+        }
+      ]}
+      toolTitle="Markdown preview"
+      toolIcon={MdArticle}
       tabs={[
         { value: "options", title: "Options", icon: MdTune, content: <MarkdownOptionsView /> },
         { value: "history", title: "Markdown History", icon: MdHistory, content: <MarkdownHistoryView /> }

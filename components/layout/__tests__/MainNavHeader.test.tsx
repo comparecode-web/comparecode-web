@@ -1,6 +1,9 @@
-import { act, render, screen } from "@testing-library/react";
+import { useEffect } from "react";
+import { MdCode } from "react-icons/md";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MainNavHeader } from "@/components/layout/MainNavHeader";
+import { useWorkspaceSidebar, WorkspaceSidebarProvider } from "@/components/layout/WorkspaceSidebarContext";
 
 const navigationMock = vi.hoisted(() => ({
   pathname: "/text",
@@ -17,6 +20,22 @@ vi.mock("next/navigation", () => ({
 vi.mock("next/image", () => ({
   default: () => null
 }));
+
+function HeaderWithSidebarRegistration() {
+  const { registerSidebar } = useWorkspaceSidebar();
+
+  useEffect(() => {
+    return registerSidebar({
+      id: "test-sidebar",
+      title: "Text compare",
+      icon: MdCode,
+      isOpen: false,
+      toggleSidebar: vi.fn()
+    });
+  }, [registerSidebar]);
+
+  return <MainNavHeader />;
+}
 
 describe("MainNavHeader", () => {
   let frameCallback: FrameRequestCallback | null;
@@ -56,5 +75,17 @@ describe("MainNavHeader", () => {
     const textTab = screen.getByRole("button", { name: "Text compare" });
     expect(textTab).toHaveAttribute("aria-label", "Text compare");
     expect(textTab).not.toHaveAttribute("title");
+  });
+
+  it("shows a mobile sidebar button when a workspace sidebar is registered", async () => {
+    render(
+      <WorkspaceSidebarProvider>
+        <HeaderWithSidebarRegistration />
+      </WorkspaceSidebarProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Open sidebar" })).toBeInTheDocument();
+    });
   });
 });
