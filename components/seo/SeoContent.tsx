@@ -4,35 +4,48 @@ import { FaqAccordion, type FaqItem } from "./FaqAccordion";
 
 const homeFaqItems: Array<FaqItem> = [
   {
-    question: "What is this site for?",
-    answer: "You can compare text, code, and images, and you can preview and edit Markdown files."
+    question: "What is CompareCode for?",
+    answer: "CompareCode was created to give people a free, ad-free place to compare text and code, review image differences, and preview Markdown files in one browser-based workspace. The goal is a customizable, user-friendly tool focused on useful features instead of ads, paywalls, or distracting upsells."
+  },
+  {
+    question: "How do I use text compare?",
+    answer: "Paste the original text on one side and the modified text on the other, then run the comparison. After the diff is generated, you can merge changes between the original and modified versions, switch between word and character precision, choose split or unified layout, and fine-tune helper options for your workflow."
+  },
+  {
+    question: "How do I use image comparison?",
+    answer: "Choose two images from your computer or drag and drop them into the image comparison tool. CompareCode will compare them automatically. If the image dimensions do not match, you can use auto align to fit them together, or adjust the alignment manually if you want more control."
+  },
+  {
+    question: "How do I use Markdown preview?",
+    answer: "Drop a Markdown or text file into the editor, paste content from your clipboard, or write directly in CompareCode. You can preview the rendered result, insert tables and alerts, and format the document with common Markdown actions while you work."
+  },
+  {
+    question: "How does history work, and what is saved?",
+    answer: "CompareCode saves text compare and image comparison sessions in your browser so you can reopen them later. You can restore previous items, bookmark important comparisons, or delete entries you no longer need."
+  },
+  {
+    question: "How can I customize CompareCode?",
+    answer: "The settings page lets you choose a theme, adjust text comparison highlight colors, and configure the date and time format used in the history view."
   },
   {
     question: "Do I need an account?",
     answer: "No. CompareCode runs directly in your browser, so the main workflows do not require registration or sign-in."
   },
   {
-    question: "Is the site free?",
-    answer: "Yes, and it will stay free. The open-source code is available on GitHub. If you have any suggestion, feedback is welcome."
+    question: "Where is my data stored?",
+    answer: "Comparison history is stored locally in your browser's IndexedDB storage. Markdown drafts use browser storage as well, so you can keep working without creating an account."
   },
   {
-    question: "Where is comparison history stored?",
-    answer: "Comparison history is stored locally in your browser's IndexedDB storage. The current Markdown draft is stored in localStorage, and Markdown undo/redo session history is stored in sessionStorage."
+    question: "Is CompareCode free?",
+    answer: "Yes. CompareCode is free and open source. Feedback, bug reports, and feature ideas are welcome through the GitHub repository."
   },
   {
     question: "Are there ads?",
-    answer: "No, and there will not be ads. The goal is to keep the interface fast, calm, and user-friendly. This site is not where I am trying to get rich."
+    answer: "No. CompareCode is designed to stay calm, fast, and focused on practical comparison workflows without ads or paywalls."
   },
   {
     question: "I found a bug. What should I do?",
     answer: "Please report it through the GitHub repository linked below.",
-    links: [
-      { href: "https://github.com/comparecode-web/comparecode-web", label: "comparecode-web/comparecode-web" }
-    ]
-  },
-  {
-    question: "How can I support the site?",
-    answer: "Reporting bugs or sharing ideas is already a big help. You can find more information on the GitHub repository.",
     links: [
       { href: "https://github.com/comparecode-web/comparecode-web", label: "comparecode-web/comparecode-web" }
     ]
