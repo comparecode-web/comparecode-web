@@ -19,20 +19,16 @@ interface FaqAccordionProps {
 }
 
 export function FaqAccordion({ items }: FaqAccordionProps) {
-  const [openItems, setOpenItems] = useState<Array<string>>([]);
+  const [openItem, setOpenItem] = useState<string | null>(null);
 
   const toggleItem = (question: string) => {
-    setOpenItems((current) => (
-      current.includes(question)
-        ? current.filter((item) => item !== question)
-        : [...current, question]
-    ));
+    setOpenItem((current) => current === question ? null : question);
   };
 
   return (
     <div className="divide-y divide-border-default rounded-lg border border-border-default bg-bg-primary">
       {items.map((item) => {
-        const isOpen = openItems.includes(item.question);
+        const isOpen = openItem === item.question;
         const panelId = `faq-${item.question.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
 
         return (

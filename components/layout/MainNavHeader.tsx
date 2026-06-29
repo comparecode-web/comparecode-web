@@ -136,7 +136,7 @@ export function MainNavHeader() {
                 aria-label={label}
                 onClick={() => navigateTo(href)}
                 className={cn(
-                  "group relative z-10 flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium) active:scale-95",
+                  "group relative z-10 flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold outline-none transition-colors duration-(--duration-medium) active:scale-95 max-[360px]:px-2",
                   isActiveIndicatorVisible
                     ? "text-white"
                     : isActive
@@ -162,7 +162,7 @@ export function MainNavHeader() {
           href="https://github.com/comparecode-web/comparecode-web"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 rounded px-2 py-1.5 text-sm font-semibold text-text-secondary transition-all duration-(--duration-medium) hover:bg-hover-overlay hover:text-accent-primary sm:px-4"
+          className="hidden items-center gap-2 rounded px-2 py-1.5 text-sm font-semibold text-text-secondary transition-all duration-(--duration-medium) hover:bg-hover-overlay hover:text-accent-primary min-[360px]:flex sm:px-4"
           title="GitHub"
         >
           <FaGithub className="text-xl" />
