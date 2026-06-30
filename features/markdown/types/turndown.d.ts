@@ -15,6 +15,7 @@ declare module "turndown" {
   type TurndownPlugin = (service: TurndownService) => void;
 
   export default class TurndownService {
+    escape: (value: string) => string;
     constructor(options?: TurndownOptions);
     turndown(input: string | Node): string;
     use(plugin: TurndownPlugin | TurndownPlugin[]): this;

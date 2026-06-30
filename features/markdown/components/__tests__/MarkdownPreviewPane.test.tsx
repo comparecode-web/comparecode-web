@@ -81,6 +81,15 @@ function createThankYouLine(note: ProjectNote): string {
     expect(container.querySelector("pre code")).toBeInTheDocument();
   });
 
+  it("keeps multiline inline code inside paragraphs as inline code", () => {
+    const { container } = renderPreview("Paragraph with `inline\ncode` text.");
+    const paragraph = container.querySelector("p");
+
+    expect(paragraph).toBeInTheDocument();
+    expect(paragraph?.querySelector("code")).toBeInTheDocument();
+    expect(paragraph?.querySelector("pre")).not.toBeInTheDocument();
+  });
+
   it("does not treat Mermaid edge labels with pipes as malformed tables", () => {
     const { container } = renderPreview(`\`\`\`mermaid
 flowchart TD
@@ -199,6 +208,56 @@ workspace: Local browser draft
     expect(screen.getByText("underlines")).toHaveClass("underline");
     expect(screen.getByText("underlines")).not.toHaveClass("decoration-accent-primary");
     expect(screen.getByText("Ctrl").tagName).toBe("KBD");
+  });
+
+  it("renders details and summary sections with nested Markdown content", () => {
+    const { container } = renderPreview(`### Title
+
+<details>
+<summary>Test section</summary>
+
+- File: 1
+- File: 2
+
+</details>
+
+### After`);
+    const details = container.querySelector("details");
+    const summary = container.querySelector("summary");
+
+    expect(details).toBeInTheDocument();
+    expect(summary).toHaveTextContent("Test section");
+    expect(screen.getByText("File: 1")).toBeInTheDocument();
+    expect(screen.getByText("File: 2")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "After" })).toBeInTheDocument();
+  });
+
+  it("preserves open details and safe inline HTML tags", () => {
+    const { container } = renderPreview(`<details open>
+<summary>Already open</summary>
+
+Use <sub>subscript</sub>, <sup>superscript</sup>, and <ins>inserted</ins>.
+
+</details>`);
+    const details = container.querySelector("details");
+
+    expect(details).toHaveAttribute("open");
+    expect(screen.getByText("subscript").tagName).toBe("SUB");
+    expect(screen.getByText("superscript").tagName).toBe("SUP");
+    expect(screen.getByText("inserted").tagName).toBe("INS");
+  });
+
+  it("removes unsafe attributes from details sections", () => {
+    const { container } = renderPreview(`<details open onclick="alert(1)">
+<summary onclick="alert(2)">Safe summary</summary>
+
+Safe content
+
+</details>`);
+
+    expect(container.querySelector("details")).toHaveAttribute("open");
+    expect(container.querySelector("details")).not.toHaveAttribute("onclick");
+    expect(container.querySelector("summary")).not.toHaveAttribute("onclick");
   });
 
   it("renders task list checkboxes as controlled read-only inputs", () => {
