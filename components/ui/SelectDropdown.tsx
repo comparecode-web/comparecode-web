@@ -142,7 +142,7 @@ export function SelectDropdown({
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-controls={listboxId}
+        aria-controls={isOpen ? listboxId : undefined}
         className={cn(
           "w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-2 text-sm text-left outline-none focus:border-accent-primary focus-visible:ring-1 focus-visible:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)",
           triggerClassName

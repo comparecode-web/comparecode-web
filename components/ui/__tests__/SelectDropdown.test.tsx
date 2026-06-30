@@ -28,6 +28,20 @@ describe("SelectDropdown", () => {
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
+  it("only links the trigger to the listbox while open", async () => {
+    const user = userEvent.setup();
+    render(<ControlledSelect />);
+
+    const trigger = screen.getByRole("button", { name: "One" });
+    expect(trigger).not.toHaveAttribute("aria-controls");
+
+    await user.click(trigger);
+
+    const listboxId = trigger.getAttribute("aria-controls");
+    expect(listboxId).toBeTruthy();
+    expect(document.getElementById(listboxId ?? "")).toBeInTheDocument();
+  });
+
   it("supports keyboard listbox navigation", async () => {
     const user = userEvent.setup();
     render(<ControlledSelect />);
