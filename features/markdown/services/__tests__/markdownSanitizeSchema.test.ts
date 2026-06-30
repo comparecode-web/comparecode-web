@@ -10,7 +10,7 @@ describe("markdownSanitizeSchema", () => {
   });
 
   it("allows safe table span attributes and inline formatting tags", () => {
-    expect(markdownSanitizeSchema.tagNames).toEqual(expect.arrayContaining(["kbd", "mark", "u"]));
+    expect(markdownSanitizeSchema.tagNames).toEqual(expect.arrayContaining(["ins", "kbd", "mark", "sub", "sup", "u"]));
     expect(markdownSanitizeSchema.attributes?.th).toEqual(expect.arrayContaining([
       ["align", "left", "center", "right"],
       "colSpan",
@@ -37,5 +37,12 @@ describe("markdownSanitizeSchema", () => {
       "height",
       "width"
     ]));
+  });
+
+  it("allows collapsed details sections without broad event attributes", () => {
+    expect(markdownSanitizeSchema.tagNames).toEqual(expect.arrayContaining(["details", "summary"]));
+    expect(markdownSanitizeSchema.attributes?.details).toEqual(expect.arrayContaining(["open"]));
+    expect(markdownSanitizeSchema.attributes?.details).not.toContain("onclick");
+    expect(markdownSanitizeSchema.attributes?.summary).not.toContain("onclick");
   });
 });

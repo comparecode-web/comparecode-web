@@ -21,10 +21,13 @@ function getTurndownService(): TurndownService {
     turndownService = new TurndownService({
       headingStyle: "atx",
       codeBlockStyle: "fenced",
+      fence: "```",
+      strongDelimiter: "**",
       bulletListMarker: "-"
     });
+    turndownService.escape = (value) => value;
     turndownService.use(gfm);
-    turndownService.keep(["mark", "u", "kbd"]);
+    turndownService.keep(["details", "ins", "kbd", "mark", "sub", "summary", "sup", "u"]);
   }
 
   return turndownService;
@@ -34,8 +37,82 @@ function normalizePastedMarkdown(value: string): string {
   return value
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
+    .replace(/\u00a0/g, " ")
     .replace(/^([ \t]*[-+*]) {2,}/gm, "$1 ")
     .trim();
+}
+
+function normalizePlainClipboardText(value: string): string {
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\u00a0/g, " ");
+}
+
+function looksLikeMarkdownSource(value: string): boolean {
+  const normalized = normalizePlainClipboardText(value);
+
+  return [
+    /^ {0,3}#{1,6}\s+\S/m,
+    /^ {0,3}(?:[-+*]|\d+\.)\s+\S/m,
+    /^ {0,3}- \[[ xX]\]\s+\S/m,
+    /^ {0,3}>\s?\S/m,
+    /^ {0,3}(?:`{3,}|~{3,})/m,
+    /^ {0,3}\|.+\|\s*$/m,
+    /^ {0,3}\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/m,
+    /`[^`\n]+`/,
+    /\*\*[^*\n]+\*\*/,
+    /~~[^~\n]+~~/,
+    /!?\[[^\]\n]+\]\([^) \n]+(?:\s+"[^"\n]+")?\)/,
+    /^\[[^\]\n]+\]:\s+\S+/m,
+    /<\/?(?:details|summary)(?:\s|>)/i,
+    /^---\n[\s\S]*?\n---(?:\n|$)/
+  ].some((pattern) => pattern.test(normalized));
+}
+
+function isSafeUrl(value: string, allowedProtocols: Array<string>): boolean {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return true;
+  }
+
+  if (trimmedValue.startsWith("#") || trimmedValue.startsWith("/") || trimmedValue.startsWith("./") || trimmedValue.startsWith("../")) {
+    return true;
+  }
+
+  try {
+    const url = new URL(trimmedValue, "https://comparecode.local");
+    return allowedProtocols.includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeClipboardHtml(document: Document): void {
+  document.querySelectorAll("script, style, iframe, object, embed, link, meta").forEach((element) => {
+    element.remove();
+  });
+
+  document.body.querySelectorAll("*").forEach((element) => {
+    Array.from(element.attributes).forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value;
+
+      if (name.startsWith("on") || name === "style" || name === "srcdoc") {
+        element.removeAttribute(attribute.name);
+        return;
+      }
+
+      if ((name === "href" || name === "xlink:href") && !isSafeUrl(value, ["http:", "https:", "mailto:"])) {
+        element.removeAttribute(attribute.name);
+        return;
+      }
+
+      if (name === "src" && !isSafeUrl(value, ["http:", "https:"])) {
+        element.removeAttribute(attribute.name);
+      }
+    });
+  });
 }
 
 function escapeTableCell(value: string): string {
@@ -113,8 +190,9 @@ function convertHtmlToMarkdown(html: string): string {
 
   const parser = new DOMParser();
   const document = parser.parseFromString(html, "text/html");
+  sanitizeClipboardHtml(document);
   const markdownTables = convertTablesToMarkdown(document);
-  let markdown = getTurndownService().turndown(document.body.innerHTML);
+  let markdown = getTurndownService().turndown(document.body.innerHTML.replace(/&(?:nbsp|#160);/g, " "));
 
   markdownTables.forEach((tableMarkdown, token) => {
     markdown = markdown.replace(token, tableMarkdown);
@@ -126,6 +204,11 @@ function convertHtmlToMarkdown(html: string): string {
 function getClipboardMarkdown(clipboardData: DataTransfer): string {
   const html = clipboardData.getData("text/html");
   const plainText = clipboardData.getData("text/plain");
+  const normalizedPlainText = normalizePlainClipboardText(plainText);
+
+  if (normalizedPlainText.trim() && looksLikeMarkdownSource(normalizedPlainText)) {
+    return normalizedPlainText;
+  }
 
   if (html.trim()) {
     try {
@@ -140,7 +223,7 @@ function getClipboardMarkdown(clipboardData: DataTransfer): string {
     }
   }
 
-  return plainText;
+  return normalizedPlainText;
 }
 
 export function buildMarkdownPasteResult(input: MarkdownPasteInput): MarkdownPasteResult | null {

@@ -6,14 +6,23 @@ export const markdownSanitizeSchema = {
   ...defaultSchema,
   tagNames: [
     ...(defaultSchema.tagNames ?? []),
+    "details",
     "div",
+    "ins",
     "kbd",
     "mark",
     "p",
+    "sub",
+    "summary",
+    "sup",
     "u"
   ],
   attributes: {
     ...defaultAttributes,
+    details: [
+      ...(defaultAttributes.details ?? []),
+      "open"
+    ],
     div: [
       ...(defaultAttributes.div ?? []),
       ["align", "left", "center", "right"]

@@ -89,6 +89,16 @@ Centered note.
 Right aligned note.
 </div>
 
+## Collapsed Note
+
+<details>
+<summary>Short checklist</summary>
+
+- Review the Markdown preview
+- Keep the useful notes
+
+</details>
+
 ## Simple Sharing Plan
 
 ### Numbered List

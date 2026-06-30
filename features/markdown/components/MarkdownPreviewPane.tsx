@@ -90,15 +90,23 @@ interface MarkerFrontmatterSection {
 
 interface MarkdownNodePosition {
   position?: {
-    start?: { line?: number };
-    end?: { line?: number };
+    start?: { column?: number; line?: number };
+    end?: { column?: number; line?: number };
   };
 }
 
 function isBlockCodeNode(node: unknown, code: string, className: string | undefined): boolean {
   const position = (node as MarkdownNodePosition | undefined)?.position;
 
-  return Boolean(className) || code.includes("\n") || Boolean(position?.start?.line && position?.end?.line && position.end.line > position.start.line);
+  return Boolean(className) || Boolean(
+    position?.start?.line
+    && position?.end?.line
+    && position.end.line > position.start.line
+    && position.start.column !== undefined
+    && position.start.column <= 4
+    && position.end.column !== undefined
+    && position.end.column <= 4
+  );
 }
 
 function renderRawMarkdown(value: string, key?: string) {
@@ -113,29 +121,76 @@ function renderRawMarkdown(value: string, key?: string) {
   );
 }
 
-function splitMarkdownBlocks(value: string): Array<string> {
+function countPatternMatches(value: string, pattern: RegExp): number {
+  return Array.from(value.matchAll(pattern)).length;
+}
+
+function getDetailsDepthChange(line: string): number {
+  const closingCount = countPatternMatches(line, /<\/details\s*>/gi);
+  const openingCount = countPatternMatches(line, /<details(?:\s|>)/gi);
+
+  return openingCount - closingCount;
+}
+
+function splitMarkdownBlocks(value: string): Array<MarkdownSourceBlock> {
   const normalized = value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   const lines = normalized.split("\n");
-  const blocks: Array<string> = [];
-  let buffer: Array<string> = [];
+  const blocks: Array<MarkdownSourceBlock> = [];
+  let markdownBuffer: Array<string> = [];
+  let paragraphBuffer: Array<string> = [];
   let inFence = false;
   let fenceChar = "";
   let fenceLength = 0;
   let inMathBlock = false;
+  let detailsDepth = 0;
 
-  const flush = () => {
-    const source = buffer.join("\n").trimEnd();
+  const flushMarkdown = () => {
+    const source = markdownBuffer.join("\n").trimEnd();
     if (source.trim()) {
-      blocks.push(source);
+      blocks.push({
+        source,
+        key: `markdown-block-${blocks.length}`,
+        isRaw: false
+      });
     }
 
-    buffer = [];
+    markdownBuffer = [];
+  };
+
+  const flushParagraph = () => {
+    const source = paragraphBuffer.join("\n").trimEnd();
+    if (!source.trim()) {
+      paragraphBuffer = [];
+      return;
+    }
+
+    if (isInvalidTableLikeBlock(source)) {
+      flushMarkdown();
+      blocks.push({
+        source,
+        key: `markdown-block-${blocks.length}`,
+        isRaw: true
+      });
+    } else {
+      markdownBuffer.push(...paragraphBuffer);
+    }
+
+    paragraphBuffer = [];
   };
 
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
     const trimmed = line.trim();
     const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    const isParagraphBoundary = !inFence && !inMathBlock && detailsDepth === 0 && !trimmed;
+
+    if (isParagraphBoundary) {
+      flushParagraph();
+      markdownBuffer.push(line);
+      continue;
+    }
+
+    paragraphBuffer.push(line);
 
     if (fenceMatch) {
       const marker = fenceMatch[1];
@@ -152,15 +207,13 @@ function splitMarkdownBlocks(value: string): Array<string> {
       inMathBlock = !inMathBlock;
     }
 
-    if (!inFence && !inMathBlock && !trimmed) {
-      flush();
-      continue;
+    if (!inFence && !inMathBlock) {
+      detailsDepth = Math.max(0, detailsDepth + getDetailsDepthChange(line));
     }
-
-    buffer.push(line);
   }
 
-  flush();
+  flushParagraph();
+  flushMarkdown();
   return blocks;
 }
 
@@ -179,6 +232,10 @@ function isInvalidTableLikeBlock(value: string): boolean {
     return false;
   }
 
+  if (/<\/?(details|summary)(?:\s|>)/i.test(value)) {
+    return false;
+  }
+
   const lines = value.split("\n").filter((line) => line.trim());
   const pipeLines = lines.filter((line) => line.includes("|"));
 
@@ -194,11 +251,7 @@ function isInvalidTableLikeBlock(value: string): boolean {
 }
 
 function buildMarkdownSourceBlocks(value: string): Array<MarkdownSourceBlock> {
-  return splitMarkdownBlocks(value).map((source, index) => ({
-    source,
-    key: `markdown-block-${index}`,
-    isRaw: isInvalidTableLikeBlock(source)
-  }));
+  return splitMarkdownBlocks(value);
 }
 
 function extractMarkerFrontmatter(markdownBeforeMarker: string): MarkerFrontmatterSection {
@@ -242,6 +295,20 @@ const markdownComponents: Components = {
           {children}
         </table>
       </div>
+    );
+  },
+  details({ children, open }) {
+    return (
+      <details open={open} className="my-3 rounded-md border border-border-default bg-bg-secondary/40 px-3 py-2 text-text-primary">
+        {children}
+      </details>
+    );
+  },
+  summary({ children }) {
+    return (
+      <summary className="cursor-pointer font-semibold text-text-primary outline-none marker:text-text-secondary hover:text-accent-hover focus-visible:text-accent-primary">
+        {children}
+      </summary>
     );
   },
   li({ children, className }) {
@@ -291,6 +358,9 @@ const markdownComponents: Components = {
   },
   u({ children }) {
     return <u className="underline">{children}</u>;
+  },
+  ins({ children }) {
+    return <ins className="underline">{children}</ins>;
   },
   kbd({ children }) {
     return (
