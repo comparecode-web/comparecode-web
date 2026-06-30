@@ -37,6 +37,71 @@ describe("buildMarkdownPasteResult", () => {
     expect(result?.value).toBe("**Markdown** text this");
   });
 
+  it("does not escape Markdown syntax from pasted HTML", () => {
+    const result = buildMarkdownPasteResult({
+      value: "",
+      selectionStart: 0,
+      selectionEnd: 0,
+      clipboardData: clipboardData({
+        "text/html": "<p># Heading</p><p>`inline code` and **bold** [link](https://example.com)</p>",
+        "text/plain": "# Heading\n\n`inline code` and **bold** [link](https://example.com)"
+      })
+    });
+
+    expect(result?.value).toBe("# Heading\n\n`inline code` and **bold** [link](https://example.com)");
+  });
+
+  it("keeps compact plain Markdown when HTML would add extra blank lines", () => {
+    const markdown = `# Heading
+Text line
+- First
+- Second
+\`inline code\``;
+    const result = buildMarkdownPasteResult({
+      value: "",
+      selectionStart: 0,
+      selectionEnd: 0,
+      clipboardData: clipboardData({
+        "text/html": "<h1>Heading</h1><p>Text line</p><ul><li>First</li><li>Second</li></ul><p><code>inline code</code></p>",
+        "text/plain": markdown
+      })
+    });
+
+    expect(result?.value).toBe(markdown);
+    expect(result?.value.split("\n")).toHaveLength(5);
+  });
+
+  it("normalizes non-breaking spaces from pasted HTML", () => {
+    const result = buildMarkdownPasteResult({
+      value: "",
+      selectionStart: 0,
+      selectionEnd: 0,
+      clipboardData: clipboardData({
+        "text/html": "<p>First&nbsp;Second&#160;Third</p>"
+      })
+    });
+
+    expect(result?.value).toBe("First Second Third");
+  });
+
+  it("strips unsafe clipboard HTML before Markdown conversion", () => {
+    const result = buildMarkdownPasteResult({
+      value: "",
+      selectionStart: 0,
+      selectionEnd: 0,
+      clipboardData: clipboardData({
+        "text/html": `<div onclick="alert(1)">Safe text<script>alert(1)</script><a href="javascript:alert(1)">bad link</a><img src="javascript:alert(1)" alt="bad image"></div>`
+      })
+    });
+
+    expect(result?.value).toContain("Safe text");
+    expect(result?.value).toContain("bad link");
+    expect(result?.value).not.toContain("alert(1)");
+    expect(result?.value).not.toContain("bad image");
+    expect(result?.value).not.toContain("javascript:");
+    expect(result?.value).not.toContain("onclick");
+  });
+
   it("keeps pasted HTML tables as GitHub-flavored Markdown tables", () => {
     const result = buildMarkdownPasteResult({
       value: "",
