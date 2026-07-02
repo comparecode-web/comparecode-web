@@ -54,8 +54,12 @@ const homeFaqItems: Array<FaqItem> = [
 
 function SeoBand({ children, className = "" }: Readonly<{ children: ReactNode; className?: string }>) {
   return (
-    <section className={`w-full border-t border-border-default bg-bg-primary px-4 py-10 sm:px-6 lg:px-8 ${className}`}>
-      <div className="mx-auto max-w-6xl">{children}</div>
+    <section className={`relative w-full border-t border-border-default bg-bg-primary px-4 py-12 sm:px-6 sm:py-16 lg:px-8 ${className}`}>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b from-accent-primary/6 to-transparent"
+      />
+      <div className="relative mx-auto max-w-6xl">{children}</div>
     </section>
   );
 }
@@ -63,23 +67,32 @@ function SeoBand({ children, className = "" }: Readonly<{ children: ReactNode; c
 function SectionHeading({ eyebrow, title, body }: Readonly<{ eyebrow: string; title: string; body: string }>) {
   return (
     <div className="max-w-3xl">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-primary">{eyebrow}</p>
-      <h2 className="mt-2 text-2xl font-extrabold text-text-primary sm:text-3xl">{title}</h2>
-      <p className="mt-3 text-sm leading-6 text-text-secondary sm:text-base">{body}</p>
+      <p className="inline-flex items-center rounded-full border border-accent-primary/30 bg-accent-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-accent-primary">
+        {eyebrow}
+      </p>
+      <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-text-primary sm:text-3xl">{title}</h2>
+      <p className="mt-3 text-sm leading-6 text-text-secondary sm:text-base sm:leading-7">{body}</p>
     </div>
   );
 }
 
 function FeatureGrid({ items }: Readonly<{ items: Array<{ title: string; body: string; icon: ComponentType<{ className?: string }> }> }>) {
   return (
-    <div className="mt-8 grid gap-4 md:grid-cols-3">
+    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {items.map(({ title, body, icon: Icon }) => (
-        <article key={title} className="rounded-lg border border-border-default bg-bg-secondary p-4">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md border border-border-default bg-bg-primary text-accent-primary">
+        <article
+          key={title}
+          className="group relative overflow-hidden rounded-xl border border-border-default bg-bg-secondary p-5 transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-lg"
+        >
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-accent-primary opacity-0 blur-2xl transition-opacity duration-(--duration-medium) group-hover:opacity-[0.1]"
+          />
+          <div className="relative mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-accent-primary/10 text-accent-primary transition-transform duration-(--duration-medium) sm:group-hover:scale-110">
             <Icon className="text-xl" />
           </div>
-          <h3 className="text-base font-bold text-text-primary">{title}</h3>
-          <p className="mt-2 text-sm leading-6 text-text-secondary">{body}</p>
+          <h3 className="relative text-base font-bold text-text-primary">{title}</h3>
+          <p className="relative mt-2 text-sm leading-6 text-text-secondary">{body}</p>
         </article>
       ))}
     </div>
@@ -90,7 +103,10 @@ function TagList({ items }: Readonly<{ items: Array<string> }>) {
   return (
     <div className="mt-5 flex flex-wrap gap-2">
       {items.map((item) => (
-        <span key={item} className="rounded-md border border-border-default bg-bg-secondary px-3 py-1.5 text-sm font-semibold text-text-primary">
+        <span
+          key={item}
+          className="rounded-full border border-border-default bg-bg-primary px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors duration-(--duration-short) hover:border-accent-primary hover:text-accent-primary sm:text-sm"
+        >
           {item}
         </span>
       ))}
@@ -132,23 +148,35 @@ export function HomeSeoContent() {
         ]}
       />
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <h3 className="text-xl font-bold text-text-primary">How it works</h3>
-          <ol className="mt-4 grid gap-3 text-sm leading-6 text-text-secondary">
-            <li><span className="font-bold text-text-primary">1.</span> Choose text comparison, image comparison, or Markdown preview.</li>
-            <li><span className="font-bold text-text-primary">2.</span> Paste text, drop images, write Markdown, or use the browser inputs for your files.</li>
-            <li><span className="font-bold text-text-primary">3.</span> Review highlighted differences, adjust options, merge text changes, or preview Markdown output.</li>
+      <div className="mt-12 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-xl border border-border-default bg-bg-secondary p-5 sm:p-6">
+          <h3 className="text-lg font-bold text-text-primary sm:text-xl">How it works</h3>
+          <ol className="mt-5 grid gap-4 text-sm leading-6 text-text-secondary">
+            {[
+              "Choose text comparison, image comparison, or Markdown preview.",
+              "Paste text, drop images, write Markdown, or use the browser inputs for your files.",
+              "Review highlighted differences, adjust options, merge text changes, or preview Markdown output."
+            ].map((step, index) => (
+              <li key={step} className="flex items-start gap-3">
+                <span
+                  aria-hidden
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-primary/10 text-xs font-bold text-accent-primary"
+                >
+                  {index + 1}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
           </ol>
         </div>
-        <div>
-          <h3 className="text-xl font-bold text-text-primary">Supported comparison types</h3>
+        <div className="rounded-xl border border-border-default bg-bg-secondary p-5 sm:p-6">
+          <h3 className="text-lg font-bold text-text-primary sm:text-xl">Supported comparison types</h3>
           <TagList items={["Code", "Plain text", "JSON", "XML", "HTML", "CSS", "JavaScript", "TypeScript", "Markdown", "Mermaid", "KaTeX", "Logs", "Screenshots", "Images"]} />
         </div>
       </div>
 
-      <div className="mt-10">
-        <h3 className="text-xl font-bold text-text-primary">CompareCode FAQ</h3>
+      <div className="mt-12">
+        <h3 className="text-lg font-bold text-text-primary sm:text-xl">CompareCode FAQ</h3>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
           Quick answers about what CompareCode supports, how it works, and what is stored locally in your browser.
         </p>
