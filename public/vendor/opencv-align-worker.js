@@ -29,7 +29,7 @@ self.onmessage = async (event) => {
     const originalDescriptors = new cv.Mat();
     const modifiedDescriptors = new cv.Mat();
     const matches = new cv.DMatchVectorVector();
-    const orb = new cv.ORB(500, 1.2, 6, 20, 0, 2, cv.ORB_HARRIS_SCORE, 25, 16);
+    const orb = new cv.ORB(800, 1.2, 6, 20, 0, 2, cv.ORB_HARRIS_SCORE, 25, 16);
     const matcher = new cv.BFMatcher(cv.NORM_HAMMING, false);
 
     orb.detectAndCompute(originalGray, new cv.Mat(), originalKeypoints, originalDescriptors);
@@ -43,14 +43,14 @@ self.onmessage = async (event) => {
       if (pair.size() < 2) continue;
       const best = pair.get(0);
       const second = pair.get(1);
-      if (best.distance >= second.distance * 0.76) continue;
+      if (best.distance >= second.distance * 0.75) continue;
       const modifiedPoint = modifiedKeypoints.get(best.queryIdx).pt;
       const originalPoint = originalKeypoints.get(best.trainIdx).pt;
       from.push(modifiedPoint.x, modifiedPoint.y);
       to.push(originalPoint.x, originalPoint.y);
     }
 
-    if (from.length < 16) {
+    if (from.length < 20) {
       throw new Error("Not enough OpenCV matches");
     }
 
