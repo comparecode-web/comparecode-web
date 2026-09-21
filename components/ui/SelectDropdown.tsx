@@ -11,6 +11,7 @@ export interface SelectDropdownOption {
 }
 
 interface SelectDropdownProps {
+  label?: string;
   value: string;
   options: Array<SelectDropdownOption>;
   onChange: (value: string) => void;
@@ -20,6 +21,7 @@ interface SelectDropdownProps {
 }
 
 export function SelectDropdown({
+  label,
   value,
   options,
   onChange,
@@ -141,6 +143,7 @@ export function SelectDropdown({
         }}
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
+        aria-label={label ? `${label}: ${selectedLabel}` : undefined}
         aria-expanded={isOpen}
         aria-controls={isOpen ? listboxId : undefined}
         className={cn(

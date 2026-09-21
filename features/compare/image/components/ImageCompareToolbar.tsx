@@ -14,7 +14,7 @@ import {
 } from "../store/useImageCompareStore";
 
 const MODES: Array<{ value: ImageCompareMode; label: string }> = [
-  { value: "side-by-side", label: "Side by Side" },
+  { value: "side-by-side", label: "Side by side" },
   { value: "fade", label: "Fade" },
   { value: "slider", label: "Slider" },
   { value: "diff", label: "Advanced" },
@@ -28,9 +28,9 @@ const DIFF_ALGORITHMS: { value: DiffAlgorithm; label: string }[] = [
   { value: "perceptual",    label: "Perceptual (ΔE)" },
   { value: "heatmap",       label: "Heatmap" },
   { value: "ssim",          label: "SSIM" },
-  { value: "edge",          label: "Edge / Outline" },
-  { value: "threshold",     label: "Threshold Mask" },
-  { value: "channel-split", label: "Channel Split" },
+  { value: "edge",          label: "Edge / outline" },
+  { value: "threshold",     label: "Threshold mask" },
+  { value: "channel-split", label: "Channel split" },
 ];
 
 export function ImageCompareToolbar() {
@@ -47,14 +47,23 @@ export function ImageCompareToolbar() {
   const hasBothImages = !!(originalImage && modifiedImage);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border-default bg-bg-primary px-3 py-2 sm:px-4">
-      <div className="w-full sm:w-auto sm:min-w-120">
+    <div data-tool-controls className="relative z-30 flex min-h-11 max-h-[40%] shrink-0 flex-wrap items-center gap-2 overflow-y-auto rounded-xl border border-border-default bg-bg-primary px-2 py-1 shadow-sm custom-scrollbar">
+      <div className="hidden min-w-0 @2xl/image:block">
         <SelectionBar<ImageCompareMode>
           options={MODES}
           value={compareMode}
           onChange={setCompareMode}
+          buttonClassName="whitespace-nowrap px-3"
         />
       </div>
+      <SelectDropdown
+        label="Comparison mode"
+        value={compareMode}
+        options={MODES}
+        onChange={(value) => setCompareMode(value as ImageCompareMode)}
+        className="w-36 @2xl/image:hidden"
+        triggerClassName="py-1.5"
+      />
 
       {compareMode === "diff" && (
         <div className="flex items-center gap-2">
@@ -79,7 +88,7 @@ export function ImageCompareToolbar() {
         leftIcon={<MdTune className="text-lg" />}
         title="Align images"
       >
-        Align images
+        <span className="hidden @2xl/image:inline">Align images</span>
       </Button>
 
       <ClearButton onClear={clearAll} disabled={!hasImages} />

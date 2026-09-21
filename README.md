@@ -11,12 +11,12 @@ It is designed for local, account-free review workflows: compare code snippets, 
 
 The project is organized into clear modules:
 
-- **Text:** Text and code comparison logic and UI.
-- **Image:** Image comparison logic and UI.
-- **Markdown:** Markdown editor, preview, formatting, paste handling, and session history.
+- **Text:** Text and code comparison logic and UI. See [Text Compare architecture](docs/architecture/text-compare.md).
+- **Image:** Image comparison logic and UI. See [Image Compare architecture](docs/architecture/image-compare.md).
+- **Markdown:** Markdown editor, preview, formatting, paste handling, and session history. See [Markdown architecture](docs/architecture/markdown.md).
 - **Shared:** Common types, utilities, and reusable building blocks used by multiple modules.
 
-When contributing, keep module boundaries strict: implement module-specific changes inside that module, and move reusable cross-module code to Shared.
+When contributing, keep module boundaries strict: implement module-specific changes inside that module, and move only genuinely reusable cross-module code to its established shared owner.
 
 ## 🚀 Main Features
 

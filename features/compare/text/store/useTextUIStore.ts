@@ -3,6 +3,8 @@ import { create } from "zustand";
 interface EditorUIState {
   isInputExpanded: boolean;
   isComparing: boolean;
+  showTextTest: boolean;
+  setShowTextTest: (show: boolean) => void;
   isOptionsPanelOpen: boolean;
   optionsPanelTab: "options" | "history";
   toggleInputPanel: () => void;
@@ -15,7 +17,9 @@ interface EditorUIState {
 export const useEditorUIStore = create<EditorUIState>((set) => ({
   isInputExpanded: true,
   isComparing: false,
-  isOptionsPanelOpen: true,
+  showTextTest: true,
+  setShowTextTest: (showTextTest) => set({ showTextTest }),
+  isOptionsPanelOpen: false,
   optionsPanelTab: "options",
   toggleInputPanel: () => set((state) => ({ isInputExpanded: !state.isInputExpanded })),
   setIsInputExpanded: (expanded: boolean) => set({ isInputExpanded: expanded }),

@@ -418,10 +418,10 @@ export function ImageAlignmentPanel() {
 
   return (
     <div className="fixed inset-0 z-50 flex bg-black/55 p-3 sm:p-5">
-      <div className="flex min-h-0 w-full overflow-hidden rounded-lg border border-border-default bg-bg-primary shadow-xl">
+      <div className="flex min-h-0 w-full flex-col overflow-hidden rounded-xl border border-border-default bg-bg-primary shadow-xl md:flex-row">
         <div
           ref={stageRef}
-          className={cn("relative min-w-0 flex-1 overflow-hidden bg-bg-secondary cursor-grab active:cursor-grabbing", isSpacePressed && "cursor-grabbing")}
+          className={cn("relative min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-secondary cursor-grab active:cursor-grabbing", isSpacePressed && "cursor-grabbing")}
           onWheel={handleWheel}
           onPointerDown={startPan}
           onPointerMove={handlePointerMove}
@@ -511,15 +511,15 @@ export function ImageAlignmentPanel() {
           </div>
         </div>
 
-        <aside className="flex w-full max-w-sm flex-col border-l border-border-default bg-bg-primary max-lg:max-w-xs max-md:absolute max-md:inset-y-3 max-md:right-3 max-md:left-3 max-md:max-w-none max-md:rounded-lg max-md:border">
-          <div className="flex items-center gap-2 border-b border-border-default px-4 py-3">
-            <h2 className="text-base font-bold text-text-primary">Align Images</h2>
+        <aside className="flex min-h-0 w-full shrink-0 flex-col border-t border-border-default bg-bg-primary max-md:max-h-[60%] md:w-80 md:border-l md:border-t-0 lg:w-96">
+          <div className="flex shrink-0 items-center gap-2 border-b border-border-default px-4 py-3">
+            <h2 className="text-base font-bold text-text-primary">Align images</h2>
             <IconButton onClick={closeAlignmentPanel} size="sm" className="ml-auto" title="Close alignment panel">
               <MdClose className="text-xl" />
             </IconButton>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-4">
             {alignment.error && (
               <div className="mb-4 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
                 {alignment.error.message}
@@ -528,7 +528,7 @@ export function ImageAlignmentPanel() {
 
             <div className="rounded-md border border-border-default bg-bg-secondary p-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Zoom</span>
+                <span className="text-xs font-semibold text-text-secondary">Zoom</span>
                 <span className="text-sm font-bold text-text-primary">{formatPercent(alignment.previewZoom)}</span>
                 <IconButton size="sm" onClick={() => setAlignmentPreviewZoom(DEFAULT_ALIGNMENT_STATE.previewZoom)} className={getSectionResetButtonClass(isZoomDirty)} title="Restore zoom default">
                   <MdRestartAlt className="text-lg" />
@@ -592,7 +592,7 @@ export function ImageAlignmentPanel() {
 
               <div className="mt-5 rounded-md border border-border-default bg-bg-primary p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wide text-text-secondary">Transformation</h4>
+                  <h4 className="text-xs font-bold text-text-secondary">Transformation</h4>
                   <IconButton
                     onClick={() => setAlignmentAspectRatioLocked(!alignment.aspectRatioLocked)}
                     size="sm"
@@ -673,12 +673,12 @@ export function ImageAlignmentPanel() {
                 buttonClassName="px-2"
               />
               <Button className="mt-3 w-full" onClick={runAutoAlign} disabled={alignment.status === "aligning"}>
-                {alignment.status === "aligning" ? "Aligning..." : "Auto Align Images"}
+                {alignment.status === "aligning" ? "Aligning..." : "Auto align images"}
               </Button>
             </section>
           </div>
 
-          <div className="flex items-center justify-between gap-2 border-t border-border-default p-4">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border-default p-3">
             <Button variant="danger" onClick={resetAlignment} leftIcon={<MdDelete className="text-lg" />}>
               Reset alignment
             </Button>

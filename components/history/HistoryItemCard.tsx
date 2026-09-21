@@ -5,6 +5,7 @@ import { formatAbsoluteDateTimeWithSettings, generatePreviewLines, getLineCount,
 import { cn } from "@/utils/uiHelpers";
 import { DiffHistoryItem } from "@/types/history";
 import { DateFormat, TimeFormat } from "@/types/settings";
+import { Button } from "@/components/ui/Button";
 
 function formatImageDimensions(width?: number, height?: number): string {
   if (!width || !height) {
@@ -63,34 +64,36 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
     <div
       onClick={() => onRestore(item)}
       className={cn(
-        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-bg-primary p-3 pb-7 sm:p-4 sm:pb-8 shadow-sm transition-all duration-(--duration-medium) hover:border-accent-primary hover:shadow-md",
+        "group relative flex cursor-pointer flex-col gap-3 overflow-hidden rounded-xl border bg-bg-primary p-4 shadow-sm transition-colors hover:border-accent-primary",
         isTransitioning ? "z-50" : item.isBookmarked ? "z-20" : "z-0",
         item.isBookmarked ? "border-accent-primary" : "border-border-default"
       )}
     >
       {item.isBookmarked && (
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-accent-primary/25 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-accent-primary" />
       )}
 
-      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 z-10">
-        <div className="flex items-center justify-between sm:contents">
-          <div className="min-w-36 flex flex-col gap-1">
-            <span className="truncate text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+      <div className="relative z-10 grid min-w-0 items-center gap-4 @5xl/history:grid-cols-[10rem_minmax(0,1fr)_auto]">
+        <div className="flex items-center justify-between gap-2 @5xl/history:flex-col @5xl/history:items-start">
+          <div className="min-w-0 flex flex-col gap-1">
+            <span className="truncate text-[0.625rem] font-semibold text-text-secondary">
               Last activity
             </span>
             <span className="truncate text-xs font-bold text-accent-primary">
               {getRelativeTime(actionAt, tickerNowMs)}
             </span>
-            <span className="truncate text-[11px] text-text-secondary">
+            <span className="truncate text-[0.6875rem] text-text-secondary">
               {formatAbsoluteDateTimeWithSettings(actionAt, dateFormat, timeFormat)}
             </span>
+            <span className="mt-1 w-fit rounded-md bg-bg-selected px-2 py-0.5 text-xs font-semibold text-accent-primary">{isImageSnapshot ? "Image" : "Text"}</span>
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
             <button
               onClick={(e) => onToggleBookmark(e, item.id, item.isBookmarked)}
-              className="rounded p-1.5 sm:p-2 text-accent-primary transition-colors duration-(--duration-short) hover:bg-hover-overlay"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-accent-primary transition-colors hover:bg-hover-overlay"
               title="Bookmark this item"
+              aria-pressed={item.isBookmarked}
             >
               {item.isBookmarked ? (
                 <MdBookmark className="text-xl sm:text-2xl" />
@@ -100,7 +103,7 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             </button>
             <button
               onClick={(e) => onDelete(e, item.id)}
-              className="rounded p-1.5 sm:p-2 text-danger transition-colors duration-(--duration-short) hover:bg-hover-overlay"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-danger transition-colors hover:bg-hover-overlay"
               title="Delete this item"
             >
               <MdDelete className="text-xl sm:text-2xl" />
@@ -108,9 +111,9 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-2 sm:gap-4 overflow-hidden sm:mx-4">
+        <div className="flex min-w-0 flex-col items-stretch gap-3 @2xl/history:flex-row @2xl/history:items-center">
           <div className="flex flex-1 flex-col overflow-hidden">
-            <span className="mb-1 text-[11px] font-semibold text-danger">
+            <span className="mb-1 text-[0.6875rem] font-semibold text-danger">
               {isImageSnapshot ? "Original image" : `${getLineCount(item.originalText)} lines`}
             </span>
             {isImageSnapshot ? (
@@ -126,18 +129,18 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] text-text-secondary">No preview</div>
+                    <div className="flex h-full w-full items-center justify-center text-[0.625rem] text-text-secondary">No preview</div>
                   )}
                 </div>
                 <div className="min-w-0 flex flex-col">
-                  <span className="truncate text-[11px] sm:text-xs font-semibold text-text-primary">{originalImageName}</span>
-                  <span className="truncate text-[11px] text-text-secondary">{originalDimensions}</span>
+                  <span className="truncate text-[0.6875rem] sm:text-xs font-semibold text-text-primary">{originalImageName}</span>
+                  <span className="truncate text-[0.6875rem] text-text-secondary">{originalDimensions}</span>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
                 {displayOrigLines.map((line, idx) => (
-                  <span key={`orig-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
+                  <span key={`orig-${idx}`} className="block truncate text-[0.6875rem] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
                     {line === "" ? "\u00A0" : line}
                   </span>
                 ))}
@@ -145,11 +148,11 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             )}
           </div>
 
-          <MdArrowForward className="text-lg shrink-0 text-text-secondary hidden sm:block" />
-          <MdArrowDownward className="text-lg shrink-0 text-text-secondary self-center sm:hidden" />
+          <MdArrowForward className="hidden shrink-0 text-lg text-text-secondary @2xl/history:block" />
+          <MdArrowDownward className="shrink-0 self-center text-lg text-text-secondary @2xl/history:hidden" />
 
           <div className="flex flex-1 flex-col overflow-hidden">
-            <span className="mb-1 text-[11px] font-semibold text-success">
+            <span className="mb-1 text-[0.6875rem] font-semibold text-success">
               {isImageSnapshot ? "Modified image" : `${getLineCount(item.modifiedText)} lines`}
             </span>
             {isImageSnapshot ? (
@@ -165,18 +168,18 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] text-text-secondary">No preview</div>
+                    <div className="flex h-full w-full items-center justify-center text-[0.625rem] text-text-secondary">No preview</div>
                   )}
                 </div>
                 <div className="min-w-0 flex flex-col">
-                  <span className="truncate text-[11px] sm:text-xs font-semibold text-text-primary">{modifiedImageName}</span>
-                  <span className="truncate text-[11px] text-text-secondary">{modifiedDimensions}</span>
+                  <span className="truncate text-[0.6875rem] sm:text-xs font-semibold text-text-primary">{modifiedImageName}</span>
+                  <span className="truncate text-[0.6875rem] text-text-secondary">{modifiedDimensions}</span>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col gap-0.5 rounded border border-border-default bg-bg-secondary px-2 sm:px-3 py-1.5 sm:py-2" style={{ fontFamily }}>
                 {displayModLines.map((line, idx) => (
-                  <span key={`mod-${idx}`} className="block truncate text-[11px] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
+                  <span key={`mod-${idx}`} className="block truncate text-[0.6875rem] sm:text-xs font-semibold text-text-primary min-h-3.5 sm:min-h-4">
                     {line === "" ? "\u00A0" : line}
                   </span>
                 ))}
@@ -184,9 +187,10 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             )}
           </div>
         </div>
+        <Button className="min-h-11" onClick={(event) => { event.stopPropagation(); onRestore(item); }} rightIcon={<MdArrowForward />}>Open comparison</Button>
       </div>
 
-      <div className="pointer-events-none absolute bottom-2 left-3 z-10 text-[10px] text-text-secondary sm:bottom-2.5 sm:left-4">
+      <div className="pointer-events-none text-xs text-text-secondary">
         Created: {formatAbsoluteDateTimeWithSettings(createdAt, dateFormat, timeFormat)}
       </div>
     </div>

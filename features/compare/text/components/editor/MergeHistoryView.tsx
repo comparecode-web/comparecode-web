@@ -175,9 +175,9 @@ export function MergeHistoryView() {
           >
             <div className="flex items-center justify-between gap-2">
               {renderSnapshotTitle(snapshot)}
-              <span className="text-[11px] font-semibold text-text-secondary">{getRelativeTime(snapshot.updatedAt, tickerNowMs)}</span>
+              <span className="text-[0.6875rem] font-semibold text-text-secondary">{getRelativeTime(snapshot.updatedAt, tickerNowMs)}</span>
             </div>
-            <p className="mt-0.5 text-[10px] text-text-secondary">
+            <p className="mt-0.5 text-[0.625rem] text-text-secondary">
               {formatAbsoluteDateTimeWithSettings(snapshot.updatedAt, settings.dateFormat, settings.timeFormat)}
             </p>
           </button>

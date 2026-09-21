@@ -1,24 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { MdArticle, MdBorderColor, MdHistory, MdTune } from "react-icons/md";
-import { VscPreview, VscSplitHorizontal } from "react-icons/vsc";
+import { MdArticle, MdHistory, MdTune } from "react-icons/md";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
 import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { MarkdownHistoryView } from "./MarkdownHistoryView";
-import { MarkdownOptionsView } from "./MarkdownOptionsView";
+import { MarkdownLayoutControl, MarkdownOptionsView } from "./MarkdownOptionsView";
 import { MarkdownSplitView } from "./MarkdownSplitView";
 import { MarkdownToolbar } from "./MarkdownToolbar";
 import { useMarkdownFormattingActions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
-import { defaultMarkdownUISettings, useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
+import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 
 function MarkdownLoadingView() {
   return (
     <div className="grid min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-primary sm:grid-cols-[1fr_0.5rem_1fr]">
       <section className="min-h-0 min-w-0 overflow-hidden border-r border-border-default max-sm:border-r-0">
         <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-          <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold uppercase tracking-wider text-text-secondary">
+          <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold text-text-secondary">
             Markdown
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-center bg-bg-primary text-sm font-semibold text-text-secondary">
@@ -29,7 +28,7 @@ function MarkdownLoadingView() {
       <div className="min-h-0 bg-border-default/35 max-sm:hidden" />
       <section className="min-h-0 min-w-0 overflow-hidden max-sm:hidden">
         <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-          <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold uppercase tracking-wider text-text-secondary">
+          <div className="flex h-9 shrink-0 items-center border-b border-border-default bg-bg-secondary px-3 text-xs font-bold text-text-secondary">
             Preview
           </div>
           <div className="min-h-0 flex-1 bg-bg-primary" />
@@ -55,16 +54,11 @@ export function MarkdownView() {
   const setOptionsPanelTab = useMarkdownUIStore((state) => state.setOptionsPanelTab);
   const isMarkdownUILoaded = useMarkdownUIStore((state) => state.isLoaded);
   const loadPersistedMarkdownUIState = useMarkdownUIStore((state) => state.loadPersistedMarkdownUIState);
-  const viewMode = useMarkdownUIStore((state) => state.viewMode);
-  const setViewMode = useMarkdownUIStore((state) => state.setViewMode);
   const isMarkdownReady = isMarkdownLoaded && isMarkdownUILoaded;
-  const nextViewMode = viewMode === "editor" ? "split" : viewMode === "split" ? "preview" : "editor";
-  const viewModeLabel = viewMode === "editor" ? "Editor" : viewMode === "split" ? "Split" : "Preview";
-  const nextViewModeLabel = nextViewMode === "editor" ? "Editor" : nextViewMode === "split" ? "Split" : "Preview";
-  const LayoutIcon = viewMode === "editor" ? MdBorderColor : viewMode === "split" ? VscSplitHorizontal : VscPreview;
   const toggleOptionsPanel = useCallback(() => {
     const uiState = useMarkdownUIStore.getState();
-    uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
+    uiState.setIsOptionsPanelOpen(uiState.optionsPanelTab !== "options" || !uiState.isOptionsPanelOpen);
+    uiState.setOptionsPanelTab("options");
   }, []);
 
   useOptionsPanelShortcut(toggleOptionsPanel);
@@ -93,22 +87,13 @@ export function MarkdownView() {
       onPanelOpenChange={setIsOptionsPanelOpen}
       activePanelTab={optionsPanelTab}
       onPanelTabChange={setOptionsPanelTab}
-      contentClassName="max-sm:w-[100dvw] max-sm:max-w-[100dvw]"
-      quickActions={[
-        {
-          id: "layout",
-          title: `Layout: ${viewModeLabel} - switch to ${nextViewModeLabel}`,
-          label: `Layout: ${viewModeLabel}`,
-          icon: LayoutIcon,
-          onClick: () => setViewMode(nextViewMode),
-          isActive: viewMode !== defaultMarkdownUISettings.viewMode
-        }
-      ]}
+      contentClassName="w-full max-w-full"
+      compactControls={!(isOptionsPanelOpen && optionsPanelTab === "options") && <div className="flex items-center gap-2"><span className="hidden text-xs text-text-secondary @lg/workspace:inline">Layout</span><MarkdownLayoutControl /></div>}
       toolTitle="Markdown preview"
       toolIcon={MdArticle}
       tabs={[
         { value: "options", title: "Options", icon: MdTune, content: <MarkdownOptionsView /> },
-        { value: "history", title: "Markdown History", icon: MdHistory, content: <MarkdownHistoryView /> }
+        { value: "history", title: "Markdown history", placement: "right", icon: MdHistory, content: <MarkdownHistoryView /> }
       ]}
     >
       <MarkdownToolbar

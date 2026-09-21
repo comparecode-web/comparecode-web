@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
@@ -18,6 +19,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
 export function useOptionsPanelShortcut(toggleOptionsPanel: () => void) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (isWorkspaceShortcutBlocked(event)) return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return;
       }

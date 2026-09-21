@@ -2,44 +2,36 @@
 
 import { useCallback, useEffect } from "react";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdTune, MdBorderColor, MdHistory, MdCode } from "react-icons/md";
-import { RiCharacterRecognitionLine } from "react-icons/ri";
-import { TbAbc } from "react-icons/tb";
-import { VscSplitHorizontal, VscSplitVertical } from "react-icons/vsc";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
 import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
-import { useSettingsStore } from "@/store/useSettingsStore";
-import { defaultSettings } from "@/config/defaults";
-import { OptionsView } from "./OptionsView";
+import { OptionsView, TextTestButton } from "./OptionsView";
+import { CompactTextOptions } from "./CompactTextOptions";
 import { MergeHistoryView } from "./MergeHistoryView";
 import { InputView } from "./InputView";
 import { ComparisonView } from "@/features/compare/text/components/diff/ComparisonView";
 import { cn } from "@/utils/uiHelpers";
 import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
-import { PrecisionLevel, ViewMode } from "@/types/settings";
+import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 
 export function EditorView() {
   const { comparisonResult } = useEditorStore();
+  const showTextTest = useEditorUIStore((state) => state.showTextTest);
   const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen, optionsPanelTab, setOptionsPanelTab } = useEditorUIStore();
-  const { settings, updateSettings } = useSettingsStore();
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const isInputEditorToggleDisabled = !hasResult && isInputExpanded;
-  const isWordPrecision = settings.precision === PrecisionLevel.Word;
-  const nextPrecision = isWordPrecision ? PrecisionLevel.Character : PrecisionLevel.Word;
-  const PrecisionIcon = isWordPrecision ? TbAbc : RiCharacterRecognitionLine;
-  const isSplitLayout = settings.viewMode === ViewMode.Split;
-  const nextViewMode = isSplitLayout ? ViewMode.Unified : ViewMode.Split;
-  const LayoutIcon = isSplitLayout ? VscSplitHorizontal : VscSplitVertical;
   const toggleOptionsPanel = useCallback(() => {
     const uiState = useEditorUIStore.getState();
-    uiState.setIsOptionsPanelOpen(!uiState.isOptionsPanelOpen);
+    uiState.setIsOptionsPanelOpen(uiState.optionsPanelTab !== "options" || !uiState.isOptionsPanelOpen);
+    uiState.setOptionsPanelTab("options");
   }, []);
 
   useOptionsPanelShortcut(toggleOptionsPanel);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (isWorkspaceShortcutBlocked(event)) return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return;
       }
@@ -75,39 +67,26 @@ export function EditorView() {
 
   return (
     <ToolWorkspaceShell
+      contentClassName="overflow-y-auto custom-scrollbar"
       isPanelOpen={isOptionsPanelOpen}
       onPanelOpenChange={setIsOptionsPanelOpen}
       activePanelTab={optionsPanelTab}
       onPanelTabChange={setOptionsPanelTab}
-      quickActions={[
-        {
-          id: "precision",
-          title: `Precision: ${settings.precision} - switch to ${nextPrecision}`,
-          label: `Precision: ${settings.precision}`,
-          icon: PrecisionIcon,
-          onClick: () => updateSettings({ precision: nextPrecision }),
-          isActive: settings.precision !== defaultSettings.precision
-        },
-        {
-          id: "layout",
-          title: `Layout: ${settings.viewMode} - switch to ${nextViewMode}`,
-          label: `Layout: ${settings.viewMode}`,
-          icon: LayoutIcon,
-          onClick: () => updateSettings({ viewMode: nextViewMode }),
-          isActive: settings.viewMode !== defaultSettings.viewMode
-        }
-      ]}
       toolTitle="Text compare"
       toolIcon={MdCode}
+      compactControls={<div className="flex min-w-0 flex-1 items-center gap-3 self-stretch">
+        {showTextTest && <TextTestButton />}
+        {!(isOptionsPanelOpen && optionsPanelTab === "options") && <CompactTextOptions />}
+      </div>}
       tabs={[
         { value: "options", title: "Options", icon: MdTune, content: <OptionsView /> },
-        { value: "history", title: "Merge History", icon: MdHistory, content: <MergeHistoryView /> }
+        { value: "history", title: "Merge history", placement: "right", icon: MdHistory, content: <MergeHistoryView /> }
       ]}
     >
       <div
         className={cn(
-          "flex flex-col bg-bg-primary relative",
-          hasResult || !isInputExpanded ? "flex-1 overflow-hidden" : "shrink-0 h-0"
+          "flex min-h-0 flex-col bg-bg-primary relative",
+          hasResult || !isInputExpanded ? "min-h-48 flex-1 overflow-hidden" : "shrink-0 h-0"
         )}
       >
         <ComparisonView />
@@ -122,22 +101,23 @@ export function EditorView() {
               "inline-flex items-center gap-2 rounded-md bg-accent-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors duration-(--duration-short) focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2",
               isInputEditorToggleDisabled ? "cursor-not-allowed opacity-60" : "hover:bg-accent-hover"
             )}
-            title={isInputExpanded ? "Hide Input Editor" : "Show Input Editor"}
+            title={isInputExpanded ? "Hide input editor (E)" : "Show input editor (E)"}
           >
             <MdBorderColor className="text-base shrink-0" />
-            <span>Input Editor (E)</span>
+            <span>Input editor</span>
             {isInputExpanded ? <MdKeyboardArrowDown className="text-xl shrink-0" /> : <MdKeyboardArrowUp className="text-xl shrink-0" />}
           </button>
         </div>
       </div>
 
       <div
+        inert={!isInputExpanded}
         className={cn(
-          "flex flex-col shrink-0 transition-[height,opacity,min-height] duration-(--duration-medium) ease-in-out overflow-hidden bg-bg-primary z-10",
+          "flex min-h-0 flex-col shrink-0 overflow-hidden bg-bg-primary z-10 transition-[height,min-height,opacity] duration-200 ease-in-out motion-reduce:transition-none",
           isInputExpanded
             ? (hasResult
-              ? "max-sm:h-[calc(100dvh-var(--header-height))] sm:h-(--input-panel-height) sm:min-h-(--input-panel-min-height) border-t border-border-default shadow-sm opacity-100"
-              : "flex-1 opacity-100")
+              ? "h-1/2 min-h-64 border-t border-border-default opacity-100"
+              : "min-h-64 flex-1 opacity-100")
             : "h-0 min-h-0 opacity-0"
         )}
       >

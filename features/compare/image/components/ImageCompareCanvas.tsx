@@ -252,7 +252,7 @@ function SideBySideView() {
         className="inline-flex max-w-full items-center gap-3 self-center rounded-md border border-border-default bg-bg-primary px-3 py-2"
         style={{ width: "min(100%, clamp(18rem, 58vw, 34rem))" }}
       >
-        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Zoom</span>
+        <span className="text-xs font-semibold text-text-secondary">Zoom</span>
         <span className="w-12 text-right text-xs font-bold text-text-primary">{zoomPercent}%</span>
         <input
           type="range"
@@ -276,7 +276,7 @@ function SideBySideView() {
         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
           <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Original</span>
+              <span className="text-xs font-semibold text-text-secondary">Original</span>
               {originalImage && (
                 <span className="text-xs font-bold text-danger shrink-0">{`${originalImage.width}x${originalImage.height}`}</span>
               )}
@@ -293,7 +293,7 @@ function SideBySideView() {
         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
           <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-semibold text-text-secondary tracking-wide uppercase">Modified</span>
+              <span className="text-xs font-semibold text-text-secondary">Modified</span>
               {modifiedImage && (
                 <span className="text-xs font-bold text-success shrink-0">{`${modifiedImage.width}x${modifiedImage.height}`}</span>
               )}
@@ -332,7 +332,7 @@ function FadeView() {
         className="inline-flex max-w-full items-center gap-3 self-center rounded-md border border-border-default bg-bg-primary px-3 py-2"
         style={{ width: "min(100%, clamp(18rem, 58vw, 34rem))" }}
       >
-        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Fade</span>
+        <span className="text-xs font-semibold text-text-secondary">Fade</span>
         <span className="w-12 text-right text-xs font-bold text-text-primary">{fadePercent}%</span>
         <input
           type="range"

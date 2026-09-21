@@ -20,18 +20,18 @@ export function InputView() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full p-2 sm:p-4 bg-bg-secondary">
+    <div className="flex min-h-0 flex-col w-full h-full p-2 bg-bg-secondary">
       <div className="flex items-center justify-between mb-2 px-1 sm:px-2 gap-2 sm:gap-4">
         <div className="flex w-full sm:flex-1 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <MdDescription className="text-text-secondary text-lg" />
-            <span className="font-bold text-text-primary text-sm hidden sm:inline">Original Text</span>
-            <span className="font-bold text-text-primary text-sm sm:hidden">Input Editor</span>
+            <span className="font-bold text-text-primary text-sm hidden sm:inline">Original text</span>
+            <span className="font-bold text-text-primary text-sm sm:hidden">Input editor</span>
           </div>
         </div>
         <div className="items-center gap-2 flex-1 hidden sm:flex">
           <MdDescription className="text-text-secondary text-lg" />
-          <span className="font-bold text-text-primary text-sm">Modified Text</span>
+          <span className="font-bold text-text-primary text-sm">Modified text</span>
         </div>
       </div>
 

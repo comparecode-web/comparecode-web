@@ -1,5 +1,7 @@
 "use client";
 
+import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
+
 import { useEffect, useRef } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp, MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
@@ -94,6 +96,7 @@ export function ComparisonView() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isWorkspaceShortcutBlocked(event)) return;
       const refs = storeRefs.current;
       const editableTarget = isEditableTarget(event.target);
       const key = event.key;
@@ -220,7 +223,8 @@ export function ComparisonView() {
       {!hideBody && <IdenticalTextInfoBar isVisible={areComparedTextsIdentical} />}
 
       {!hideBody && (
-        <div id="diff-container" className="flex flex-1 min-h-0 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
+        <div id="diff-container" className="flex flex-col flex-1 min-h-0 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
+          <div className="relative flex min-h-0 min-w-0 flex-1">
           {!hasResult ? (
             <div className="flex h-full w-full items-center justify-center">
               <p className="text-text-secondary">No comparison generated yet.</p>
@@ -243,8 +247,10 @@ export function ComparisonView() {
             </div>
           )}
 
-          {hasResult && settings.isJumpButtonsVisible && (
-            <div className="absolute bottom-4 right-4 sm:right-16 z-30 flex flex-col items-center gap-2">
+          </div>
+          {hasResult && (settings.isJumpButtonsVisible || settings.isMergeJumpButtonsVisible) && <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-default bg-bg-primary p-2 [@media(min-width:40rem)_and_(min-height:32rem)]:contents">
+          {settings.isJumpButtonsVisible && (
+            <div className="z-30 flex items-center gap-2 [@media(min-width:40rem)_and_(min-height:32rem)]:absolute [@media(min-width:40rem)_and_(min-height:32rem)]:bottom-4 [@media(min-width:40rem)_and_(min-height:32rem)]:right-16 [@media(min-width:40rem)_and_(min-height:32rem)]:flex-col">
               <button
                 onClick={scrollToTop}
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
@@ -262,8 +268,8 @@ export function ComparisonView() {
             </div>
           )}
 
-          {hasResult && settings.isMergeJumpButtonsVisible && (
-            <div className="absolute top-4 right-4 sm:right-16 z-30 flex flex-col items-center gap-2">
+          {settings.isMergeJumpButtonsVisible && (
+            <div className="z-30 flex items-center gap-2 [@media(min-width:40rem)_and_(min-height:32rem)]:absolute [@media(min-width:40rem)_and_(min-height:32rem)]:top-4 [@media(min-width:40rem)_and_(min-height:32rem)]:right-16 [@media(min-width:40rem)_and_(min-height:32rem)]:flex-col">
               <button
                 onClick={jumpToPreviousBlock}
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
@@ -280,6 +286,7 @@ export function ComparisonView() {
               </button>
             </div>
           )}
+          </div>}
         </div>
       )}
     </div>

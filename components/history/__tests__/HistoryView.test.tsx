@@ -153,13 +153,13 @@ describe("HistoryView", () => {
     expect(screen.queryByText("text-1 text")).not.toBeInTheDocument();
   });
 
-  it("keeps Delete All scoped to the whole history database", async () => {
+  it("keeps Delete all scoped to the whole history database", async () => {
     const user = userEvent.setup();
     historyStoreMock.items = [createTextItem("text-1"), createImageItem("image-1")];
 
     render(<HistoryView />);
 
-    await user.click(screen.getByRole("button", { name: "Delete All" }));
+    await user.click(screen.getByRole("button", { name: "Delete all" }));
 
     expect(window.confirm).toHaveBeenCalledWith("You are about to delete the whole history database, including items hidden by the current filter. Are you sure?");
     await waitFor(() => {
@@ -178,5 +178,40 @@ describe("HistoryView", () => {
 
     expect(restoreMocks.restoreImageHistoryItem).toHaveBeenCalledWith(imageItem);
     expect(routerMock.push).toHaveBeenCalledWith("/image");
+  });
+
+  it("combines sorting, bookmarks, filtering and refreshed items without writing history", async () => {
+    const user = userEvent.setup();
+    const oldest = { ...createTextItem("text-old"), createdAt: "2026-01-01T00:00:00Z" };
+    const newest = { ...createTextItem("text-new"), createdAt: "2026-09-01T00:00:00Z" };
+    const bookmark = createImageItem("image-bookmarked", true);
+    historyStoreMock.items = [bookmark, oldest, newest];
+    const { rerender } = render(<HistoryView />);
+    const itemOrder = () => screen.getAllByRole("button", { name: /^(text-|image-)/ }).map((button) => button.textContent);
+
+    await user.click(screen.getByRole("button", { name: "Default" }));
+    await user.click(screen.getByRole("option", { name: "Created" }));
+    expect(itemOrder()).toEqual(["image-bookmarked image", "text-new text", "text-old text"]);
+
+    await user.click(screen.getByRole("button", { name: "Newest first" }));
+    expect(itemOrder()).toEqual(["image-bookmarked image", "text-old text", "text-new text"]);
+
+    await user.click(screen.getByRole("button", { name: "All" }));
+    await user.click(screen.getByRole("option", { name: "Text compare" }));
+    expect(itemOrder()).toEqual(["text-old text", "text-new text"]);
+    expect(screen.getByText("Bookmarked: 0")).toBeInTheDocument();
+
+    historyStoreMock.items = [bookmark, { ...newest, isBookmarked: true }, oldest];
+    rerender(<HistoryView />);
+    expect(itemOrder()).toEqual(["text-new text", "text-old text"]);
+    expect(screen.getByText("Bookmarked: 1")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Created" }));
+    await user.click(screen.getByRole("option", { name: "Default" }));
+    expect(screen.queryByRole("button", { name: "Oldest first" })).not.toBeInTheDocument();
+    expect(itemOrder()).toEqual(["text-new text", "text-old text"]);
+    expect(historyStoreMock.deleteItem).not.toHaveBeenCalled();
+    expect(historyStoreMock.toggleBookmark).not.toHaveBeenCalled();
+    expect(historyStoreMock.deleteAll).not.toHaveBeenCalled();
   });
 });

@@ -15,6 +15,7 @@ import { DiffHistoryItem } from "@/types/history";
 import { useLiveTimeTicker } from "@/hooks/useLiveTimeTicker";
 import { cn } from "@/utils/uiHelpers";
 import type { CompareMode } from "@/features/compare/shared/types/compareMode";
+import { HISTORY_SORT_OPTIONS, sortHistoryItems, type HistorySort, type HistorySortDirection } from "./historySorting";
 
 type HistoryFilter = "all" | CompareMode;
 
@@ -38,6 +39,8 @@ export function HistoryView() {
   const tickerNowMs = useLiveTimeTicker(items.map((item) => item.lastActionAt ?? item.updatedAt ?? item.createdAt));
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
+  const [historySort, setHistorySort] = useState<HistorySort>("default");
+  const [sortDirection, setSortDirection] = useState<HistorySortDirection>("desc");
   const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
   const movingResetTimerRef = useRef<number | null>(null);
   const filterAnimationFrameRef = useRef<number | null>(null);
@@ -48,6 +51,7 @@ export function HistoryView() {
       ? items
       : items.filter((item) => getHistoryItemMode(item) === historyFilter)
   ), [historyFilter, items]);
+  const sortedItems = useMemo(() => sortHistoryItems(filteredItems, historySort, sortDirection), [filteredItems, historySort, sortDirection]);
   const bookmarkedCount = useMemo(() => filteredItems.filter((i) => i.isBookmarked).length, [filteredItems]);
   const textHistoryCount = useMemo(() => items.filter((item) => getHistoryItemMode(item) === "text").length, [items]);
   const imageHistoryCount = useMemo(() => items.filter((item) => getHistoryItemMode(item) === "image").length, [items]);
@@ -143,25 +147,27 @@ export function HistoryView() {
   }, [toggleBookmark]);
 
   return (
-    <div className="flex h-full w-full flex-col bg-bg-secondary bg-linear-to-br from-accent-primary/10 via-transparent to-accent-primary/5">
-      <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border-default bg-bg-primary px-3 sm:px-6 relative">
+    <div className="@container/history h-full min-w-0 w-full overflow-y-auto bg-bg-secondary p-3 sm:p-6 custom-scrollbar">
+      <div className="mx-auto w-full max-w-7xl space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 py-2">
         <div className="flex items-center gap-2 sm:gap-3">
           <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
-          <h2 className="text-lg sm:text-xl font-bold text-text-primary">History</h2>
+          <div><h2 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">History</h2><p className="mt-1 text-sm text-text-secondary">Revisit your comparisons, saved in this browser.</p></div>
         </div>
 
         {items.length > 0 && (
-          <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-3 text-sm font-bold md:flex lg:gap-6">
+          <div className="flex flex-wrap gap-3 rounded-xl border border-border-default bg-bg-primary px-4 py-3 text-sm font-semibold">
             <span className="text-text-secondary">Text: {textHistoryCount}</span>
             <span className="text-text-secondary">Image: {imageHistoryCount}</span>
-            <span className="text-accent-primary">Bookmarked: {bookmarkedCount}</span>
+            <span className="text-accent-primary" title="Bookmarked items in the current filter">Bookmarked: {bookmarkedCount}</span>
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          {items.length > 0 && (
-            <>
-              <span className="hidden shrink-0 text-xs font-semibold text-text-secondary min-[360px]:inline sm:text-sm">Filter:</span>
+      </div>
+        {items.length > 0 && (
+          <div className="relative z-30 flex flex-wrap items-center gap-3 rounded-xl border border-border-default bg-bg-primary p-3 shadow-sm" data-tool-controls>
+              <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-text-secondary">Filter:</span>
               <SelectDropdown
                 value={historyFilter}
                 onChange={handleHistoryFilterChange}
@@ -170,29 +176,26 @@ export function HistoryView() {
                 triggerClassName="h-8 py-1 pl-2 pr-7 text-xs sm:h-9 sm:text-sm"
                 menuClassName="min-w-40"
               />
+              </div>
+              <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-text-secondary">Sort:</span>
+              <SelectDropdown value={historySort} options={HISTORY_SORT_OPTIONS} onChange={(value) => setHistorySort(value as HistorySort)} className="w-36 sm:w-40" />
+              </div>
+              {historySort !== "default" && <Button variant="outline" size="sm" onClick={() => setSortDirection((value) => value === "desc" ? "asc" : "desc")}>{sortDirection === "desc" ? "Newest first" : "Oldest first"}</Button>}
+              <span className="mr-auto text-xs text-text-secondary">Bookmarks first · Bookmarked count follows filter</span>
               <Button
                 variant="danger"
                 size="sm"
                 onClick={handleDeleteAll}
                 leftIcon={<MdDelete className="text-xl" />}
                 title="Clear all history"
-                className="hidden sm:inline-flex"
+                className="min-h-10"
               >
-                Delete All
+                Delete all
               </Button>
-              <button
-                onClick={handleDeleteAll}
-                className="sm:hidden p-1.5 text-danger hover:bg-hover-overlay rounded transition-colors"
-                title="Clear all history"
-              >
-                <MdDelete className="text-xl" />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 custom-scrollbar">
+          </div>
+        )}
+      <div className="min-h-40">
         {items.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center">
             <MdHistoryToggleOff className="mb-4 text-5xl sm:text-6xl text-text-secondary" />
@@ -209,11 +212,11 @@ export function HistoryView() {
           <div
             ref={listRef}
             className={cn(
-              "mx-auto flex w-full max-w-5xl flex-col gap-2 transition-[opacity,transform] duration-200 ease-out sm:gap-3",
+              "flex w-full flex-col gap-3 transition-[opacity,transform] duration-200 ease-out",
               isFilterTransitioning ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
             )}
           >
-            {filteredItems.map((item) => (
+            {sortedItems.map((item) => (
               <HistoryItemCard
                 key={item.id}
                 item={item}
@@ -229,6 +232,7 @@ export function HistoryView() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

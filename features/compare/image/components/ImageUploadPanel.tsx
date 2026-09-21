@@ -84,10 +84,10 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
 
   if (image) {
     return (
-      <div className="flex min-h-0 flex-1 min-w-0 flex-col gap-2">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 rounded-xl border border-border-default bg-bg-primary p-4 shadow-sm">
         <div className="min-w-0 flex flex-col gap-0.5 shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{label}</span>
+            <span className="text-xs font-semibold text-text-secondary">{label}</span>
             <span className={cn("text-xs font-bold shrink-0", dimensionsClassName)}>{`${image.width}x${image.height}`}</span>
             <Button
               variant="danger"
@@ -101,7 +101,7 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
           </div>
           <p className="text-xs text-text-secondary truncate" title={image.name}>{image.name}</p>
         </div>
-        <div className="relative rounded-lg border border-border-default bg-bg-secondary overflow-hidden flex flex-1 items-center justify-center min-h-[120px]">
+        <div className="relative rounded-lg border border-border-default bg-bg-secondary overflow-hidden flex flex-1 items-center justify-center min-h-30">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image.url}
@@ -114,8 +114,8 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
   }
 
   return (
-    <div className="flex min-h-0 flex-1 min-w-0 flex-col gap-2">
-      <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{label}</span>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 rounded-xl border border-border-default bg-bg-primary p-4 shadow-sm">
+      <span className="text-xs font-semibold text-text-secondary">{label}</span>
       <div
         role="button"
         tabIndex={0}
@@ -126,7 +126,7 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
         onPaste={handlePaste}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          "flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed min-h-[180px] cursor-pointer transition-all duration-(--duration-short)",
+          "flex min-h-56 flex-1 cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-4 transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary",
           isDragging
             ? "border-accent-primary bg-accent-primary/10"
             : "border-border-default bg-bg-secondary hover:border-accent-primary hover:bg-hover-overlay"
@@ -187,7 +187,7 @@ export function ImageUploadPanel({ compact = false }: ImageUploadPanelProps) {
   }
 
   return (
-    <div className="flex h-full min-h-full flex-col gap-4 p-4 sm:flex-row sm:p-6">
+    <div className="flex min-h-full flex-col gap-4 @2xl/image:flex-row">
       <ImageUploadSlot
         label="Original"
         image={originalImage}

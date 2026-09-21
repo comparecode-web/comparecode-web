@@ -1,6 +1,6 @@
 "use client";
 
-import { MdRestartAlt } from "react-icons/md";
+import { MdRestartAlt, MdEdit, MdVerticalSplit, MdPreview } from "react-icons/md";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/Slider";
@@ -23,7 +23,6 @@ export function MarkdownOptionsView() {
   const editorPaneWidthPercent = useMarkdownUIStore((state) => state.editorPaneWidthPercent);
   const setEditorPaneWidthPercent = useMarkdownUIStore((state) => state.setEditorPaneWidthPercent);
   const viewMode = useMarkdownUIStore((state) => state.viewMode);
-  const setViewMode = useMarkdownUIStore((state) => state.setViewMode);
   const fontSize = useMarkdownUIStore((state) => state.fontSize);
   const setFontSize = useMarkdownUIStore((state) => state.setFontSize);
   const resetSectionToDefaults = useMarkdownUIStore((state) => state.resetSectionToDefaults);
@@ -32,7 +31,7 @@ export function MarkdownOptionsView() {
   const isLayoutSectionDirty = isMarkdownSettingsSectionDirty(previewSettings, LAYOUT_SECTION_KEYS);
 
   return (
-    <div className="flex min-h-full flex-col gap-2 bg-hover-overlay p-2">
+    <div className="grid gap-3 p-3 @xl/workspace:grid-cols-2 @4xl/workspace:grid-cols-3">
       <OptionsSection
         title="Preview"
         isDirty={isPreviewSectionDirty}
@@ -64,16 +63,7 @@ export function MarkdownOptionsView() {
         isDirty={isLayoutSectionDirty}
         onReset={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
       >
-        <SelectionBar<MarkdownViewMode>
-          options={[
-            { label: "Editor", value: "editor" },
-            { label: "Split", value: "split" },
-            { label: "Preview", value: "preview" }
-          ]}
-          value={viewMode}
-          onChange={setViewMode}
-          className="mt-1"
-        />
+        <MarkdownLayoutControl />
         <Slider
           min={30}
           max={70}
@@ -100,4 +90,20 @@ export function MarkdownOptionsView() {
       </div>
     </div>
   );
+}
+
+export function MarkdownLayoutControl() {
+  const viewMode = useMarkdownUIStore((state) => state.viewMode);
+  const setViewMode = useMarkdownUIStore((state) => state.setViewMode);
+  return <SelectionBar<MarkdownViewMode>
+    options={[
+      { label: "Editor", value: "editor", icon: <MdEdit /> },
+      { label: "Split", value: "split", icon: <MdVerticalSplit /> },
+      { label: "Preview", value: "preview", icon: <MdPreview /> }
+    ]}
+    value={viewMode}
+    onChange={setViewMode}
+    className="w-auto"
+    buttonClassName="px-3"
+  />;
 }

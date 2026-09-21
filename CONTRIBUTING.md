@@ -1,9 +1,8 @@
-
 # Contributing to CompareCode
 
 First off, thank you for considering contributing to CompareCode! It's people like you that make the open-source community such a great place to learn, inspire, and create.
 
-## 🛠️ How to Contribute
+## How to Contribute
 
 We use the standard **Fork & Pull Request** workflow. You don't need direct access to this repository to contribute.
 
@@ -19,69 +18,58 @@ Clone the forked repository to your local machine.
 
 Always create a new branch for your changes. Avoid working directly on the `main` or `development` branch. Use descriptive names for your branches:
 
-```
+```bash
 git checkout -b feature/your-amazing-feature
 # or
 git checkout -b fix/issue-description
-
 ```
 
 ### 4. Make Your Changes
 
--   Write your code.
-    
--   Ensure your code follows the existing style and uses **TypeScript** properly.
-
--   Follow module boundaries strictly:
-	- Text-related logic/UI changes belong in the Text module.
-	- Image-related logic/UI changes belong in the Image module.
-	- Cross-module reusable code belongs in Shared.
-	- Avoid coupling Text internals to Image internals (and vice versa).
-    
--   Run `npm run lint` to check for any formatting or linting issues.
-    
--   Test your changes locally by running `npm run dev`.
-    
+- Write your code.
+- Ensure your code follows the existing style and uses **TypeScript** properly.
+- Follow the documented module boundaries:
+  - [Text Compare architecture](docs/architecture/text-compare.md)
+  - [Image Compare architecture](docs/architecture/image-compare.md)
+  - [Markdown architecture](docs/architecture/markdown.md)
+- Avoid coupling Text internals to Image internals or unrelated features to Markdown internals.
+- Run `npm run lint` and `npm run test` before submitting production code changes.
+- Run `npm run build` when production code, configuration, or dependencies change.
 
 ### 5. Commit Your Changes
 
-Write clear and concise commit messages explaining _what_ you changed and _why_.
+Use an English, subject-only [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) message.
 
-**⚠️ IMPORTANT: Sign Your Commits** Our CI pipeline requires all commits to be signed (e.g., via GPG, SSH, or S/MIME) to be accepted. You can sign your commit by adding the `-S` flag:
+Every commit requires a [Developer Certificate of Origin](https://developercertificate.org/) sign-off. Create it with `git commit -s`:
 
+```bash
+git commit -s -m "feat(text): add unified view toggle"
 ```
-git commit -S -m "Add: unified view toggle feature"
 
-```
+### 6. The "One PR = One Feature/Fix" Rule
 
-### 6. 🎯 The "One PR = One Feature/Fix" Rule
+**Please keep your pull requests focused!** Each PR should address exactly **one** specific feature or bug fix. Do not mix multiple unrelated changes into a single PR.
 
-**Please keep your Pull Requests focused!** Each PR should address exactly **one** specific feature or bug fix. Do not mix multiple, unrelated changes into a single PR.
-
-If you want to contribute multiple features or fixes, please create separate branches and open a separate Pull Request for each. This makes reviewing much faster and easier!
+If you want to contribute multiple features or fixes, create separate branches and open a separate pull request for each. This makes reviewing much faster and easier.
 
 ### 7. Push and Open a Pull Request
 
 Push your branch to your forked repository on GitHub:
 
-```
+```bash
 git push origin feature/your-amazing-feature
-
 ```
 
-Then, go to the original CompareCode repository on GitHub, and you will see a prompt to open a **Pull Request (PR)**. Click it, describe your changes, and submit!
+Then go to the original CompareCode repository on GitHub, open a pull request to `development`, describe your changes, and submit it.
 
-## 🧑‍💻 Code Guidelines
+## Code Guidelines
 
--   **Components:** We use functional React components with hooks.
-    
--   **Styling:** We use Tailwind CSS. Try to use utility classes instead of writing custom CSS whenever possible.
-    
--   **State Management:** For global state, use the existing `Zustand` stores located in the `/store` directory.
-    
+- **Components:** Use functional React components with hooks.
+- **Styling:** Use Tailwind CSS and the existing theme tokens and shared UI primitives.
+- **State Management:** Extend the canonical Zustand store for the affected feature or application-wide concern. Do not create a parallel source of truth.
 
-## 🐛 Found a Bug?
+## Found a Bug?
 
-If you find a bug in the source code, you can help us by submitting an issue to our GitHub Repository. Even better, you can submit a Pull Request with a fix!
+If you find a bug in the source code, submit an issue to the GitHub repository. Even better, submit a pull request with a fix.
 
 Thank you for your help!

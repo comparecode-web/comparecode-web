@@ -122,10 +122,10 @@ export function MarkdownHistoryView() {
           >
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-semibold text-text-primary">{item.title}</span>
-              {isCurrent && <span className="text-[10px] font-bold uppercase tracking-wider text-accent-primary">Active</span>}
+              {isCurrent && <span className="text-[0.625rem] font-bold text-accent-primary">Active</span>}
             </div>
             <p className="mt-1 truncate text-xs text-text-secondary">{summarizeMarkdown(item.value)}</p>
-            <p className="mt-0.5 text-[10px] text-text-secondary">{item.detail}</p>
+            <p className="mt-0.5 text-[0.625rem] text-text-secondary">{item.detail}</p>
           </button>
         );
       })}

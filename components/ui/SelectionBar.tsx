@@ -7,6 +7,7 @@ export interface SelectionBarOption<T extends string> {
   label: string;
   value: T;
   disabled?: boolean;
+  icon?: React.ReactNode;
 }
 
 interface SelectionBarBaseProps<T extends string> {
@@ -85,7 +86,7 @@ export const SelectionBar = <T extends string>({
             disabled={optionDisabled}
             onClick={() => handleSelect(option.value)}
             className={cn(
-              "relative flex-1 border-r border-border-default px-3 py-1.5 text-sm transition-colors outline-none last:border-r-0",
+              "relative flex min-w-max flex-1 items-center justify-center border-r border-border-default px-3 py-1.5 text-sm transition-colors outline-none last:border-r-0",
               "focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-accent-primary/45",
               selected
                 ? "bg-bg-selected text-accent-primary font-semibold"
@@ -94,7 +95,10 @@ export const SelectionBar = <T extends string>({
               buttonClassName
             )}
           >
-            {option.label}
+            <span className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+              {option.icon && <span aria-hidden="true" className="inline-flex shrink-0 text-base">{option.icon}</span>}
+              {option.label}
+            </span>
           </button>
         );
       })}

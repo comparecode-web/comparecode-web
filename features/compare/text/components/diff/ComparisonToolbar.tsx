@@ -33,25 +33,25 @@ export function ComparisonToolbar() {
   };
 
   return (
-    <div className="flex items-center justify-between border-b border-border-default bg-bg-secondary px-2 sm:px-4 h-(--header-height) shrink-0 z-20 select-none">
-      <div className="flex flex-1 items-center justify-between min-w-0">
+    <div data-tool-controls className="flex min-h-(--header-height) shrink-0 items-center justify-between gap-1 border-b border-border-default bg-bg-secondary px-2 py-1 z-20 select-none @3xl/workspace:px-4">
+      <div className="flex flex-1 items-center justify-between gap-1 min-w-0">
         <StatDisplay type="removals" count={stats.removals} />
-        <div className="flex items-center gap-1 sm:gap-4">
-          <span className="text-xs sm:text-sm text-text-secondary hidden md:block">{leftLineCount} lines</span>
+        <div className="flex items-center gap-1 @3xl/workspace:gap-4">
+          <span className="hidden text-sm text-text-secondary @5xl/workspace:block">{leftLineCount} lines</span>
           <CopyButton text={leftText} side="left" copiedSide={copiedSide} onCopy={handleCopy} />
         </div>
       </div>
 
-      <button onClick={() => executeSwap(settings)} className="mx-3 sm:mx-6 text-2xl text-accent-primary hover:bg-hover-overlay p-2 rounded transition-colors duration-(--duration-short) shrink-0" title="Swap Sides">
+      <button onClick={() => executeSwap(settings)} className="mx-1 @3xl/workspace:mx-4 text-2xl text-accent-primary hover:bg-hover-overlay p-2 rounded transition-colors duration-(--duration-short) shrink-0" title="Swap sides">
         <MdSwapHoriz />
       </button>
 
-      <div className="flex flex-1 items-center justify-between min-w-0">
+      <div className="flex flex-[1.5] items-center justify-between gap-1 min-w-0 @3xl/workspace:flex-1">
         <StatDisplay type="additions" count={stats.additions} />
-        <div className="flex items-center gap-1 sm:gap-4">
-          <span className="text-xs sm:text-sm text-text-secondary hidden md:block">{rightLineCount} lines</span>
+        <div className="flex items-center gap-1 @3xl/workspace:gap-4">
+          <span className="hidden text-sm text-text-secondary @5xl/workspace:block">{rightLineCount} lines</span>
           <CopyButton text={rightText} side="right" copiedSide={copiedSide} onCopy={handleCopy} />
-          <div className="w-px h-6 bg-border-default mx-2" />
+          <div className="w-px h-6 bg-border-default mx-1" />
           <ClearButton onClear={executeClear} />
         </div>
       </div>
@@ -71,11 +71,11 @@ function StatDisplay({ type, count }: StatDisplayProps) {
   const label = isRemovals ? "removals" : "additions";
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-      <MdDescription className="text-xl text-text-secondary shrink-0" />
+    <div className="flex shrink-0 items-center gap-1 whitespace-nowrap @3xl/workspace:gap-2">
+      <MdDescription className="hidden text-xl text-text-secondary shrink-0 @lg/workspace:block" />
       <span className={`font-bold ${textColor} text-sm`}>
-        <span className="inline sm:hidden">{count}<span className="hidden min-[400px]:inline"> {sign}</span></span>
-        <span className="hidden sm:inline">{count} {label}</span>
+        <span className="inline @3xl/workspace:hidden">{count} {sign}</span>
+        <span className="hidden @3xl/workspace:inline">{count} {label}</span>
       </span>
     </div>
   );
@@ -90,7 +90,7 @@ interface CopyButtonProps {
 
 function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
   const isCopied = copiedSide === side;
-  const title = side === "left" ? "Copy Original Text" : "Copy Modified Text";
+  const title = side === "left" ? "Copy original text" : "Copy modified text";
 
   const isDisabled = isCopied || !text?.trim();
 
@@ -98,11 +98,11 @@ function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
     <button
       onClick={() => onCopy(text, side)}
       disabled={isDisabled}
-      className="flex items-center gap-1 text-accent-primary hover:bg-hover-overlay px-3 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-(--duration-short)"
+      className="flex min-h-10 items-center gap-1 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors duration-(--duration-short)"
       title={title}
     >
       {isCopied ? <MdCheck className="text-xl" /> : <MdContentCopy className="text-xl" />}
-      <span className="text-sm font-semibold hidden sm:inline">{isCopied ? "Copied" : "Copy"}</span>
+      <span className="text-sm font-semibold hidden @3xl/workspace:inline">{isCopied ? "Copied" : "Copy"}</span>
     </button>
   );
 }
@@ -120,13 +120,13 @@ function ClearButton({ onClear }: ClearButtonProps) {
         onClick={onClear}
         leftIcon={<MdDelete className="text-xl" />}
         title="Clear comparison"
-        className="hidden md:inline-flex"
+        className="hidden @3xl/workspace:inline-flex"
       >
         Clear
       </Button>
       <button
         onClick={onClear}
-        className="md:hidden p-2 text-danger hover:bg-hover-overlay rounded transition-colors"
+        className="@3xl/workspace:hidden p-2 text-danger hover:bg-hover-overlay rounded transition-colors"
         title="Clear comparison"
       >
         <MdDelete className="text-xl" />
@@ -134,6 +134,5 @@ function ClearButton({ onClear }: ClearButtonProps) {
     </>
   );
 }
-
 
 

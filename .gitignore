@@ -8,6 +8,8 @@
 !.yarn/versions
 /coverage
 /.next/
+/.playwright-mcp/
+/.venv/
 /out/
 /build
 /dist
@@ -26,7 +28,4 @@ yarn-error.log*
 next-env.d.ts
 .vscode/
 .idea/
-.github/copilot-instructions.local.md
 .tmp/
-.next-dev-server.*.log
-.next-start-server.*.log

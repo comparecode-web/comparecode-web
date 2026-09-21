@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { remToCssPixels } from "@/utils/domSizing";
 
 type TooltipState = {
   target: HTMLElement;
@@ -52,8 +53,8 @@ export function GlobalTooltip() {
     const tooltipRect = tooltipElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const edgePadding = 8;
-    const gap = 10;
+    const edgePadding = remToCssPixels(0.5);
+    const gap = remToCssPixels(0.625);
     const anchor = activeTooltip.anchorRect;
 
     const unclampedLeft = anchor.left + anchor.width / 2 - tooltipRect.width / 2;
@@ -190,7 +191,7 @@ export function GlobalTooltip() {
       role="tooltip"
       ref={tooltipRef}
       className="cc-global-tooltip"
-      style={{ left: "8px", top: "8px" }}
+      style={{ left: "0.5rem", top: "0.5rem" }}
     >
       {activeTooltip.text}
     </div>,

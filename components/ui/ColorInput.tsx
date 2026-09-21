@@ -46,14 +46,14 @@ export function ColorInput({
   }, [pickerFallback, value]);
 
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{label}</span>
-      <div className="flex items-center gap-2">
+    <label className="flex min-w-0 flex-col gap-1">
+      <span className="text-xs font-semibold text-text-secondary">{label}</span>
+      <div className="flex min-w-0 items-center gap-2">
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-bg-secondary text-text-primary border border-border-default rounded-md px-3 py-2 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
+          className="min-w-0 w-full flex-1 bg-bg-secondary text-text-primary border border-border-default rounded-md px-3 py-2 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
           placeholder={placeholder}
         />
 

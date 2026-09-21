@@ -43,7 +43,7 @@ function persistPartial(state: Pick<MarkdownUIState, "editorPaneWidthPercent" | 
 
 export const useMarkdownUIStore = create<MarkdownUIState>((set, get) => ({
   isLoaded: false,
-  isOptionsPanelOpen: true,
+  isOptionsPanelOpen: false,
   optionsPanelTab: "options",
   ...defaultMarkdownUISettings,
   setIsOptionsPanelOpen: (value) => set({ isOptionsPanelOpen: value }),

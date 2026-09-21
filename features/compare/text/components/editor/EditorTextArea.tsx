@@ -28,7 +28,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
   }, [value, onChange]);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex min-w-0 flex-col flex-1 min-h-0">
       <div className="flex items-center gap-2 mb-1 sm:hidden">
         <span className="font-bold text-text-primary text-xs">{label}</span>
       </div>
@@ -36,7 +36,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 resize-none rounded-md border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary outline-none custom-scrollbar"
+        className="min-h-0 min-w-0 flex-1 resize-none rounded-xl border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary outline-none custom-scrollbar"
         style={{
           fontSize: `${fontSize}px`,
           fontFamily: fontFamily,

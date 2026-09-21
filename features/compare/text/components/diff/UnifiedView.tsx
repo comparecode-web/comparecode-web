@@ -51,7 +51,7 @@ export function UnifiedView() {
   }
 
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
-  const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 100px)` } : {};
+  const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 6.25rem)` } : {};
 
   const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;

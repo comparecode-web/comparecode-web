@@ -67,7 +67,7 @@ function SeoBand({ children, className = "" }: Readonly<{ children: ReactNode; c
 function SectionHeading({ eyebrow, title, body }: Readonly<{ eyebrow: string; title: string; body: string }>) {
   return (
     <div className="max-w-3xl">
-      <p className="inline-flex items-center rounded-full border border-accent-primary/30 bg-accent-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-accent-primary">
+      <p className="inline-flex items-center rounded-full border border-accent-primary/30 bg-accent-primary/10 px-3 py-1 text-xs font-bold tracking-[0.14em] text-accent-primary">
         {eyebrow}
       </p>
       <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-text-primary sm:text-3xl">{title}</h2>

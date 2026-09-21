@@ -117,7 +117,7 @@ export function ImageView() {
   }, [alignment.appliedTransform, bothLoaded, modifiedImage, originalImage]);
 
   return (
-    <div className="flex h-full w-full flex-col bg-bg-secondary overflow-hidden">
+    <div className="@container/image flex h-full min-w-0 w-full flex-col gap-3 overflow-hidden bg-bg-secondary p-2">
       {!bothLoaded ? (
         <div className="flex-1 min-h-0 overflow-auto custom-scrollbar">
           <ImageUploadPanel />
@@ -128,16 +128,16 @@ export function ImageView() {
           <AlignmentPrompt />
           <ImageAlignmentPanel />
 
-          <div className="flex-1 min-h-0 flex flex-col">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-bg-primary shadow-sm">
             <ImageCompareCanvas />
           </div>
 
-          <div className="shrink-0 border-t border-border-default bg-bg-secondary px-2 py-1.5 sm:px-3 sm:py-2">
+          <div className="shrink-0 rounded-xl border border-border-default bg-bg-primary px-2 py-1.5 sm:px-3 sm:py-2">
             <div className="flex items-center justify-center">
               <button
                 onClick={toggleMetadataPanel}
                 className="inline-flex items-center gap-2 rounded-md bg-accent-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors duration-(--duration-short) hover:bg-accent-hover"
-                title={isMetadataPanelOpen ? "Hide Metadata" : "Show Metadata"}
+                title={isMetadataPanelOpen ? "Hide metadata" : "Show metadata"}
               >
                 <MdInfo className="text-base shrink-0" />
                 <span>Metadata</span>
@@ -147,14 +147,15 @@ export function ImageView() {
           </div>
 
           <div
+            hidden={!isMetadataPanelOpen}
             className={cn(
-              "shrink-0 transition-[max-height,opacity] duration-(--duration-medium) ease-in-out overflow-hidden bg-bg-primary z-10",
+              "min-h-0 shrink flex-col overflow-hidden rounded-xl bg-bg-primary z-10",
               isMetadataPanelOpen
-                ? "max-h-120 border-t border-border-default shadow-sm opacity-100"
-                : "max-h-0 opacity-0"
+                ? "flex max-h-[35%] border border-border-default shadow-sm"
+                : "hidden"
             )}
           >
-            <div className="overflow-y-auto custom-scrollbar">
+            <div className="min-h-0 overflow-y-auto custom-scrollbar">
               <ImageMetadataPanel
                 originalImage={originalImage}
                 modifiedImage={modifiedImage}

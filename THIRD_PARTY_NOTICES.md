@@ -1,42 +1,11 @@
 # Third-Party Notices
 
-This project uses third-party open-source software.
+CompareCode's own code is licensed under [MIT](LICENSE). Dependencies, fonts, icons, and embedded libraries retain their original licenses.
 
-## OpenCV.js
+The [license texts and copyright notices](public/licenses/third-party.txt) accompany the web application at `/licenses/third-party.txt`, accessible through **Settings → Open-source licenses**. Keep this file in deployments. Identical license texts are shared between their explicitly listed owners; the original copyright notices are retained.
 
-- Package: `@techstark/opencv-js`
-- License: Apache License 2.0
-- Source: https://github.com/TechStark/opencv-js
-- Upstream project: https://opencv.org
+The notices cover application libraries and their transitive dependencies, Next.js bundled notices, Material Design / Font Awesome / Ionicons artwork, the OFL fonts, KaTeX fonts, and the libraries embedded in the vendored OpenCV.js build. DOMPurify is used under its Apache-2.0 option; `diff` retains BSD-3-Clause. This does not change CompareCode's MIT license.
 
-The OpenCV.js package is used for browser-side image feature detection, descriptor matching, and affine alignment estimation.
+When updating dependencies or assets, update the affected notices from their upstream license and copyright files. Source URLs and package versions are recorded alongside the texts. The dependency-based collection retains framework and transitive notices together; it is not an assertion that every listed package appears in a browser bundle.
 
-Apache License 2.0 text: https://www.apache.org/licenses/LICENSE-2.0
-
-## Markdown Preview Runtime Libraries
-
-- Packages: `react-markdown`, `remark-gfm`, `remark-gemoji`, `remark-math`, `rehype-raw`, `rehype-sanitize`, `rehype-katex`, `katex`, `mermaid`, `turndown`, `turndown-plugin-gfm`
-- License: MIT
-- Sources:
-  - https://github.com/remarkjs/react-markdown
-  - https://github.com/remarkjs/remark-gfm
-  - https://github.com/remarkjs/remark-gemoji
-  - https://github.com/remarkjs/remark-math
-  - https://github.com/rehypejs/rehype-raw
-  - https://github.com/rehypejs/rehype-sanitize
-  - https://github.com/remarkjs/remark-math/tree/main/packages/rehype-katex
-  - https://github.com/KaTeX/KaTeX
-  - https://github.com/mermaid-js/mermaid
-  - https://github.com/mixmark-io/turndown
-  - https://github.com/domchristie/turndown-plugin-gfm
-
-These packages are used for browser-side Markdown rendering, GitHub Flavored Markdown support, emoji shortcodes, limited sanitized HTML alignment, mathematical notation, Mermaid diagrams, and rich HTML paste conversion to Markdown.
-
-MIT License text: https://opensource.org/license/mit
-
-Notable transitive license finding:
-
-- Package: `@mixmark-io/domino`
-- License: BSD 2-Clause
-- Source: https://github.com/mixmark-io/domino
-- Used transitively by `turndown`.
+The hosted web application does not distribute sharp/libvips native server binaries to browsers. If a future release ships those binaries in an installer, container, or server archive, that distribution must separately satisfy their LGPL and other license obligations, including applicable corresponding-source and replacement/relinking requirements.

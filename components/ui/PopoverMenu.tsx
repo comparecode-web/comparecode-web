@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/utils/uiHelpers";
+import { remToCssPixels } from "@/utils/domSizing";
 
 interface PopoverMenuProps {
   isOpen: boolean;
@@ -25,6 +27,35 @@ export function PopoverMenu({
   onKeyDown
 }: PopoverMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [position, setPosition] = useState<CSSProperties>({ position: "fixed", visibility: "hidden", width: "max-content", maxWidth: "calc(100vw - 1rem)" });
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const updatePosition = () => {
+      const trigger = triggerRef.current;
+      const menu = menuRef.current;
+      if (!trigger || !menu) return;
+      setPortalTarget(trigger.closest("dialog") ?? document.body);
+      const rect = trigger.getBoundingClientRect();
+      const edge = remToCssPixels(0.5);
+      const gap = remToCssPixels(0.25);
+      const dropdownMaxHeight = remToCssPixels(14);
+      const width = Math.min(role === "listbox" ? rect.width : Math.max(rect.width, menu.scrollWidth), Math.max(0, window.innerWidth - 2 * edge));
+      const below = window.innerHeight - rect.bottom - edge - gap;
+      const above = rect.top - edge - gap;
+      const placeAbove = below < Math.min(menu.scrollHeight, dropdownMaxHeight) && above > below;
+      const left = Math.max(edge, Math.min(align === "end" ? rect.right - width : rect.left, window.innerWidth - width - edge));
+      const next: CSSProperties = { position: "fixed", visibility: "visible", width, left, top: placeAbove ? undefined : rect.bottom + gap, bottom: placeAbove ? window.innerHeight - rect.top + gap : undefined, maxHeight: Math.min(role === "listbox" ? dropdownMaxHeight : Infinity, Math.max(0, placeAbove ? above : below)) };
+      setPosition((previous) => JSON.stringify(previous) === JSON.stringify(next) ? previous : next);
+    };
+    updatePosition();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updatePosition);
+    if (triggerRef.current) observer?.observe(triggerRef.current);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => { observer?.disconnect(); window.removeEventListener("resize", updatePosition); window.removeEventListener("scroll", updatePosition, true); };
+  }, [align, isOpen, portalTarget, role, triggerRef]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -47,16 +78,22 @@ export function PopoverMenu({
       }
 
       event.preventDefault();
+      event.stopImmediatePropagation();
       onOpenChange(false);
       triggerRef.current?.focus();
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleEscape, true);
+    const observer = new MutationObserver(() => {
+      if (triggerRef.current?.closest("[inert]")) onOpenChange(false);
+    });
+    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ["inert"] });
 
     return () => {
+      observer.disconnect();
       document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleEscape, true);
     };
   }, [isOpen, onOpenChange, triggerRef]);
 
@@ -64,19 +101,20 @@ export function PopoverMenu({
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       ref={menuRef}
       role={role}
+      style={position}
       className={cn(
-        "absolute top-full z-20 mt-1 rounded-md border border-border-default bg-bg-primary shadow-lg",
-        align === "end" ? "right-0" : "left-0",
+        "z-[70] overflow-y-auto rounded-xl border border-border-default bg-bg-primary shadow-lg",
         className
       )}
       onKeyDown={onKeyDown}
     >
       {children}
-    </div>
+    </div>,
+    portalTarget ?? document.body
   );
 }
 
