@@ -39,6 +39,20 @@ describe("Workspace navigation", () => {
     expect(screen.getByRole("link", { name: "GitHub" }).closest("aside")).toContainElement(screen.getByRole("button", { name: /^Theme:/ }));
   });
 
+  it("toggles desktop navigation from the brand without changing routes", async () => {
+    const user = userEvent.setup();
+    render(<WorkspaceNavigation />);
+    const toggle = screen.getByRole("button", { name: "Toggle navigation labels" });
+    await user.click(toggle);
+    expect(toggle.closest("aside")).toHaveClass("w-60");
+    await user.click(within(toggle).getByText("Compare", { exact: true }));
+    expect(toggle.closest("aside")).toHaveClass("w-16");
+    expect(navigation.replace).not.toHaveBeenCalled();
+    expect(toggle.querySelector("a")).toBeNull();
+    await user.keyboard("{Enter}");
+    expect(toggle.closest("aside")).toHaveClass("w-60");
+  });
+
   it("opens mobile navigation on any route and closes after a destination is selected", async () => {
     navigation.pathname = "/settings";
     const user = userEvent.setup();

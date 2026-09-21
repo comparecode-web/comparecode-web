@@ -17,6 +17,9 @@
 - When a repository change makes `AGENTS.md`, skill routing, a `SKILL.md`, or project documentation stale, update or remove that guidance in the same task.
 - Preserve UTF-8, preferably without BOM. Do not run bulk encoding conversions or character-set transforms.
 - Edit repository files deliberately and file by file. Command-line tools are appropriate for search, diagnostics, formatting, and validation, but not for unreviewed bulk rewrites.
+- AI image generation is strictly prohibited for visual assets. Author and edit graphics directly with SVG paths, HTML/CSS, or equivalent code-authored vector shapes; never use image-generation models or generated-image derivatives.
+- Keep editable vector or code-based artwork as the canonical source. Raster exports are allowed only when required for compatibility and must be rendered from that source, not maintained independently. The project icon source is `public/brand/comparecode-logo.svg`; its PNG export is for social previews and Apple touch icons.
+- Keep asset provenance accurate. Describe code-authored or mechanically rendered artwork as edited or code-authored, never as human-drawn.
 
 ## Communication and Language
 

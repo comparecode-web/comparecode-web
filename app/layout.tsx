@@ -6,7 +6,7 @@ import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { GlobalTooltip } from "@/components/layout/GlobalTooltip";
 import { ToastViewport } from "@/components/layout/ToastViewport";
-import { defaultDescription, SITE_LOGO_PATH, SITE_NAME, SITE_URL } from "@/config/seo";
+import { defaultDescription, SITE_ICON_PATH, SITE_LOGO_PATH, SITE_NAME, SITE_URL } from "@/config/seo";
 
 const THEME_INIT_SCRIPT = `
   (function () {
@@ -75,8 +75,8 @@ export const metadata: Metadata = {
     images: [SITE_LOGO_PATH]
   },
   icons: {
-    icon: SITE_LOGO_PATH,
-    shortcut: SITE_LOGO_PATH,
+    icon: { url: SITE_ICON_PATH, type: "image/svg+xml", sizes: "any" },
+    shortcut: SITE_ICON_PATH,
     apple: SITE_LOGO_PATH
   }
 };

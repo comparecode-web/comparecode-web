@@ -240,7 +240,7 @@ export function MarkdownEditorPane({
         size="sm"
         onClick={() => fileInputRef.current?.click()}
         title="Import Markdown or text file"
-        className="absolute right-3 top-3 bg-bg-primary/95 shadow-sm backdrop-blur-sm"
+        className="absolute right-6 top-3 bg-bg-primary/95 shadow-sm backdrop-blur-sm"
       >
         <span className="text-lg"><MdUploadFile /></span>
       </IconButton>

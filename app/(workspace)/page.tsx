@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MdArticle, MdCode, MdImage, MdHistory, MdSettings, MdArrowOutward } from "react-icons/md";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HomeSeoContent } from "@/components/seo/SeoContent";
-import { homeMetadata, softwareApplicationJsonLd } from "@/config/seo";
+import { homeMetadata, SITE_ICON_PATH, softwareApplicationJsonLd } from "@/config/seo";
 
 export const metadata = homeMetadata;
 
@@ -48,12 +48,12 @@ export default function Home() {
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col overflow-auto bg-bg-secondary custom-scrollbar">
       <JsonLd data={softwareApplicationJsonLd} />
-      <section className="relative flex min-h-[calc(100dvh-var(--header-height))] w-full shrink-0 items-center justify-center bg-linear-to-br from-accent-primary/16 via-transparent to-accent-primary/8 px-4 py-8 sm:px-6">
+      <section className="relative flex min-h-full w-full shrink-0 items-center justify-center bg-linear-to-br from-accent-primary/16 via-transparent to-accent-primary/8 px-4 py-8 sm:px-6">
         <div className="cc-animate-scale-in relative w-full max-w-5xl rounded-xl border border-border-default bg-bg-primary/95 p-4 shadow-xl backdrop-blur-sm sm:rounded-2xl sm:p-8">
           <div className="mb-5 border-b border-border-default pb-5 sm:mb-8 sm:pb-6">
             <div className="cc-animate-fade-in-up flex min-w-0 flex-col items-start gap-3 p-1 sm:inline-flex sm:flex-row sm:items-center sm:p-1.5">
               <Image
-                src="/brand/comparecode-logo.png"
+                src={SITE_ICON_PATH}
                 alt="CompareCode"
                 width={64}
                 height={64}

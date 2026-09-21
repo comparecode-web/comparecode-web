@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const SITE_URL = "https://comparecodeweb.com";
 export const SITE_NAME = "CompareCode";
 export const SITE_LOGO_PATH = "/brand/comparecode-logo.png";
+export const SITE_ICON_PATH = "/brand/comparecode-logo.svg";
 
 export const defaultDescription = "CompareCode is a free, open-source comparison tool for code, text, images, and Markdown. Compare changes, preview Markdown, and work locally in your browser with no account required.";
 
