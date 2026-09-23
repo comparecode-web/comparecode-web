@@ -160,7 +160,7 @@ export function SelectDropdown({
         triggerRef={triggerRef}
         role="listbox"
         onKeyDown={handleListboxKeyDown}
-        className={cn("w-full max-h-56 overflow-y-auto bg-bg-secondary py-1 custom-scrollbar", menuClassName)}
+        className={cn("w-full overflow-y-auto bg-bg-secondary py-1 custom-scrollbar", menuClassName)}
       >
         <div id={listboxId}>
           {options.map((option, index) => {

@@ -10,7 +10,7 @@ Keep the root font size at the browser default. Do not force `html` to 16px or 6
 
 | Use | Preferred unit | CompareCode examples |
 | --- | --- | --- |
-| UI text, spacing, control dimensions, rounded corners, scalable panel limits | Existing Tailwind tokens backed by `rem`; explicit `rem` when the scale has no equivalent | `p-2`, `w-60`, `min-h-30`, small history labels, 14rem dropdown cap |
+| UI text, spacing, control dimensions, rounded corners, scalable panel limits | Existing Tailwind tokens backed by `rem`; explicit `rem` when the scale has no equivalent | `p-2`, `w-60`, `min-h-30`, small history labels, 14.5rem dropdown cap |
 | An icon or decoration that should follow its local text size | `em` or the existing icon primitive | React Icons' intrinsic `1em` size |
 | Space shared between panes or constrained by a parent | Flex/Grid, `fr`, `%`, `auto`, intrinsic sizing | Editor split ratios, compact options fitting |
 | Mobile viewport containment | `dvh`, viewport units combined with scalable limits | Navigation height, `min(90vw, 20rem)` history width |
@@ -32,7 +32,7 @@ Font-relative units in media queries resolve against the browser's initial font 
 
 ## DOM Geometry Boundaries
 
-Keep `getBoundingClientRect`, scroll, pointer, and virtualization values in their native coordinate system. Convert a rem design constraint to CSS pixels only when combining it with measured geometry, using `utils/domSizing.ts`; never divide measured coordinates by 16. Popup positioning uses this boundary for its 0.5rem edge margin, 0.25rem trigger gap, and 14rem dropdown limit. It recalculates on trigger resize, viewport resize, and scroll. The dropdown limit also respects the available viewport space.
+Keep `getBoundingClientRect`, scroll, pointer, and virtualization values in their native coordinate system. Convert a rem design constraint to CSS pixels only when combining it with measured geometry, using `utils/domSizing.ts`; never divide measured coordinates by 16. Popup positioning uses this boundary for its 0.5rem edge margin, 0.25rem trigger gap, and 14.5rem dropdown limit. It recalculates on trigger resize, viewport resize, and scroll. The dropdown limit also respects the available viewport space.
 
 Tooltips use scalable CSS bounds and convert their spacing at the same geometry boundary. Canvas coordinates, image dimensions, device-pixel ratios, and saved font settings must not be reinterpreted as rem values. The mobile form-control rule retains a 16px minimum while allowing the root-relative size to grow with `max(1rem, 16px)`.
 

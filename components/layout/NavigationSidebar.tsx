@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
 import { usePathname, useRouter } from "next/navigation";
-import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome, MdClose, MdChevronLeft, MdChevronRight } from "react-icons/md";
+import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome, MdClose, MdChevronLeft, MdChevronRight, MdQrCode2 } from "react-icons/md";
 import { IconButton } from "@/components/ui/IconButton";
 import { ThemeSelect } from "@/components/settings/ThemeSelect";
 import { cn } from "@/utils/uiHelpers";
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/text", label: "Text compare", icon: MdCode },
   { href: "/image", label: "Image compare", icon: MdImage },
   { href: "/markdown", label: "Markdown preview", icon: MdArticle },
+  { href: "/qr", label: "QR code generator", icon: MdQrCode2 },
   { href: "/history", label: "History", icon: MdHistory },
   { href: "/settings", label: "Settings", icon: MdSettings }
 ];
@@ -73,7 +74,7 @@ export function NavigationSidebar() {
     <nav aria-label={mobile ? "Mobile navigation" : "Main navigation"} className="flex flex-col gap-1.5 p-2" data-tool-controls>
       {navItems.map(({ href, label, icon: Icon }) => (
         <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} onClick={() => navigate(href)} className={cn("flex min-h-11 items-center gap-3 rounded-xl border px-3 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? "border-accent-primary/20 bg-bg-selected text-accent-primary" : "border-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
-          <Icon className="shrink-0 text-xl" />
+          <Icon className={cn("shrink-0 text-2xl", pathname !== href && "text-text-primary")} />
           <span className={cn("whitespace-nowrap", !mobile && "hidden @min-[12rem]/navigation:inline")}>{label}</span>
         </button>
       ))}

@@ -1,6 +1,6 @@
 import { DiffAlgorithm } from "../store/useImageCompareStore";
 import { ImageAffineTransform } from "./alignment/types";
-import { buildAffineMatrix, getTransformedBounds } from "./alignment/transformUtils";
+import { buildAffineMatrix, getTransformedBounds, hasSameAspectRatio } from "./alignment/transformUtils";
 
 export interface DiffStats {
   totalPixels: number;
@@ -94,7 +94,7 @@ function drawCheckerboard(ctx: CanvasRenderingContext2D, width: number, height: 
   }
 }
 
-function createAlignedPair(
+export function createAlignedPair(
   original: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
   modified: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D },
   transform: ImageAffineTransform | null | undefined
@@ -107,27 +107,53 @@ function createAlignedPair(
   if (!transform) {
     const width = Math.max(original.canvas.width, modified.canvas.width);
     const height = Math.max(original.canvas.height, modified.canvas.height);
-    const totalPixels = width * height;
-    const originalData = original.ctx.getImageData(0, 0, original.canvas.width, original.canvas.height).data;
-    const modifiedData = modified.ctx.getImageData(0, 0, modified.canvas.width, modified.canvas.height).data;
-    const o = new Uint8ClampedArray(totalPixels * 4);
-    const m = new Uint8ClampedArray(totalPixels * 4);
 
-    for (let y = 0; y < original.canvas.height; y++) {
-      const srcStart = y * original.canvas.width * 4;
-      const srcEnd = srcStart + original.canvas.width * 4;
-      const dstStart = y * width * 4;
-      o.set(originalData.subarray(srcStart, srcEnd), dstStart);
+    if (
+      original.canvas.width === width &&
+      original.canvas.height === height &&
+      modified.canvas.width === width &&
+      modified.canvas.height === height
+    ) {
+      return {
+        width,
+        height,
+        originalData: original.ctx.getImageData(0, 0, width, height).data,
+        modifiedData: modified.ctx.getImageData(0, 0, width, height).data
+      };
     }
 
-    for (let y = 0; y < modified.canvas.height; y++) {
-      const srcStart = y * modified.canvas.width * 4;
-      const srcEnd = srcStart + modified.canvas.width * 4;
-      const dstStart = y * width * 4;
-      m.set(modifiedData.subarray(srcStart, srcEnd), dstStart);
+    const originalCanvas = document.createElement("canvas");
+    const modifiedCanvas = document.createElement("canvas");
+    originalCanvas.width = width;
+    originalCanvas.height = height;
+    modifiedCanvas.width = width;
+    modifiedCanvas.height = height;
+
+    const originalCtx = originalCanvas.getContext("2d");
+    const modifiedCtx = modifiedCanvas.getContext("2d");
+    if (!originalCtx || !modifiedCtx) {
+      throw new Error("Could not create aligned canvas context");
     }
 
-    return { width, height, originalData: o, modifiedData: m };
+    if (hasSameAspectRatio(original.canvas.width, original.canvas.height, modified.canvas.width, modified.canvas.height)) {
+      originalCtx.imageSmoothingEnabled = true;
+      originalCtx.imageSmoothingQuality = "high";
+      originalCtx.drawImage(original.canvas, 0, 0, width, height);
+
+      modifiedCtx.imageSmoothingEnabled = true;
+      modifiedCtx.imageSmoothingQuality = "high";
+      modifiedCtx.drawImage(modified.canvas, 0, 0, width, height);
+    } else {
+      originalCtx.drawImage(original.canvas, 0, 0);
+      modifiedCtx.drawImage(modified.canvas, 0, 0);
+    }
+
+    return {
+      width,
+      height,
+      originalData: originalCtx.getImageData(0, 0, width, height).data,
+      modifiedData: modifiedCtx.getImageData(0, 0, width, height).data
+    };
   }
 
   const modifiedBounds = getTransformedBounds(transform, modified.canvas.width, modified.canvas.height);
@@ -500,4 +526,184 @@ export async function renderFade(
   ctx.globalAlpha = clampedAlpha;
   ctx.drawImage(modifiedCompositeCanvas, 0, 0, width, height);
   ctx.globalAlpha = 1;
+}
+
+export async function renderSlider(
+  originalUrl: string,
+  modifiedUrl: string,
+  targetCanvas: HTMLCanvasElement,
+  sliderPosition: number,
+  alignmentTransform?: ImageAffineTransform | null,
+  options?: { showLabels?: boolean }
+): Promise<void> {
+  const clampedPosition = Math.min(1, Math.max(0, sliderPosition));
+  const showLabels = options?.showLabels ?? true;
+
+  const [original, modified] = await Promise.all([
+    loadImageToCanvas(originalUrl),
+    loadImageToCanvas(modifiedUrl)
+  ]);
+
+  const ctx = targetCanvas.getContext("2d");
+  if (!ctx) return;
+
+  if (alignmentTransform) {
+    const bounds = getTransformedBounds(alignmentTransform, modified.canvas.width, modified.canvas.height);
+    const minX = Math.min(0, bounds.x);
+    const minY = Math.min(0, bounds.y);
+    const maxX = Math.max(original.canvas.width, bounds.x + bounds.width);
+    const maxY = Math.max(original.canvas.height, bounds.y + bounds.height);
+    const width = Math.max(1, Math.ceil(maxX - minX));
+    const height = Math.max(1, Math.ceil(maxY - minY));
+    targetCanvas.width = width;
+    targetCanvas.height = height;
+
+    const originOffsetX = -minX;
+    const originOffsetY = -minY;
+    const divX = clampedPosition * width;
+    const matrix = buildAffineMatrix(alignmentTransform, modified.canvas.width, modified.canvas.height);
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.translate(originOffsetX, originOffsetY);
+    ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
+    ctx.drawImage(modified.canvas, 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, divX, height);
+    ctx.clip();
+    ctx.drawImage(original.canvas, originOffsetX, originOffsetY);
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(divX, 0);
+    ctx.lineTo(divX, height);
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = Math.max(2, Math.round(width * 0.002));
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 4;
+    ctx.stroke();
+    ctx.restore();
+
+    if (showLabels) {
+      const fontSize = Math.max(12, Math.round(height * 0.025));
+      ctx.save();
+      ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.shadowColor = "rgba(0,0,0,0.85)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      const pad = Math.max(10, Math.round(fontSize * 0.8));
+      ctx.fillText("Original", pad, pad + fontSize);
+      const modLabel = "Modified";
+      const modWidth = ctx.measureText(modLabel).width;
+      ctx.fillText(modLabel, width - modWidth - pad, pad + fontSize);
+      ctx.restore();
+    }
+
+    return;
+  }
+
+  const width = Math.max(original.canvas.width, modified.canvas.width);
+  const height = Math.max(original.canvas.height, modified.canvas.height);
+  targetCanvas.width = width;
+  targetCanvas.height = height;
+
+  const divX = clampedPosition * width;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.drawImage(modified.canvas, 0, 0, width, height);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, divX, height);
+  ctx.clip();
+  ctx.drawImage(original.canvas, 0, 0, width, height);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(divX, 0);
+  ctx.lineTo(divX, height);
+  ctx.strokeStyle = "rgba(255,255,255,0.95)";
+  ctx.lineWidth = Math.max(2, Math.round(width * 0.002));
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 4;
+  ctx.stroke();
+  ctx.restore();
+
+  if (showLabels) {
+    const fontSize = Math.max(12, Math.round(height * 0.025));
+    ctx.save();
+    ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    const pad = Math.max(10, Math.round(fontSize * 0.8));
+    ctx.fillText("Original", pad, pad + fontSize);
+    const modLabel = "Modified";
+    const modWidth = ctx.measureText(modLabel).width;
+    ctx.fillText(modLabel, width - modWidth - pad, pad + fontSize);
+    ctx.restore();
+  }
+}
+
+export async function renderSideBySide(
+  originalUrl: string,
+  modifiedUrl: string,
+  targetCanvas: HTMLCanvasElement,
+  options?: { showLabels?: boolean }
+): Promise<void> {
+  const showLabels = options?.showLabels ?? true;
+  const [original, modified] = await Promise.all([
+    loadImageToCanvas(originalUrl),
+    loadImageToCanvas(modifiedUrl)
+  ]);
+
+  const targetHeight = Math.max(original.canvas.height, modified.canvas.height);
+  const origScale = targetHeight / original.canvas.height;
+  const modScale = targetHeight / modified.canvas.height;
+
+  const origWidth = Math.round(original.canvas.width * origScale);
+  const modWidth = Math.round(modified.canvas.width * modScale);
+  const dividerWidth = Math.max(2, Math.round(targetHeight * 0.003));
+  const totalWidth = origWidth + modWidth + dividerWidth;
+
+  targetCanvas.width = totalWidth;
+  targetCanvas.height = targetHeight;
+
+  const ctx = targetCanvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, totalWidth, targetHeight);
+
+  drawCheckerboard(ctx, totalWidth, targetHeight);
+
+  ctx.drawImage(original.canvas, 0, 0, origWidth, targetHeight);
+  ctx.drawImage(modified.canvas, origWidth + dividerWidth, 0, modWidth, targetHeight);
+
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillRect(origWidth, 0, dividerWidth, targetHeight);
+
+  if (showLabels) {
+    const fontSize = Math.max(12, Math.round(targetHeight * 0.025));
+    ctx.save();
+    ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    const pad = Math.max(10, Math.round(fontSize * 0.8));
+    ctx.fillText("Original", pad, pad + fontSize);
+    ctx.fillText("Modified", origWidth + dividerWidth + pad, pad + fontSize);
+    ctx.restore();
+  }
 }

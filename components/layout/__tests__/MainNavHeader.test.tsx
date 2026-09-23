@@ -25,11 +25,12 @@ describe("Workspace navigation", () => {
     HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
   });
 
-  it("retains all six routes and replace navigation when labels are collapsed", async () => {
+  it("retains all seven routes and replace navigation when labels are collapsed", async () => {
     const user = userEvent.setup();
     render(<WorkspaceNavigation />);
     const nav = screen.getByRole("navigation", { name: "Main navigation" });
-    expect(within(nav).getAllByRole("button")).toHaveLength(6);
+    expect(within(nav).getAllByRole("button")).toHaveLength(7);
+    expect(within(nav).getByRole("button", { name: "QR code generator" })).toBeInTheDocument();
     expect(within(nav).getByRole("button", { name: "Text compare" })).toHaveAttribute("aria-current", "page");
     await user.click(screen.getByRole("button", { name: "Toggle navigation labels" }));
     await user.click(within(nav).getByRole("button", { name: "History" }));

@@ -83,8 +83,14 @@ function runOpenCvWorker(original: WorkImage, modified: WorkImage): Promise<Work
   });
 }
 
-function matToTransform(matrix: number[], original: ImageFileMeta, modified: ImageFileMeta, workScale: number) {
-  if (matrix.length < 6) return null;
+export function matToTransform(
+  matrix: number[],
+  original: ImageFileMeta,
+  modified: ImageFileMeta,
+  originalScale: number,
+  modifiedScale: number
+) {
+  if (matrix.length < 6 || originalScale <= 0 || modifiedScale <= 0) return null;
 
   const a = matrix[0];
   const c = matrix[1];
@@ -92,17 +98,30 @@ function matToTransform(matrix: number[], original: ImageFileMeta, modified: Ima
   const b = matrix[3];
   const d = matrix[4];
   const f = matrix[5];
-  const estimatedScale = Math.sqrt(a * a + b * b);
+
+  const scaleRatio = modifiedScale / originalScale;
+  const A = a * scaleRatio;
+  const B = b * scaleRatio;
+  const C = c * scaleRatio;
+  const D = d * scaleRatio;
+  const E = e / originalScale;
+  const F = f / originalScale;
+
+  const estimatedScale = Math.sqrt(A * A + B * B);
   if (!Number.isFinite(estimatedScale) || estimatedScale <= 0) return null;
-  const aspectDelta = Math.abs(original.width / original.height - modified.width / modified.height);
-  const scale = aspectDelta < 0.03 && Math.abs(estimatedScale - 1) < 0.07 ? 1 : estimatedScale;
+
+  const aspectDelta = Math.abs(original.width / original.height - modified.width / modified.height) / Math.max(original.width / original.height, modified.width / modified.height);
+  const dimensionScale = original.width / modified.width;
+  const scale = aspectDelta < 0.03 && Math.abs(estimatedScale - dimensionScale) / dimensionScale < 0.005 ? dimensionScale : estimatedScale;
+
+  const rotationDeg = Math.atan2(B, A) * 180 / Math.PI;
 
   return {
-    x: (a * modified.width * workScale / 2 + c * modified.height * workScale / 2 + e) / workScale,
-    y: (b * modified.width * workScale / 2 + d * modified.height * workScale / 2 + f) / workScale,
+    x: E + A * modified.width / 2 + C * modified.height / 2,
+    y: F + B * modified.width / 2 + D * modified.height / 2,
     scaleX: scale,
     scaleY: scale,
-    rotationDeg: Math.atan2(b, a) * 180 / Math.PI,
+    rotationDeg: Math.abs(rotationDeg) < 0.25 ? 0 : rotationDeg,
     flipX: false,
     flipY: false
   };
@@ -136,7 +155,7 @@ export async function estimateOpenCvAutoAlignment(
       };
     }
 
-    const transform = matToTransform(result.matrix, original, modified, originalWork.scale);
+    const transform = matToTransform(result.matrix, original, modified, originalWork.scale, modifiedWork.scale);
     if (!transform) {
       return {
         success: false,

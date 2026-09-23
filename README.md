@@ -1,6 +1,6 @@
 # CompareCode
 
-CompareCode is a free and open-source browser tool for comparing text, code, images, and Markdown.
+CompareCode is a free and open-source browser tool for comparing text, code, and images, previewing Markdown, and creating QR codes.
 
 It is designed for local, account-free review workflows: compare code snippets, inspect visual differences between images, draft Markdown notes with live preview, and keep recent work in browser storage.
 
@@ -14,6 +14,7 @@ The project is organized into clear modules:
 - **Text:** Text and code comparison logic and UI. See [Text Compare architecture](docs/architecture/text-compare.md).
 - **Image:** Image comparison logic and UI. See [Image Compare architecture](docs/architecture/image-compare.md).
 - **Markdown:** Markdown editor, preview, formatting, paste handling, and session history. See [Markdown architecture](docs/architecture/markdown.md).
+- **QR:** Static QR code creation and export. See [QR code architecture](docs/architecture/qr-code.md).
 - **Shared:** Common types, utilities, and reusable building blocks used by multiple modules.
 
 When contributing, keep module boundaries strict: implement module-specific changes inside that module, and move only genuinely reusable cross-module code to its established shared owner.
@@ -27,6 +28,7 @@ When contributing, keep module boundaries strict: implement module-specific chan
 - **Markdown Preview:** Write Markdown with live preview, line numbers, local draft persistence, GitHub-style formatting, Mermaid diagrams, KaTeX formulas, and rich paste support.
 - **Session Undo/Redo:** Use Markdown undo/redo during the current browser session, with a dedicated history panel.
 - **Local History:** Store recent comparison history locally in the browser.
+- **QR Code Generator:** Create static QR codes for URLs, text, and Wi-Fi with PNG and SVG exports.
 - **No Account Required:** Core workflows run directly in the browser.
 
 ## 🛠 Technology Stack
@@ -62,6 +64,13 @@ When contributing, keep module boundaries strict: implement module-specific chan
 2. Write or paste Markdown in the editor.
 3. Use formatting tools, line-numbered editing, live preview, Mermaid diagrams, KaTeX formulas, and session undo/redo.
 4. Reset to the default text whenever you want a clean sample document.
+
+### QR Code Generator
+
+1. Open **QR code generator** and choose Website, Text, or Wi-Fi.
+2. Enter the content and adjust colors, error correction, or PNG size if needed.
+3. Check the preview, then download a PNG or SVG file. The QR code is static, and its content and settings are not saved or sent to a server.
+4. Scan the exported file before sharing or printing it. A Wi-Fi QR code reveals its password to anyone who can scan it.
 
 ## 💻 Local Development
 
