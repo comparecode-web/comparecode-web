@@ -1,11 +1,11 @@
 import type { ComponentType, ReactNode } from "react";
-import { MdArticle, MdCode, MdHistory, MdImage } from "react-icons/md";
+import { MdArticle, MdCode, MdHistory, MdImage, MdQrCode2 } from "react-icons/md";
 import { FaqAccordion, type FaqItem } from "./FaqAccordion";
 
 const homeFaqItems: Array<FaqItem> = [
   {
     question: "What is CompareCode for?",
-    answer: "CompareCode was created to give people a free, ad-free place to compare text and code, review image differences, and preview Markdown files in one browser-based workspace. The goal is a customizable, user-friendly tool focused on useful features instead of ads, paywalls, or distracting upsells."
+    answer: "CompareCode was created to give people a free, ad-free place to compare text and code, review image differences, preview Markdown files, and create QR codes in one browser-based workspace. The goal is a customizable, user-friendly tool focused on useful features instead of ads, paywalls, or distracting upsells."
   },
   {
     question: "How do I use text compare?",
@@ -18,6 +18,10 @@ const homeFaqItems: Array<FaqItem> = [
   {
     question: "How do I use Markdown preview?",
     answer: "Drop a Markdown or text file into the editor, paste content from your clipboard, or write directly in CompareCode. You can preview the rendered result, insert tables and alerts, and format the document with common Markdown actions while you work."
+  },
+  {
+    question: "Can I create a QR code without uploading my content?",
+    answer: "Yes. The QR code generator creates static codes for websites, text, Wi-Fi, and vCard contacts in your browser. Your QR content and options are not uploaded or saved, and you can download PNG or SVG files."
   },
   {
     question: "How does history work, and what is saved?",
@@ -78,7 +82,7 @@ function SectionHeading({ eyebrow, title, body }: Readonly<{ eyebrow: string; ti
 
 function FeatureGrid({ items }: Readonly<{ items: Array<{ title: string; body: string; icon: ComponentType<{ className?: string }> }> }>) {
   return (
-    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {items.map(({ title, body, icon: Icon }) => (
         <article
           key={title}
@@ -119,8 +123,8 @@ export function HomeSeoContent() {
     <SeoBand>
       <SectionHeading
         eyebrow="Browser-based comparison"
-        title="Compare code, text, images, and Markdown without switching tools"
-        body="CompareCode is built for developers who need fast visual review of text changes, code diffs, screenshots, image differences, and Markdown drafts. The core workflows run in the browser and do not require an account."
+        title="Compare code, text, and images, preview Markdown, and create QR codes"
+        body="CompareCode supports text changes, code diffs, screenshots, Markdown drafts, and static QR codes in one browser workspace. The core workflows run in the browser and do not require an account."
       />
 
       <FeatureGrid
@@ -141,6 +145,11 @@ export function HomeSeoContent() {
             icon: MdArticle
           },
           {
+            title: "QR code generator",
+            body: "Create static codes for links, text, Wi-Fi, and contacts, then download PNG or SVG files locally.",
+            icon: MdQrCode2
+          },
+          {
             title: "Local workflow",
             body: "Use local comparison history, browser draft persistence, and session history tools without creating an account.",
             icon: MdHistory
@@ -153,9 +162,9 @@ export function HomeSeoContent() {
           <h3 className="text-lg font-bold text-text-primary sm:text-xl">How it works</h3>
           <ol className="mt-5 grid gap-4 text-sm leading-6 text-text-secondary">
             {[
-              "Choose text comparison, image comparison, or Markdown preview.",
-              "Paste text, drop images, write Markdown, or use the browser inputs for your files.",
-              "Review highlighted differences, adjust options, merge text changes, or preview Markdown output."
+              "Choose text comparison, image comparison, Markdown preview, or QR code generation.",
+              "Paste text, drop images, write Markdown, or enter QR code content.",
+              "Review differences, adjust options, preview Markdown, or export a static QR code."
             ].map((step, index) => (
               <li key={step} className="flex items-start gap-3">
                 <span

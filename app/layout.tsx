@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
   title: {
-    default: "CompareCode - Free Online Code and Image Comparison Tool",
+    default: "CompareCode - Free Browser Tools for Code, Images, Markdown, and QR Codes",
     template: "%s"
   },
   description: defaultDescription,
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: "CompareCode - Free Online Code, Image, and Markdown Tools",
+    title: "CompareCode - Free Code, Image, Markdown, and QR Code Tools",
     description: defaultDescription,
     url: SITE_URL,
     images: [
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "CompareCode - Free Online Code, Image, and Markdown Tools",
+    title: "CompareCode - Free Code, Image, Markdown, and QR Code Tools",
     description: defaultDescription,
     images: [SITE_LOGO_PATH]
   },

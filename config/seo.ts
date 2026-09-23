@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-export const SITE_URL = "https://comparecodeweb.com";
+export const SITE_URL = "https://www.comparecodeweb.com";
 export const SITE_NAME = "CompareCode";
 export const SITE_LOGO_PATH = "/brand/comparecode-logo.png";
 export const SITE_ICON_PATH = "/brand/comparecode-logo.svg";
 
-export const defaultDescription = "CompareCode is a free, open-source comparison tool for code, text, images, and Markdown. Compare changes, preview Markdown, and work locally in your browser with no account required.";
+export const defaultDescription = "CompareCode is a free, open-source browser tool for comparing code, text, and images, previewing Markdown, and creating QR codes locally without an account.";
 
 export function absoluteUrl(path: string): string {
   if (path === "/") {
@@ -56,7 +56,7 @@ export function createPageMetadata({ title, description, path }: PageMetadataInp
 
 export const homeMetadata = createPageMetadata({
   path: "/",
-  title: "CompareCode - Free Online Code, Image, and Markdown Tools",
+  title: "CompareCode - Free Code, Image, Markdown, and QR Tools",
   description: defaultDescription
 });
 
@@ -76,6 +76,12 @@ export const markdownMetadata = createPageMetadata({
   path: "/markdown",
   title: "Markdown Preview Tool - Live Markdown Editor and Renderer | CompareCode",
   description: "Write Markdown with live preview, line numbers, local draft persistence, GitHub-style formatting, rich paste support, Mermaid diagrams, KaTeX formulas, and session undo/redo."
+});
+
+export const qrMetadata = createPageMetadata({
+  path: "/qr",
+  title: "Free QR Code Generator - Create PNG and SVG Codes | CompareCode",
+  description: "Create static QR codes for websites, text, Wi-Fi, and vCard contacts in your browser. Customize colors and error correction, then download PNG or SVG without uploading content."
 });
 
 export const settingsMetadata = createPageMetadata({
@@ -107,6 +113,7 @@ export const softwareApplicationJsonLd = {
     "Mermaid and KaTeX rendering",
     "Local comparison history",
     "Merge controls",
-    "Image alignment"
+    "Image alignment",
+    "QR code generation"
   ]
 };

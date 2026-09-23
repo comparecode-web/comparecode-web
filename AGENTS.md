@@ -2,7 +2,7 @@
 
 ## Project Snapshot
 
-- CompareCode is a free and open-source, local-first browser application for comparing text, code, images, and Markdown.
+- CompareCode is a free and open-source, local-first browser application for comparing text, code, and images, editing Markdown, and generating QR codes.
 - The stack is Next.js, React, TypeScript, Tailwind CSS, Zustand, Vitest, Testing Library, Dexie, and IndexedDB.
 - `package.json` is the source of truth for available commands and dependency versions.
 - The root `AGENTS.md` is the only repository-wide agent instruction file. Keep repeatable workflows in `.agents/skills`, detailed architecture in `docs/architecture`, and the only project `README.md` at the repository root.
@@ -26,7 +26,6 @@
 - Reply in the language the user is currently using.
 - Write code, identifiers, code comments, developer-facing messages, technical repository documentation, commit messages, branch names, and pull-request text in English.
 - Avoid code comments when clear naming and structure are sufficient. Any necessary comment must be concise, current, and in English.
-- After a repository modification task, end the final response with exactly one short English Conventional Commit suggestion. Label the suggestion naturally in the user's conversation language.
 
 ## Architecture and Implementation
 
@@ -40,8 +39,9 @@
   - Image comparison logic and UI belong under `features/compare/image`.
   - Compare-only shared contracts belong under `features/compare/shared` only when both compare modules genuinely use them.
   - Markdown editor, preview, formatting, import, paste, and history behavior belong under `features/markdown`.
+  - QR payloads, rendering, export, and the generator UI belong under `features/qr`.
   - Application-wide primitives, stores, services, hooks, utilities, configuration, and types belong in their established root-level owners only when they are genuinely cross-feature.
-- Treat `docs/architecture/text-compare.md`, `docs/architecture/image-compare.md`, and `docs/architecture/markdown.md` as the detailed feature contracts. Update the relevant document when ownership, data flow, invariants, or required validation changes.
+- Treat `docs/architecture/text-compare.md`, `docs/architecture/image-compare.md`, `docs/architecture/markdown.md`, and `docs/architecture/qr-code.md` as the detailed feature contracts. Update the relevant document when ownership, data flow, invariants, or required validation changes.
 - Do not make Text depend on Image internals, Image depend on Text internals, or unrelated features depend on Markdown internals.
 - Extend the existing canonical owner instead of duplicating business rules, defaults, persistence keys, mappings, UI policy, or state across components, stores, and services.
 - Reuse existing UI primitives and semantic components before introducing a new component or one-off variant. A new parallel implementation requires a concrete unmet requirement.
