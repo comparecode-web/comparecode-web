@@ -17,7 +17,7 @@ function TextField({ label, value, onChange, placeholder, type = "text" }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: "text" | "password" | "email" | "url" | "tel";
+  type?: "text" | "password" | "url";
 }) {
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-text-primary">
@@ -52,16 +52,6 @@ export function QrContentFields({ content, onChange, passwordVisible, onPassword
           <Switch label="Hidden network" checked={content.hidden} onChange={(event) => onChange({ ...content, hidden: event.target.checked })} />
           <p className="text-xs leading-5 text-text-secondary">Off: for networks shown in Wi-Fi lists. On: tells supported scanners to connect to a network that does not broadcast its name.</p>
           <p className="text-xs leading-5 text-text-secondary">Anyone who scans or receives this QR code can read the network password.</p>
-        </div>
-      );
-    case "contact":
-      return (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2"><TextField label="Full name" value={content.name} onChange={(name) => onChange({ ...content, name })} placeholder="Alex Example" /></div>
-          <TextField label="Phone (optional)" type="tel" value={content.phone} onChange={(phone) => onChange({ ...content, phone })} placeholder="+36 30 123 4567" />
-          <TextField label="Email (optional)" type="email" value={content.email} onChange={(email) => onChange({ ...content, email })} placeholder="alex@example.com" />
-          <div className="sm:col-span-2"><TextField label="Organization (optional)" value={content.organization} onChange={(organization) => onChange({ ...content, organization })} placeholder="Example Studio" /></div>
-          <p className="text-xs leading-5 text-text-secondary sm:col-span-2">The contact is encoded as vCard 4.0. Anyone with the code can read these details.</p>
         </div>
       );
   }

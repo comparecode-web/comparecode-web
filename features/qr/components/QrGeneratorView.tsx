@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { MdContactPage, MdDownload, MdLink, MdQrCode2, MdTextFields, MdWifi } from "react-icons/md";
+import { MdDownload, MdLink, MdQrCode2, MdTextFields, MdWifi } from "react-icons/md";
 import { OptionsSection } from "@/components/settings/OptionsSection";
 import { Button } from "@/components/ui/Button";
 import { ColorInput } from "@/components/ui/ColorInput";
@@ -26,8 +26,7 @@ type QrContentType = QrContent["type"];
 const contentTypes = [
   { value: "url", label: "Website", icon: <MdLink /> },
   { value: "text", label: "Text", icon: <MdTextFields /> },
-  { value: "wifi", label: "Wi-Fi", icon: <MdWifi /> },
-  { value: "contact", label: "Contact", icon: <MdContactPage /> }
+  { value: "wifi", label: "Wi-Fi", icon: <MdWifi /> }
 ] as const;
 
 const pngSizes = [512, 1024, 2048] as const;
@@ -43,7 +42,6 @@ function emptyContent(type: QrContentType): QrContent {
     case "url": return { type, url: DEFAULT_QR_WEBSITE_URL };
     case "text": return { type, text: "" };
     case "wifi": return { type, ssid: "", password: "", security: "WPA", hidden: false };
-    case "contact": return { type, name: "", phone: "", email: "", organization: "" };
   }
 }
 
@@ -52,7 +50,6 @@ function hasInput(content: QrContent): boolean {
     case "url": return content.url.length > 0;
     case "text": return content.text.length > 0;
     case "wifi": return content.ssid.length > 0 || content.password.length > 0;
-    case "contact": return [content.name, content.phone, content.email, content.organization].some(Boolean);
   }
 }
 
@@ -129,8 +126,8 @@ export function QrGeneratorView() {
                 options={[...contentTypes]}
                 value={content.type}
                 onChange={(type) => { updateContent(emptyContent(type)); setPasswordVisible(false); }}
-                className="mt-4 grid grid-cols-2 sm:grid-cols-4"
-                buttonClassName="min-h-11 min-w-0 px-2 max-sm:even:border-r-0 max-sm:[&:nth-child(-n+2)]:border-b sm:[&:nth-child(2)]:border-r"
+                className="mt-4 grid grid-cols-3"
+                buttonClassName="min-h-11 min-w-0 px-2"
               />
               <div className="mt-5"><QrContentFields content={content} onChange={updateContent} passwordVisible={passwordVisible} onPasswordVisibleChange={setPasswordVisible} /></div>
             </section>

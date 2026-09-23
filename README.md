@@ -28,7 +28,7 @@ When contributing, keep module boundaries strict: implement module-specific chan
 - **Markdown Preview:** Write Markdown with live preview, line numbers, local draft persistence, GitHub-style formatting, Mermaid diagrams, KaTeX formulas, and rich paste support.
 - **Session Undo/Redo:** Use Markdown undo/redo during the current browser session, with a dedicated history panel.
 - **Local History:** Store recent comparison history locally in the browser.
-- **QR Code Generator:** Create static QR codes for URLs, text, Wi-Fi, and vCard 4.0 contacts with PNG and SVG exports.
+- **QR Code Generator:** Create static QR codes for URLs, text, and Wi-Fi with PNG and SVG exports.
 - **No Account Required:** Core workflows run directly in the browser.
 
 ## 🛠 Technology Stack
@@ -67,7 +67,7 @@ When contributing, keep module boundaries strict: implement module-specific chan
 
 ### QR Code Generator
 
-1. Open **QR code generator** and choose Website, Text, Wi-Fi, or Contact.
+1. Open **QR code generator** and choose Website, Text, or Wi-Fi.
 2. Enter the content and adjust colors, error correction, or PNG size if needed.
 3. Check the preview, then download a PNG or SVG file. The QR code is static, and its content and settings are not saved or sent to a server.
 4. Scan the exported file before sharing or printing it. A Wi-Fi QR code reveals its password to anyone who can scan it.

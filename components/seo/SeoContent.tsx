@@ -21,7 +21,7 @@ const homeFaqItems: Array<FaqItem> = [
   },
   {
     question: "Can I create a QR code without uploading my content?",
-    answer: "Yes. The QR code generator creates static codes for websites, text, Wi-Fi, and vCard contacts in your browser. Your QR content and options are not uploaded or saved, and you can download PNG or SVG files."
+    answer: "Yes. The QR code generator creates static codes for websites, text, and Wi-Fi in your browser. Your QR content and options are not uploaded or saved, and you can download PNG or SVG files."
   },
   {
     question: "How does history work, and what is saved?",
@@ -146,7 +146,7 @@ export function HomeSeoContent() {
           },
           {
             title: "QR code generator",
-            body: "Create static codes for links, text, Wi-Fi, and contacts, then download PNG or SVG files locally.",
+            body: "Create static codes for links, text, and Wi-Fi, then download PNG or SVG files locally.",
             icon: MdQrCode2
           },
           {

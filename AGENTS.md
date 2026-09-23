@@ -64,6 +64,7 @@
 - Use `$comparecode-text-compare` for text input, diff calculation or rendering, merge behavior, block navigation, text settings, or text-history restoration.
 - Use `$comparecode-image-compare` for image upload, comparison modes, canvas rendering, diff algorithms, alignment, metadata, or image-history restoration.
 - Use `$comparecode-markdown` for Markdown editing, preview rendering, formatting, paste, import, scroll sync, session history, or Markdown persistence.
+- Use `$comparecode-qr` for QR content inputs, payload encoding, symbol generation, preview, PNG/SVG export, or QR-specific validation.
 - Use `$comparecode-git-workflow` for branch, staging, commit, push, fork, pull-request title, or pull-request description work.
 - Use `$comparecode-code-review` for code reviews, pull-request reviews, diff audits, or pre-merge assessments.
 - Use `$comparecode-clarify-open-questions` when material requirements remain unresolved or the user explicitly asks for questions, options, or a recommendation before implementation.

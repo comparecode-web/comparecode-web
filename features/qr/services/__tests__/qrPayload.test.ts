@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildQrPayload } from "../qrPayload";
+import { buildQrPayload, type QrContent } from "../qrPayload";
 
 describe("QR payloads", () => {
   it("keeps an entered URL unchanged and rejects unsafe or ambiguous schemes", () => {
@@ -22,9 +22,8 @@ describe("QR payloads", () => {
       .toMatch(/password/);
   });
 
-  it("creates a vCard 4.0 with CRLF lines and escaped text", () => {
-    const result = buildQrPayload({ type: "contact", name: "Ági; Doe", phone: "+36 30 123 4567", email: "agi@example.com", organization: "Acme, Inc.\nBudapest" });
-    expect(result.value).toBe("BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Ági\\; Doe\r\nTEL;VALUE=text:+36 30 123 4567\r\nEMAIL:agi@example.com\r\nORG:Acme\\, Inc.\\nBudapest\r\nEND:VCARD\r\n");
-    expect(buildQrPayload({ type: "contact", name: "", phone: "123", email: "", organization: "" }).error).toMatch(/name/);
+  it("refuses unsupported contact content without generating a payload", () => {
+    const unsupported = { type: "contact", name: "Ági Doe" } as unknown as QrContent;
+    expect(buildQrPayload(unsupported)).toEqual({ value: null, error: "This QR content type is not supported." });
   });
 });

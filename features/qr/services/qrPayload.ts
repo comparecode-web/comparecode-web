@@ -3,21 +3,12 @@ export const DEFAULT_QR_WEBSITE_URL = "https://www.comparecodeweb.com/";
 export type QrContent =
   | { type: "url"; url: string }
   | { type: "text"; text: string }
-  | { type: "wifi"; ssid: string; password: string; security: "WPA" | "nopass"; hidden: boolean }
-  | { type: "contact"; name: string; phone: string; email: string; organization: string };
+  | { type: "wifi"; ssid: string; password: string; security: "WPA" | "nopass"; hidden: boolean };
 
 export type QrPayloadResult = { value: string; error: null } | { value: null; error: string };
 
 function escapeWifi(value: string): string {
   return value.replace(/[\\;,":]/g, "\\$&");
-}
-
-function escapeVcard(value: string): string {
-  return value
-    .replace(/\\/g, "\\\\")
-    .replace(/\r\n|\r|\n/g, "\\n")
-    .replace(/,/g, "\\,")
-    .replace(/;/g, "\\;");
 }
 
 export function buildQrPayload(content: QrContent): QrPayloadResult {
@@ -49,14 +40,7 @@ export function buildQrPayload(content: QrContent): QrPayloadResult {
       if (content.hidden) fields.push("H:true");
       return { value: `WIFI:${fields.join(";")};;`, error: null };
     }
-    case "contact": {
-      if (!content.name.trim()) return { value: null, error: "Enter a contact name." };
-      const lines = ["BEGIN:VCARD", "VERSION:4.0", `FN:${escapeVcard(content.name)}`];
-      if (content.phone.trim()) lines.push(`TEL;VALUE=text:${escapeVcard(content.phone)}`);
-      if (content.email.trim()) lines.push(`EMAIL:${escapeVcard(content.email)}`);
-      if (content.organization.trim()) lines.push(`ORG:${escapeVcard(content.organization)}`);
-      lines.push("END:VCARD", "");
-      return { value: lines.join("\r\n"), error: null };
-    }
+    default:
+      return { value: null, error: "This QR content type is not supported." };
   }
 }
