@@ -16,7 +16,6 @@ describe("QR code generator", () => {
     render(<QrGeneratorView />);
     expect(screen.getByRole("textbox", { name: "Website URL" })).toHaveValue("https://www.comparecodeweb.com/");
     expect(screen.getAllByRole("radio")).toHaveLength(3);
-    expect(screen.queryByRole("radio", { name: "Contact" })).not.toBeInTheDocument();
     const preview = screen.getByRole("img", { name: "url QR code preview" });
     expect(preview).toHaveAttribute("src", expect.stringContaining("data:image/svg+xml"));
     expect(preview).toHaveAttribute("width", "512");

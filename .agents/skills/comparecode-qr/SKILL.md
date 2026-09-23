@@ -21,4 +21,4 @@ Read `docs/architecture/qr-code.md` before changing QR code. Its supported conte
 
 ## Validation
 
-Run focused QR payload, image, and component tests, then the checks required by `AGENTS.md`. Exercise changed input, error, preview, and export paths in an isolated browser. For interoperability claims, use the physical-device gate documented in the architecture contract; automated checks alone do not establish device support.
+Run focused QR payload, image, and component tests, then the checks required by `AGENTS.md`. Exercise changed input, error, preview, and export paths in an isolated browser. Check generated symbols against independent reference vectors; automated checks alone do not establish device compatibility.

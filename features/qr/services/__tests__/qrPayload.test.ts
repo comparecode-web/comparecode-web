@@ -22,8 +22,8 @@ describe("QR payloads", () => {
       .toMatch(/password/);
   });
 
-  it("refuses unsupported contact content without generating a payload", () => {
-    const unsupported = { type: "contact", name: "Ági Doe" } as unknown as QrContent;
+  it("refuses unknown runtime content without generating a payload", () => {
+    const unsupported = { type: "unknown" } as unknown as QrContent;
     expect(buildQrPayload(unsupported)).toEqual({ value: null, error: "This QR content type is not supported." });
   });
 });

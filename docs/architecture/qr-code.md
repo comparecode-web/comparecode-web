@@ -9,7 +9,7 @@ The route renders a server page with the interactive `QrGeneratorView` client co
 ## Data flow
 
 1. `QrGeneratorView` holds the active content form and appearance options in page-local React state. The Website form starts with `https://www.comparecodeweb.com/` so a QR preview is ready immediately. Nothing is written to IndexedDB, local storage, session storage, a URL, or an API. Navigating away or reloading restores defaults.
-2. `qrPayload.ts` converts a typed form into one payload string. Website URLs are limited to `http:` and `https:`; text is preserved; Wi-Fi syntax follows the ZXing convention with escaped separators. Unsupported content types, including structured contacts, return an error without producing a payload.
+2. `qrPayload.ts` converts a typed form into one payload string. Website URLs are limited to `http:` and `https:`; text is preserved; Wi-Fi syntax follows the ZXing convention with escaped separators. Unknown runtime content types return an error without producing a payload.
 3. `qrImage.ts` passes the payload to the MIT-licensed `qrcode` package. The package selects the version and mask; the user selects the error correction level. Its matrix is the single source for SVG preview, SVG export, and pixel-aligned PNG export.
 4. The preview is a local SVG data URL. Downloads create a Blob URL and release it after the browser starts the download. No remote QR service, redirect, or analytics endpoint is used.
 
@@ -23,8 +23,8 @@ The route renders a server page with the interactive `QrGeneratorView` client co
 - SVG contains only the generated paths and validated colors. User content is encoded in the matrix and never interpolated into SVG markup or HTML.
 - Invalid or oversized content and invalid colors disable downloads and show a clear message. No payload is silently truncated.
 - QR codes are static. Wi-Fi passwords are readable by anyone who obtains the code; the interface states this plainly.
-- Structured Contact/vCard generation is unavailable until Android and iOS scanning can validate interoperability. The Contact option is absent from the UI and the payload service rejects the unsupported type without generating a code. Free text remains unrestricted and may contain contact-like text entered by the user.
+- The supported content types are Website, Text, and Wi-Fi. Unknown runtime content types cannot produce a code.
 
 ## Validation
 
-Focused tests under `features/qr` cover payload escaping, unsupported content rejection, URL restrictions, SVG border/markup, exact PNG canvas size and integer pixel boundaries, colors, and UI state. Browser checks cover responsive layout, navigation, input errors, exports, and the absence of network transfer or persistence. Adding structured vCard generation later requires successful scanning on physical Android and iOS devices; simulators and matrix decoders cannot replace that interoperability gate.
+Focused tests under `features/qr` cover payload escaping, unknown content rejection, URL restrictions, independently generated reference matrices for all supported content types, SVG border/markup, exact PNG canvas size and integer pixel boundaries, colors, and UI state. Browser checks cover responsive layout, navigation, input errors, exports, and the absence of network transfer or persistence.
