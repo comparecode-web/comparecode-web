@@ -40,7 +40,7 @@ export function PopoverMenu({
       const rect = trigger.getBoundingClientRect();
       const edge = remToCssPixels(0.5);
       const gap = remToCssPixels(0.25);
-      const dropdownMaxHeight = remToCssPixels(14);
+      const dropdownMaxHeight = remToCssPixels(14.5);
       const width = Math.min(role === "listbox" ? rect.width : Math.max(rect.width, menu.scrollWidth), Math.max(0, window.innerWidth - 2 * edge));
       const below = window.innerHeight - rect.bottom - edge - gap;
       const above = rect.top - edge - gap;

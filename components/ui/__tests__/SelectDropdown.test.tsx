@@ -17,11 +17,11 @@ function ControlledSelect() {
 }
 
 describe("SelectDropdown", () => {
-  it("caps the list at 14rem and dismisses it when its controls become inert", async () => {
+  it("caps the list at 14.5rem and dismisses it when its controls become inert", async () => {
     const user = userEvent.setup();
     const { rerender } = render(<div><ControlledSelect /></div>);
     await user.click(screen.getByRole("button", { name: "One" }));
-    expect(screen.getByRole("listbox")).toHaveStyle({ maxHeight: "224px" });
+    expect(screen.getByRole("listbox")).toHaveStyle({ maxHeight: "232px" });
     rerender(<div inert><ControlledSelect /></div>);
     await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
   });
@@ -32,7 +32,7 @@ describe("SelectDropdown", () => {
       const user = userEvent.setup();
       render(<ControlledSelect />);
       await user.click(screen.getByRole("button", { name: "One" }));
-      expect(screen.getByRole("listbox")).toHaveStyle({ maxHeight: "280px" });
+      expect(screen.getByRole("listbox")).toHaveStyle({ maxHeight: "290px" });
     } finally {
       document.documentElement.style.fontSize = previous;
     }
