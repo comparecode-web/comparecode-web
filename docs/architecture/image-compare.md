@@ -14,6 +14,7 @@ External modules must use the public entry point at `features/compare/image/inde
 4. `ImageCompareToolbar` changes comparison and diff modes.
 5. `ImageCompareCanvas` renders side-by-side, fade, slider, and diff presentations.
 6. `ImageDiffService` produces visual diff output and statistics on canvas data.
+7. `ImageSnapshotService` renders full-resolution comparison snapshots across fade, slider, diff, and side-by-side modes and manages lossless PNG export.
 
 Keep canvas and pixel-processing rules in image services or focused image utilities. UI components may coordinate gestures and presentation but must not create independent diff or transform rules.
 
@@ -48,6 +49,6 @@ The feature keeps its own compact comparison toolbar above the canvas within the
 Metadata cards stack below the image container's two-column breakpoint so file sizes, dimensions, and hashes remain readable on narrow screens.
 
 - Image state and object-URL lifecycle: run `features/compare/image/store/__tests__/useImageCompareStore.test.ts`.
-- Diff, alignment, transform, or metadata logic: add or run focused tests for the changed service or utility when deterministic automation is practical.
+- Diff, alignment, transform, snapshot export, or metadata logic: add or run focused tests for the changed service or utility when deterministic automation is practical.
 - Upload, clipboard, canvas rendering, gestures, responsive layout, and history restoration: use `$comparecode-browser-testing` with task-owned images and browser storage.
 - Complete the repository validation required by `AGENTS.md` for the type of change.

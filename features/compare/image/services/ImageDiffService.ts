@@ -527,3 +527,183 @@ export async function renderFade(
   ctx.drawImage(modifiedCompositeCanvas, 0, 0, width, height);
   ctx.globalAlpha = 1;
 }
+
+export async function renderSlider(
+  originalUrl: string,
+  modifiedUrl: string,
+  targetCanvas: HTMLCanvasElement,
+  sliderPosition: number,
+  alignmentTransform?: ImageAffineTransform | null,
+  options?: { showLabels?: boolean }
+): Promise<void> {
+  const clampedPosition = Math.min(1, Math.max(0, sliderPosition));
+  const showLabels = options?.showLabels ?? true;
+
+  const [original, modified] = await Promise.all([
+    loadImageToCanvas(originalUrl),
+    loadImageToCanvas(modifiedUrl)
+  ]);
+
+  const ctx = targetCanvas.getContext("2d");
+  if (!ctx) return;
+
+  if (alignmentTransform) {
+    const bounds = getTransformedBounds(alignmentTransform, modified.canvas.width, modified.canvas.height);
+    const minX = Math.min(0, bounds.x);
+    const minY = Math.min(0, bounds.y);
+    const maxX = Math.max(original.canvas.width, bounds.x + bounds.width);
+    const maxY = Math.max(original.canvas.height, bounds.y + bounds.height);
+    const width = Math.max(1, Math.ceil(maxX - minX));
+    const height = Math.max(1, Math.ceil(maxY - minY));
+    targetCanvas.width = width;
+    targetCanvas.height = height;
+
+    const originOffsetX = -minX;
+    const originOffsetY = -minY;
+    const divX = clampedPosition * width;
+    const matrix = buildAffineMatrix(alignmentTransform, modified.canvas.width, modified.canvas.height);
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.translate(originOffsetX, originOffsetY);
+    ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
+    ctx.drawImage(modified.canvas, 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, divX, height);
+    ctx.clip();
+    ctx.drawImage(original.canvas, originOffsetX, originOffsetY);
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(divX, 0);
+    ctx.lineTo(divX, height);
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = Math.max(2, Math.round(width * 0.002));
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 4;
+    ctx.stroke();
+    ctx.restore();
+
+    if (showLabels) {
+      const fontSize = Math.max(12, Math.round(height * 0.025));
+      ctx.save();
+      ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.shadowColor = "rgba(0,0,0,0.85)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      const pad = Math.max(10, Math.round(fontSize * 0.8));
+      ctx.fillText("Original", pad, pad + fontSize);
+      const modLabel = "Modified";
+      const modWidth = ctx.measureText(modLabel).width;
+      ctx.fillText(modLabel, width - modWidth - pad, pad + fontSize);
+      ctx.restore();
+    }
+
+    return;
+  }
+
+  const width = Math.max(original.canvas.width, modified.canvas.width);
+  const height = Math.max(original.canvas.height, modified.canvas.height);
+  targetCanvas.width = width;
+  targetCanvas.height = height;
+
+  const divX = clampedPosition * width;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.drawImage(modified.canvas, 0, 0, width, height);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, divX, height);
+  ctx.clip();
+  ctx.drawImage(original.canvas, 0, 0, width, height);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(divX, 0);
+  ctx.lineTo(divX, height);
+  ctx.strokeStyle = "rgba(255,255,255,0.95)";
+  ctx.lineWidth = Math.max(2, Math.round(width * 0.002));
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 4;
+  ctx.stroke();
+  ctx.restore();
+
+  if (showLabels) {
+    const fontSize = Math.max(12, Math.round(height * 0.025));
+    ctx.save();
+    ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    const pad = Math.max(10, Math.round(fontSize * 0.8));
+    ctx.fillText("Original", pad, pad + fontSize);
+    const modLabel = "Modified";
+    const modWidth = ctx.measureText(modLabel).width;
+    ctx.fillText(modLabel, width - modWidth - pad, pad + fontSize);
+    ctx.restore();
+  }
+}
+
+export async function renderSideBySide(
+  originalUrl: string,
+  modifiedUrl: string,
+  targetCanvas: HTMLCanvasElement,
+  options?: { showLabels?: boolean }
+): Promise<void> {
+  const showLabels = options?.showLabels ?? true;
+  const [original, modified] = await Promise.all([
+    loadImageToCanvas(originalUrl),
+    loadImageToCanvas(modifiedUrl)
+  ]);
+
+  const targetHeight = Math.max(original.canvas.height, modified.canvas.height);
+  const origScale = targetHeight / original.canvas.height;
+  const modScale = targetHeight / modified.canvas.height;
+
+  const origWidth = Math.round(original.canvas.width * origScale);
+  const modWidth = Math.round(modified.canvas.width * modScale);
+  const dividerWidth = Math.max(2, Math.round(targetHeight * 0.003));
+  const totalWidth = origWidth + modWidth + dividerWidth;
+
+  targetCanvas.width = totalWidth;
+  targetCanvas.height = targetHeight;
+
+  const ctx = targetCanvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, totalWidth, targetHeight);
+
+  drawCheckerboard(ctx, totalWidth, targetHeight);
+
+  ctx.drawImage(original.canvas, 0, 0, origWidth, targetHeight);
+  ctx.drawImage(modified.canvas, origWidth + dividerWidth, 0, modWidth, targetHeight);
+
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillRect(origWidth, 0, dividerWidth, targetHeight);
+
+  if (showLabels) {
+    const fontSize = Math.max(12, Math.round(targetHeight * 0.025));
+    ctx.save();
+    ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    const pad = Math.max(10, Math.round(fontSize * 0.8));
+    ctx.fillText("Original", pad, pad + fontSize);
+    ctx.fillText("Modified", origWidth + dividerWidth + pad, pad + fontSize);
+    ctx.restore();
+  }
+}
