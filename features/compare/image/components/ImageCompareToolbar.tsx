@@ -1,17 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import {
   MdDelete,
+  MdDownload,
   MdTune,
 } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
+import { useToastStore } from "@/store/useToastStore";
 import {
   useImageCompareStore,
   ImageCompareMode,
   DiffAlgorithm,
 } from "../store/useImageCompareStore";
+import { ImageSnapshotService } from "../services/ImageSnapshotService";
 
 const MODES: Array<{ value: ImageCompareMode; label: string }> = [
   { value: "side-by-side", label: "Side by side" },
@@ -42,9 +46,44 @@ export function ImageCompareToolbar() {
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const openAlignmentPanel = useImageCompareStore((s) => s.openAlignmentPanel);
+  const fadeValue = useImageCompareStore((s) => s.fadeValue);
+  const sliderPosition = useImageCompareStore((s) => s.sliderPosition);
+  const alignmentTransform = useImageCompareStore((s) => s.alignment.appliedTransform);
+  const pushToast = useToastStore((s) => s.pushToast);
+
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const hasImages = !!(originalImage || modifiedImage);
   const hasBothImages = !!(originalImage && modifiedImage);
+
+  const handleDownloadSnapshot = async () => {
+    if (!originalImage || !modifiedImage || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const filename = await ImageSnapshotService.downloadSnapshot({
+        compareMode,
+        originalImage,
+        modifiedImage,
+        fadeValue,
+        sliderPosition,
+        diffAlgorithm,
+        alignmentTransform,
+      });
+      pushToast({
+        message: `Downloaded snapshot as ${filename}`,
+        tone: "success",
+        icon: "success",
+      });
+    } catch (error) {
+      pushToast({
+        message: error instanceof Error ? error.message : "Failed to download snapshot",
+        tone: "error",
+        icon: "error",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div data-tool-controls className="relative z-30 flex min-h-11 max-h-[40%] shrink-0 flex-wrap items-center gap-2 overflow-y-auto rounded-xl border border-border-default bg-bg-primary px-2 py-1 shadow-sm custom-scrollbar">
@@ -91,8 +130,47 @@ export function ImageCompareToolbar() {
         <span className="hidden @2xl/image:inline">Align images</span>
       </Button>
 
+      <DownloadSnapshotButton
+        onDownload={handleDownloadSnapshot}
+        disabled={!hasBothImages}
+        isDownloading={isDownloading}
+      />
+
       <ClearButton onClear={clearAll} disabled={!hasImages} />
     </div>
+  );
+}
+
+interface DownloadSnapshotButtonProps {
+  onDownload: () => void;
+  disabled?: boolean;
+  isDownloading?: boolean;
+}
+
+function DownloadSnapshotButton({ onDownload, disabled = false, isDownloading = false }: DownloadSnapshotButtonProps) {
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onDownload}
+        disabled={disabled || isDownloading}
+        leftIcon={<MdDownload className="text-lg" />}
+        title="Download snapshot"
+        className="hidden md:inline-flex"
+      >
+        <span className="hidden @2xl/image:inline">Download snapshot</span>
+        <span className="@2xl/image:hidden">Snapshot</span>
+      </Button>
+      <button
+        onClick={onDownload}
+        className="md:hidden p-2 text-text-primary hover:bg-hover-overlay rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Download snapshot"
+        disabled={disabled || isDownloading}
+      >
+        <MdDownload className="text-xl" />
+      </button>
+    </>
   );
 }
 

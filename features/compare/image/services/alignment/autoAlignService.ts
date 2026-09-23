@@ -597,24 +597,35 @@ function getPreferredDimensionScale(original: ImageFileMeta, modified: ImageFile
   const originalRatio = original.width / original.height;
   const modifiedRatio = modified.width / modified.height;
   if (!Number.isFinite(originalRatio) || !Number.isFinite(modifiedRatio)) return null;
-  if (Math.abs(originalRatio - modifiedRatio) > 0.03) return null;
+  const aspectDelta = Math.abs(originalRatio - modifiedRatio) / Math.max(originalRatio, modifiedRatio);
+  if (aspectDelta > 0.03) return null;
 
   const preferredScale = (widthScale + heightScale) / 2;
-  if (Math.abs(Math.log(preferredScale)) > 0.08) return null;
-
   return Number.isFinite(preferredScale) && preferredScale > 0 ? preferredScale : null;
 }
 
-function regularizeNearIdentityScale(original: ImageFileMeta, modified: ImageFileMeta, transform: ImageAffineTransform): ImageAffineTransform {
-  const aspectDelta = Math.abs(original.width / original.height - modified.width / modified.height);
+export function regularizeNearIdentityScale(original: ImageFileMeta, modified: ImageFileMeta, transform: ImageAffineTransform): ImageAffineTransform {
+  const originalRatio = original.width / original.height;
+  const modifiedRatio = modified.width / modified.height;
+  const aspectDelta = Math.abs(originalRatio - modifiedRatio) / Math.max(originalRatio, modifiedRatio);
   if (aspectDelta >= 0.03) return transform;
-  if (Math.abs(transform.scaleX - 1) >= 0.07 || Math.abs(transform.scaleY - 1) >= 0.07) return transform;
+  const expectedScale = original.width / modified.width;
+  const isNearExpectedScale =
+    Math.abs(transform.scaleX - expectedScale) / expectedScale < 0.005 &&
+    Math.abs(transform.scaleY - expectedScale) / expectedScale < 0.005;
 
-  return {
-    ...transform,
-    scaleX: 1,
-    scaleY: 1
-  };
+  const nextTransform = { ...transform };
+
+  if (isNearExpectedScale) {
+    nextTransform.scaleX = expectedScale;
+    nextTransform.scaleY = expectedScale;
+  }
+
+  if (Math.abs(nextTransform.rotationDeg) < 0.25) {
+    nextTransform.rotationDeg = 0;
+  }
+
+  return nextTransform;
 }
 
 function getScaleCandidates(original: ImageFileMeta, modified: ImageFileMeta, options: ImageAlignmentOptions): Array<number> {

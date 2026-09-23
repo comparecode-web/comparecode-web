@@ -126,8 +126,20 @@ export function getPairKey(original: ImageFileMeta | null, modified: ImageFileMe
   ].join("|");
 }
 
+export function hasSameAspectRatio(width1: number, height1: number, width2: number, height2: number, tolerance = 0.02): boolean {
+  if (width1 <= 0 || height1 <= 0 || width2 <= 0 || height2 <= 0) return false;
+  const ratio1 = width1 / height1;
+  const ratio2 = width2 / height2;
+  return Math.abs(ratio1 - ratio2) / Math.max(ratio1, ratio2) <= tolerance;
+}
+
 export function imagesNeedAlignmentPrompt(original: ImageFileMeta | null, modified: ImageFileMeta | null): boolean {
   if (!original || !modified) return false;
+  if (original.width === modified.width && original.height === modified.height) return false;
 
-  return original.width !== modified.width || original.height !== modified.height;
+  if (hasSameAspectRatio(original.width, original.height, modified.width, modified.height)) {
+    return false;
+  }
+
+  return true;
 }
