@@ -7,6 +7,7 @@ import { getRowContainerClass, getWordWrapClass, cn } from "@/utils/uiHelpers";
 import { RowControls } from "./RowControls";
 import { BlockHeaderControls } from "./BlockHeaderControls";
 import { DiffFragmentList } from "./DiffFragmentList";
+import { MoveAnnotation } from "./MoveAnnotation";
 
 export interface UnifiedLineData {
   line1: number | string | null;
@@ -14,6 +15,7 @@ export interface UnifiedLineData {
   sign: string;
   fragments: Array<TextFragment>;
   bgClass: string;
+  lineEndingLabel?: string;
 }
 
 export interface UnifiedRowData {
@@ -34,16 +36,27 @@ interface UnifiedRowProps {
   virtualRow: VirtualItem;
   settings: AppSettings;
   hoveredBlockId: string | null;
+  selectedBlockId: string | null;
+  activeMoveId: string | null;
+  onActivateMove: (block: ChangeBlock) => void;
   setHoveredBlockId: (id: string | null) => void;
   selectBlock: (id: string | null) => void;
   mergeBlock: (block: ChangeBlock, dir: MergeDirection, settings: AppSettings) => void;
   measureRef: (node: HTMLElement | null) => void;
 }
 
-export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, setHoveredBlockId, selectBlock, mergeBlock, measureRef }: UnifiedRowProps) => {
+export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, selectedBlockId, activeMoveId, onActivateMove, setHoveredBlockId, selectBlock, mergeBlock, measureRef }: UnifiedRowProps) => {
+  const isLinked = row.block.move?.counterpartBlockId === selectedBlockId;
+  const moveFocused = !!row.block.move && row.block.move.id === activeMoveId;
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
   const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled);
-  const containerClass = getRowContainerClass(row.isSelectable, row.block.isSelected || false);
+  const containerClass = cn(
+    getRowContainerClass(row.isSelectable, row.block.isSelected || false),
+    row.block.move && "border-l-accent-primary",
+    (row.block.isSelected || isLinked || moveFocused) && "border-r-accent-primary",
+    (row.block.move || row.block.isSelected) && row.isFirstLine && "rounded-t-md border-t border-t-accent-primary",
+    (row.block.move || row.block.isSelected) && row.isLastLine && "rounded-b-md border-b border-b-accent-primary"
+  );
 
   if (row.type === "header-controls") {
     return (
@@ -55,6 +68,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
         className="absolute top-0 left-0 w-full"
         style={{ transform: `translateY(${virtualRow.start}px)` }}
       >
+        {row.block.move && <MoveAnnotation block={row.block} onActivate={onActivateMove} />}
         {row.block.isSelected && <BlockHeaderControls />}
       </div>
     );
@@ -90,12 +104,18 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
       data-block-id={row.block.id}
       data-row-type={row.type}
       data-first-line={row.type === "line" && row.isFirstLine ? "true" : undefined}
+      data-move-id={row.block.move?.id}
+      data-move-linked={isLinked ? "true" : undefined}
+      data-move-focused={moveFocused ? "true" : undefined}
       ref={measureRef}
       className="absolute top-0 left-0 w-full"
       style={{ transform: `translateY(${virtualRow.start}px)` }}
       onMouseEnter={() => setHoveredBlockId(row.block.id)}
       onMouseLeave={() => setHoveredBlockId(null)}
-      onClick={row.isSelectable ? () => selectBlock(row.block.id) : undefined}
+      onClick={row.isSelectable ? () => {
+        if (!window.getSelection()?.isCollapsed) return;
+        selectBlock(row.block.id);
+      } : undefined}
     >
       <div className={containerClass}>
         {isHovered && (
@@ -118,7 +138,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, set
                 {l.sign}
               </div>
               <div className={cn("flex-1 px-2 py-0.5 min-h-6", wordWrapClass)}>
-                <DiffFragmentList fragments={l.fragments} ignoreWhitespace={settings.ignoreWhitespace} />
+                <DiffFragmentList fragments={l.fragments} lineEndingLabel={l.lineEndingLabel} suppressHighlight={!!row.block.move} />
               </div>
             </div>
           </div>

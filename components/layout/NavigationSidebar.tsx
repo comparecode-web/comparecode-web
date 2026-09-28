@@ -61,20 +61,20 @@ export function NavigationSidebar() {
   );
 
   const footer = (mobile: boolean) => (
-    <div className="mt-auto shrink-0 space-y-2 border-t border-border-default p-2" data-tool-controls>
+    <div className="mt-auto shrink-0 space-y-1 border-t border-border-default p-2" data-tool-controls>
       <ThemeSelect sidebar={!mobile} showIcon />
-      <a href="https://github.com/comparecode-web/comparecode-web" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="flex min-h-11 items-center gap-3 overflow-hidden rounded-xl border border-transparent px-3 text-left text-sm font-semibold text-text-secondary transition-colors hover:bg-hover-overlay hover:text-text-primary focus-visible:outline-2 focus-visible:outline-accent-primary">
-        <FaGithub className="shrink-0 text-xl" />
+      <a href="https://github.com/comparecode-web/comparecode-web" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="flex h-10 items-center overflow-hidden rounded-lg border border-transparent text-left text-sm font-semibold text-text-secondary transition-colors hover:bg-hover-overlay hover:text-text-primary focus-visible:outline-2 focus-visible:outline-accent-primary">
+        <span className="flex h-10 w-9 shrink-0 items-center justify-center"><FaGithub className="text-xl" /></span>
         <span className={mobile ? "" : "hidden @min-[12rem]/navigation:inline"}>GitHub</span>
       </a>
     </div>
   );
 
   const navigation = (mobile: boolean) => (
-    <nav aria-label={mobile ? "Mobile navigation" : "Main navigation"} className="flex flex-col gap-1.5 p-2" data-tool-controls>
+    <nav aria-label={mobile ? "Mobile navigation" : "Main navigation"} className="flex flex-col gap-1 p-2" data-tool-controls>
       {navItems.map(({ href, label, icon: Icon }) => (
-        <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} onClick={() => navigate(href)} className={cn("flex min-h-11 items-center gap-3 rounded-xl border px-3 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? "border-accent-primary/20 bg-bg-selected text-accent-primary" : "border-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
-          <Icon className={cn("shrink-0 text-2xl", pathname !== href && "text-text-primary")} />
+        <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} onClick={() => navigate(href)} className={cn("flex h-10 items-center overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? "border-accent-primary/20 bg-bg-selected text-accent-primary" : "border-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
+          <span className="flex h-10 w-9 shrink-0 items-center justify-center"><Icon className="text-2xl" /></span>
           <span className={cn("whitespace-nowrap", !mobile && "hidden @min-[12rem]/navigation:inline")}>{label}</span>
         </button>
       ))}
@@ -83,13 +83,13 @@ export function NavigationSidebar() {
 
   return (
     <>
-      <aside className={cn("@container/navigation hidden shrink-0 flex-col overflow-hidden border-r border-border-default bg-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none md:flex", desktopExpanded === null ? "w-16 xl:w-60" : desktopExpanded ? "w-60" : "w-16")}>
-        <div className="flex h-16 shrink-0 items-center px-2">
-          <button type="button" aria-label="Toggle navigation labels" onClick={() => setDesktopExpanded(!(desktopExpanded ?? window.matchMedia(WORKSPACE_MEDIA.expandedNavigation).matches))} className="group/sidebar-toggle flex h-11 w-full min-w-0 cursor-pointer items-center justify-between gap-1 rounded-lg text-left transition-colors duration-(--duration-short) hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary motion-reduce:transition-none @min-[12rem]/navigation:pl-2">
+      <aside className={cn("@container/navigation hidden shrink-0 flex-col overflow-hidden border-r border-border-default bg-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none md:flex", desktopExpanded === null ? "w-14 xl:w-52" : desktopExpanded ? "w-52" : "w-14")}>
+        <div className="flex h-14 shrink-0 items-center px-2">
+          <Link href="/" className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-accent-primary @max-[12rem]/navigation:hidden" aria-label="CompareCode home">
             {brand(false)}
-            <span className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center text-text-secondary transition-colors duration-(--duration-short) group-hover/sidebar-toggle:text-text-primary motion-reduce:transition-none">
+          </Link>
+          <button type="button" aria-label="Toggle navigation labels" onClick={() => setDesktopExpanded(!(desktopExpanded ?? window.matchMedia(WORKSPACE_MEDIA.expandedNavigation).matches))} className="ml-auto flex h-10 w-10 min-w-0 items-center justify-center rounded-lg border border-transparent text-text-secondary transition-colors duration-(--duration-short) hover:bg-hover-overlay hover:text-text-primary focus-visible:outline-2 focus-visible:outline-accent-primary motion-reduce:transition-none">
               {desktopExpanded === null ? <><MdChevronRight className="size-5 shrink-0 xl:hidden" /><MdChevronLeft className="hidden size-5 shrink-0 xl:block" /></> : desktopExpanded ? <MdChevronLeft className="size-5 shrink-0" /> : <MdChevronRight className="size-5 shrink-0" />}
-            </span>
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">{navigation(false)}</div>

@@ -17,11 +17,11 @@ export function ComparisonToolbar() {
   const [copiedSide, setCopiedSide] = useState<"left" | "right" | null>(null);
 
   const stats = useMemo(() => {
-    return calculateStats(comparisonResult?.blocks, settings.ignoreWhitespace);
-  }, [comparisonResult, settings.ignoreWhitespace]);
+    return calculateStats(comparisonResult?.blocks);
+  }, [comparisonResult]);
 
-  const leftLineCount = useMemo(() => leftText ? leftText.split(/\r?\n/).length : 0, [leftText]);
-  const rightLineCount = useMemo(() => rightText ? rightText.split(/\r?\n/).length : 0, [rightText]);
+  const leftLineCount = useMemo(() => leftText ? leftText.split(/\r\n|\r|\n/).length : 0, [leftText]);
+  const rightLineCount = useMemo(() => rightText ? rightText.split(/\r\n|\r|\n/).length : 0, [rightText]);
 
   const handleCopy = (text: string, side: "left" | "right") => {
     if (!text) return;
@@ -90,7 +90,7 @@ interface CopyButtonProps {
 
 function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
   const isCopied = copiedSide === side;
-  const title = side === "left" ? "Copy original text" : "Copy modified text";
+  const label = side === "left" ? "Copy original text" : "Copy modified text";
 
   const isDisabled = isCopied || !text?.trim();
 
@@ -99,7 +99,7 @@ function CopyButton({ text, side, copiedSide, onCopy }: CopyButtonProps) {
       onClick={() => onCopy(text, side)}
       disabled={isDisabled}
       className="flex min-h-10 items-center gap-1 text-accent-primary hover:bg-hover-overlay px-2 py-1.5 rounded disabled:text-text-secondary disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors duration-(--duration-short)"
-      title={title}
+      aria-label={label}
     >
       {isCopied ? <MdCheck className="text-xl" /> : <MdContentCopy className="text-xl" />}
       <span className="text-sm font-semibold hidden @3xl/workspace:inline">{isCopied ? "Copied" : "Copy"}</span>

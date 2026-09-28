@@ -5,22 +5,23 @@ import { cn } from "@/utils/uiHelpers";
 
 interface DiffFragmentListProps {
   fragments: Array<TextFragment>;
-  ignoreWhitespace: boolean;
+  lineEndingLabel?: string;
+  suppressHighlight?: boolean;
 }
 
-export const DiffFragmentList = memo(({ fragments, ignoreWhitespace }: DiffFragmentListProps) => {
-  if (!fragments || fragments.length === 0) {
+export const DiffFragmentList = memo(({ fragments, lineEndingLabel, suppressHighlight = false }: DiffFragmentListProps) => {
+  if ((!fragments || fragments.length === 0) && !lineEndingLabel) {
     return <span className="select-none opacity-0 inline-block w-0">{"\u200B"}</span>;
   }
 
   return (
     <>
-      {fragments.map((frag, fIdx, arr) => (
+      {(fragments ?? []).map((frag, fIdx, arr) => (
         <span
           key={fIdx}
           className={cn(
-            getFragmentColorClass(frag.kind, frag.isWhitespaceChange, ignoreWhitespace),
-            getFragmentRoundingClass(arr, fIdx, ignoreWhitespace)
+            suppressHighlight ? "bg-transparent text-text-primary" : getFragmentColorClass(frag.kind),
+            !suppressHighlight && getFragmentRoundingClass(arr, fIdx)
           )}
         >
           {frag.text === "" ? (
@@ -30,6 +31,7 @@ export const DiffFragmentList = memo(({ fragments, ignoreWhitespace }: DiffFragm
           )}
         </span>
       ))}
+      {lineEndingLabel && <span className="ml-1 rounded bg-bg-secondary px-1 text-[0.75em] text-text-secondary" title="Changed line ending">{lineEndingLabel}</span>}
     </>
   );
 });

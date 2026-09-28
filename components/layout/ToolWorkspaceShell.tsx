@@ -13,6 +13,7 @@ export interface ToolWorkspaceTab<T extends string> {
   icon: ComponentType<{ className?: string }>;
   content: ReactNode;
   placement?: "top" | "right";
+  isDisabled?: boolean;
 }
 
 export interface ToolWorkspaceQuickAction {
@@ -140,6 +141,7 @@ export function ToolWorkspaceShell<T extends string>({
                 aria-expanded={selected}
                 aria-label={tab.title}
                 aria-controls={panelId}
+                disabled={tab.isDisabled}
                 onClick={() => {
                   onPanelTabChange(tab.value);
                   onPanelOpenChange(!selected);

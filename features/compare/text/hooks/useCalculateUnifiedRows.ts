@@ -1,17 +1,15 @@
 import { useMemo } from "react";
 import { ComparisonResult, DiffChangeType, BlockType } from "@/features/compare/text/types/diff";
-import { AppSettings } from "@/types/settings";
 import { UnifiedRowData } from "@/features/compare/text/components/diff/UnifiedRow";
 import { getBlockColorClass } from "@/features/compare/text/utils/diffHelpers";
 
-export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | null, settings: AppSettings) {
+export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | null) {
   return useMemo(() => {
     const result: Array<UnifiedRowData> = [];
     if (!comparisonResult) return result;
 
     comparisonResult.blocks.forEach((block) => {
-      const isIgnoredWhitespace = settings.ignoreWhitespace && block.isWhitespaceChange;
-      const isSelectable = block.kind !== BlockType.Unchanged && !isIgnoredWhitespace;
+      const isSelectable = block.kind !== BlockType.Unchanged;
 
       if (isSelectable) {
         result.push({
@@ -40,7 +38,8 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
                 line2: "",
                 sign: "-",
                 fragments: line.fragments,
-                bgClass: getBlockColorClass(BlockType.Removed, "old", block.isWhitespaceChange, settings.ignoreWhitespace)
+                lineEndingLabel: line.lineEndingLabel,
+                bgClass: getBlockColorClass(BlockType.Removed, "old")
               },
               isSelectable
             });
@@ -58,7 +57,8 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
                 line2: line.lineNumber,
                 sign: "+",
                 fragments: line.fragments,
-                bgClass: getBlockColorClass(BlockType.Added, "new", block.isWhitespaceChange, settings.ignoreWhitespace)
+                lineEndingLabel: line.lineEndingLabel,
+                bgClass: getBlockColorClass(BlockType.Added, "new")
               },
               isSelectable
             });
@@ -73,8 +73,8 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
           const isAdded = block.kind === BlockType.Added;
 
           let bgClass = "bg-transparent";
-          if (isRemoved) bgClass = getBlockColorClass(BlockType.Removed, "old", block.isWhitespaceChange, settings.ignoreWhitespace);
-          if (isAdded) bgClass = getBlockColorClass(BlockType.Added, "new", block.isWhitespaceChange, settings.ignoreWhitespace);
+          if (isRemoved) bgClass = getBlockColorClass(BlockType.Removed, "old");
+          if (isAdded) bgClass = getBlockColorClass(BlockType.Added, "new");
 
           blockRows.push({
             id: `${block.id}-line-${idx}`,
@@ -84,7 +84,8 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
             unifiedLine: {
               line1: oldLine?.lineNumber || "",
               line2: newLine?.lineNumber || "",
-              sign: isRemoved ? "-" : isAdded ? "+" : " ",
+              sign: isRemoved && oldLine?.kind !== DiffChangeType.Unchanged ? "-"
+                : isAdded && newLine?.kind !== DiffChangeType.Unchanged ? "+" : " ",
               fragments: isAdded ? (newLine?.fragments || []) : (oldLine?.fragments || []),
               bgClass
             },
@@ -118,6 +119,6 @@ export function useCalculateUnifiedRows(comparisonResult: ComparisonResult | nul
     });
 
     return result;
-  }, [comparisonResult, settings.ignoreWhitespace]);
+  }, [comparisonResult]);
 }
 

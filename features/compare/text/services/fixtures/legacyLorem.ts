@@ -1,4 +1,4 @@
-const originalBaseText = `Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+export const legacyOriginalLorem = `Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
 Aenean commodo ligula eget dolor.
 
 Aenean massa.
@@ -12,9 +12,9 @@ Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
 	Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.
 Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum.
 	Aenean imperdiet.
-	
+\t
 	Etiam ultricies nisi (vel augue.)
-	
+\t
 Curabitur ullamcorper ultricies nisi.
 Maecenas tempus, tramba eget condimentum rhoncus, sem quam semper libero, sem neque sed ipsum.
 Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem.
@@ -23,7 +23,7 @@ Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem.
 Da batun tlen arres.
 Pudbo alo pohki sermec.   `;
 
-const modifiedBaseText = `Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+export const legacyModifiedLorem = `Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
 Aenean commodo ligula eget dolor.
 
 Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.
@@ -33,7 +33,7 @@ Inenim(porjusto, rhoncus ut, imperdiet a, venenatis vitae, justo.
 	Vivamus elementumsemper() nisi.)
 	Aenean vulputate eleifend tellus.
 Etiam ultricies nisi (por guband.)
-	
+\t
 Curabitur ullamcorper ultricies nisi.
 
 Nam eget dui.
@@ -44,15 +44,3 @@ Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem.
 	Lutrani funi gobro dubp polnugn.
  Da batun tlen arres.
 	Pudbo alo pohki sermec.`;
-
-const movedSection = `Sed fringilla mauris sit amet nibh.
-Donec sodales sagittis magna.
-Sed consequat, leo eget bibendum sodales, augue velit cursus nunc.
-Quisque malesuada placerat nisl.`;
-
-export const originalTestText = `${movedSection}
-${originalBaseText}`;
-export const modifiedTestText = modifiedBaseText.replace(
-  "Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem.\n",
-  `Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem.\n${movedSection}\n`
-);

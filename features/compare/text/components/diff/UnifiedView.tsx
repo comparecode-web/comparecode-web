@@ -9,15 +9,21 @@ import { useDiffVirtualizer } from "@/features/compare/text/hooks/useDiffVirtual
 import { cn } from "@/utils/uiHelpers";
 import { useCalculateUnifiedRows } from "@/features/compare/text/hooks/useCalculateUnifiedRows";
 import { UI_CONSTANTS } from "@/config/constants";
+import { ComparisonResult } from "@/features/compare/text/types/diff";
+import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
 
 export function UnifiedView() {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
 
   const unifiedScrollRef = useRef<HTMLDivElement>(null);
-  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+  const [hoveredBlock, setHoveredBlock] = useState<{ result: ComparisonResult | null; id: string | null }>({ result: null, id: null });
+  const hoveredBlockId = hoveredBlock.result === comparisonResult ? hoveredBlock.id : null;
+  const setHoveredBlockId = (id: string | null) => setHoveredBlock({ result: comparisonResult, id });
+  const selectedBlockId = comparisonResult?.blocks.find((block) => block.isSelected)?.id ?? null;
+  const { activeMoveId, activateMove } = useMoveFocus(comparisonResult);
 
-  const rows = useCalculateUnifiedRows(comparisonResult, settings);
+  const rows = useCalculateUnifiedRows(comparisonResult);
 
   const maxLineChars = useMemo(() => {
     let max = 0;
@@ -34,7 +40,7 @@ export function UnifiedView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0;
+    if (row.type === "header-controls") return (row.block.move ? 28 : 0) + (row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0);
     if (row.type === "controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT : 0;
     return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
@@ -53,7 +59,7 @@ export function UnifiedView() {
   const containerWidthClass = settings.isWordWrapEnabled ? "w-full" : "w-max min-w-full";
   const minWidthStyle = !settings.isWordWrapEnabled && maxLineChars > 0 ? { minWidth: `calc(${maxLineChars}ch + 6.25rem)` } : {};
 
-  const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length);
+  const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r\n|\r|\n/).length || 0, rightText?.split(/\r\n|\r|\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
 
   return (
@@ -68,6 +74,9 @@ export function UnifiedView() {
               virtualRow={virtualRow}
               settings={settings}
               hoveredBlockId={hoveredBlockId}
+              selectedBlockId={selectedBlockId}
+              activeMoveId={activeMoveId}
+              onActivateMove={activateMove}
               setHoveredBlockId={setHoveredBlockId}
               selectBlock={selectBlock}
               mergeBlock={mergeBlock}

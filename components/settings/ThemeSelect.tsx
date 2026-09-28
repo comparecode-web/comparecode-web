@@ -19,10 +19,10 @@ export function ThemeSelect({ className, sidebar = false, showIcon = sidebar }: 
         onChange={(value) => updateSettings({ theme: value })}
         options={themeOptions}
         className={sidebar ? "@max-[12rem]/navigation:[&>svg]:hidden" : undefined}
-        triggerClassName={cn(showIcon && "pl-10", sidebar && "h-11 transition-[background-color,border-color,box-shadow] @max-[12rem]/navigation:p-0 @max-[12rem]/navigation:text-transparent @max-[12rem]/navigation:overflow-hidden @max-[12rem]/navigation:whitespace-nowrap")}
+        triggerClassName={cn(showIcon && "pl-9", sidebar && "h-10 rounded-lg transition-[background-color,border-color,box-shadow] @max-[12rem]/navigation:p-0 @max-[12rem]/navigation:text-transparent @max-[12rem]/navigation:overflow-hidden @max-[12rem]/navigation:whitespace-nowrap")}
         menuClassName="min-w-44"
       />
-      {showIcon && <MdPalette className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xl text-text-secondary" />}
+      {showIcon && <MdPalette className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xl text-text-secondary" />}
     </div>
   );
 }

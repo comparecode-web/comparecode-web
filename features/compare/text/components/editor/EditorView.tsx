@@ -16,16 +16,22 @@ import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
 import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 
 export function EditorView() {
-  const { comparisonResult } = useEditorStore();
+  const { comparisonResult, leftText, rightText } = useEditorStore();
+  const hasInput = Boolean(leftText || rightText);
   const showTextTest = useEditorUIStore((state) => state.showTextTest);
   const { isInputExpanded, toggleInputPanel, isOptionsPanelOpen, setIsOptionsPanelOpen, optionsPanelTab, setOptionsPanelTab } = useEditorUIStore();
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const isInputEditorToggleDisabled = !hasResult && isInputExpanded;
   const toggleOptionsPanel = useCallback(() => {
+    if (!hasInput) return;
     const uiState = useEditorUIStore.getState();
     uiState.setIsOptionsPanelOpen(uiState.optionsPanelTab !== "options" || !uiState.isOptionsPanelOpen);
     uiState.setOptionsPanelTab("options");
-  }, []);
+  }, [hasInput]);
+
+  useEffect(() => {
+    if (!hasInput && isOptionsPanelOpen && optionsPanelTab === "options") setIsOptionsPanelOpen(false);
+  }, [hasInput, isOptionsPanelOpen, optionsPanelTab, setIsOptionsPanelOpen]);
 
   useOptionsPanelShortcut(toggleOptionsPanel);
 
@@ -76,10 +82,10 @@ export function EditorView() {
       toolIcon={MdCode}
       compactControls={<div className="flex min-w-0 flex-1 items-center gap-3 self-stretch">
         {showTextTest && <TextTestButton />}
-        {!(isOptionsPanelOpen && optionsPanelTab === "options") && <CompactTextOptions />}
+        {!(isOptionsPanelOpen && optionsPanelTab === "options") && <CompactTextOptions disabled={!hasInput} />}
       </div>}
       tabs={[
-        { value: "options", title: "Options", icon: MdTune, content: <OptionsView /> },
+        { value: "options", title: "Options", icon: MdTune, content: <OptionsView />, isDisabled: !hasInput },
         { value: "history", title: "Merge history", placement: "right", icon: MdHistory, content: <MergeHistoryView /> }
       ]}
     >
