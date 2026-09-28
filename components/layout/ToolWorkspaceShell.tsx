@@ -198,7 +198,7 @@ export function ToolWorkspaceShell<T extends string>({
         <div className="flex h-full min-h-0 w-[min(90vw,20rem)] flex-col border-l border-border-default">
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border-default p-3">
             <h2 className="font-semibold">{historyTab.title}</h2>
-            <Button size="sm" variant="outline" aria-label="Close history" onClick={() => { onPanelOpenChange(false); historyTriggerRef.current?.focus(); }}><MdClose className="text-lg" /></Button>
+            <Button size="icon" variant="outline" aria-label="Close history" onClick={() => { onPanelOpenChange(false); historyTriggerRef.current?.focus(); }}><MdClose className="text-lg" /></Button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">{historyTab.content}</div>
         </div>
