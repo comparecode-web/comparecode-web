@@ -11,7 +11,7 @@ vi.mock("next/image", () => ({
 
 type TabValue = "options" | "history";
 
-function ShellHarness({ initiallyOpen = true }: { initiallyOpen?: boolean }) {
+function ShellHarness({ initiallyOpen = true, optionsDisabled = false }: { initiallyOpen?: boolean; optionsDisabled?: boolean }) {
   const [isOpen, setIsOpen] = useState(initiallyOpen);
   const [tab, setTab] = useState<TabValue>("options");
   const [quickActionCount, setQuickActionCount] = useState(0);
@@ -35,7 +35,7 @@ function ShellHarness({ initiallyOpen = true }: { initiallyOpen?: boolean }) {
       toolTitle="Text compare"
       toolIcon={MdCode}
       tabs={[
-        { value: "options", title: "Options", icon: MdTune, content: <div>Options content</div> },
+        { value: "options", title: "Options", icon: MdTune, content: <div>Options content</div>, isDisabled: optionsDisabled },
         { value: "history", title: "History", placement: "right", icon: MdHistory, content: <div>History content</div> }
       ]}
     >
@@ -47,6 +47,13 @@ function ShellHarness({ initiallyOpen = true }: { initiallyOpen?: boolean }) {
 }
 
 describe("ToolWorkspaceShell", () => {
+  it("disables only the unavailable options tab", async () => {
+    const user = userEvent.setup();
+    render(<ShellHarness initiallyOpen={false} optionsDisabled />);
+    expect(screen.getByRole("button", { name: "Options" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "History" }));
+    expect(screen.getByText("History content")).toBeVisible();
+  });
   it("reveals options only on request and closes them with Escape", async () => {
     const user = userEvent.setup();
     render(<ShellHarness initiallyOpen={false} />);

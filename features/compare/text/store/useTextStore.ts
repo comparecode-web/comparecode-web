@@ -40,6 +40,7 @@ interface EditorState {
 export const useEditorStore = create<EditorState>((set, get) => {
   let pendingHistorySessionPromise: Promise<string> | null = null;
   let pendingHistorySessionVersion = 0;
+  let comparedInputs: { left: string; right: string } | null = null;
 
   const invalidatePendingHistorySession = () => {
     pendingHistorySessionVersion += 1;
@@ -105,6 +106,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
   clearContent: () => {
     invalidatePendingHistorySession();
+    comparedInputs = null;
     set({
       leftText: "",
       rightText: "",
@@ -120,7 +122,8 @@ export const useEditorStore = create<EditorState>((set, get) => {
   compare: (settings: CompareSettings) => {
     const { leftText, rightText } = get();
     const result = TextCompareService.compare(leftText, rightText, settings);
-    const selectableBlocks = result.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+    comparedInputs = { left: leftText, right: rightText };
+    const selectableBlocks = result.blocks.filter(b => b.kind !== BlockType.Unchanged);
 
     set({
       comparisonResult: result,
@@ -136,21 +139,23 @@ export const useEditorStore = create<EditorState>((set, get) => {
       return;
     }
 
+    const eligibleId = currentResult.blocks.some(b => b.id === blockId && b.kind !== BlockType.Unchanged) ? blockId : null;
     const updatedBlocks = currentResult.blocks.map(b => ({
       ...b,
-      isSelected: b.id === blockId
+      isSelected: b.id === eligibleId
     }));
-    const settings = useSettingsStore.getState().settings;
-    const selectableBlocks = updatedBlocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
-    const currentIndex = blockId ? selectableBlocks.findIndex(b => b.id === blockId) + 1 : 0;
+    const selectableBlocks = updatedBlocks.filter(b => b.kind !== BlockType.Unchanged);
+    const currentIndex = eligibleId ? selectableBlocks.findIndex(b => b.id === eligibleId) + 1 : 0;
     set({
-      comparisonResult: { blocks: updatedBlocks },
+      comparisonResult: { ...currentResult, blocks: updatedBlocks },
       totalSelectableBlocks: selectableBlocks.length,
       currentBlockIndex: currentIndex
     });
   },
 
   mergeBlock: (block: ChangeBlock, direction: MergeDirection, settings: CompareSettings) => {
+    if (block.kind === BlockType.Unchanged || !get().comparisonResult?.blocks.some((candidate) => candidate === block) ||
+      comparedInputs?.left !== get().leftText || comparedInputs?.right !== get().rightText) return;
     const { leftText, rightText, currentBlockIndex, historySessionId } = get();
     const beforeLeft = leftText;
     const beforeRight = rightText;
@@ -158,9 +163,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
     let newRight = rightText;
 
     if (direction === MergeDirection.LeftToRight) {
-      newRight = MergeService.mergeBlock(rightText, block, direction);
+      newRight = MergeService.mergeBlock(rightText, leftText, block, direction);
     } else {
-      newLeft = MergeService.mergeBlock(leftText, block, direction);
+      newLeft = MergeService.mergeBlock(leftText, rightText, block, direction);
     }
 
     set({ leftText: newLeft, rightText: newRight });
@@ -199,7 +204,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     if (appSettings.isContinuousMergeEnabled) {
       const newResult = get().comparisonResult;
       if (newResult) {
-        const newSelectableBlocks = newResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+        const newSelectableBlocks = newResult.blocks.filter(b => b.kind !== BlockType.Unchanged);
         let targetIndex = currentBlockIndex - 1;
 
         if (targetIndex >= newSelectableBlocks.length) {
@@ -271,8 +276,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       return;
     }
 
-    const settings = useSettingsStore.getState().settings;
-    const selectableBlocks = currentResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+    const selectableBlocks = currentResult.blocks.filter(b => b.kind !== BlockType.Unchanged);
     if (selectableBlocks.length === 0) {
       return;
     }
@@ -307,8 +311,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       return;
     }
 
-    const settings = useSettingsStore.getState().settings;
-    const selectableBlocks = currentResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+    const selectableBlocks = currentResult.blocks.filter(b => b.kind !== BlockType.Unchanged);
     if (selectableBlocks.length === 0) {
       return;
     }

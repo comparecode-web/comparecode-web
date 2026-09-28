@@ -10,7 +10,7 @@ import { PrecisionLevel } from "@/types/settings";
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 it("fits complete settings in priority order and preserves values when resizing", async () => {
-  let width = 1000;
+  let width = 1200;
   let resize = () => {};
   vi.stubGlobal("ResizeObserver", class {
     constructor(callback: () => void) { resize = callback; }
@@ -23,17 +23,26 @@ it("fits complete settings in priority order and preserves values when resizing"
   useSettingsStore.setState({ settings: { ...defaultSettings }, isLoaded: true });
   const user = userEvent.setup();
   const { container } = render(<CompactTextOptions />);
+  expect(screen.getByRole("checkbox", { name: "Ignore whitespace" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /Font family:/ })).toBeInTheDocument();
   await user.click(screen.getByRole("radio", { name: "Character" }));
 
-  act(() => { width = 370; resize(); });
-  expect(screen.getByRole("radio", { name: "Unified" })).toBeInTheDocument();
+  act(() => { width = 400; resize(); });
+  expect(screen.getByRole("checkbox", { name: "Ignore whitespace" })).toBeInTheDocument();
+  expect(screen.queryByRole("radio", { name: "Unified" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /Font family:/ })).not.toBeInTheDocument();
-  expect(container.querySelectorAll("[inert]")).toHaveLength(3);
+  expect(container.querySelectorAll("[inert]")).toHaveLength(4);
 
   act(() => { width = 100; resize(); });
   expect(screen.queryAllByRole("radio")).toHaveLength(0);
-  act(() => { width = 1000; resize(); });
+  act(() => { width = 1200; resize(); });
   expect(screen.getByRole("radio", { name: "Character" })).toHaveAttribute("aria-checked", "true");
   expect(useSettingsStore.getState().settings.precision).toBe(PrecisionLevel.Character);
+});
+
+it("keeps compact settings inert without input", () => {
+  vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
+  const { container } = render(<CompactTextOptions disabled />);
+  expect(container.firstElementChild).toHaveAttribute("inert");
+  expect(container.firstElementChild).toHaveAttribute("aria-disabled", "true");
 });

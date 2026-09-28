@@ -1,10 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { TextFontFamilyControl, TextFontSizeControl, TextLayoutControl, TextPrecisionControl, TextWordWrapControl } from "./OptionsView";
+import { TextFontFamilyControl, TextFontSizeControl, TextIgnoreWhitespaceControl, TextLayoutControl, TextPrecisionControl, TextWordWrapControl } from "./OptionsView";
 import { cn } from "@/utils/uiHelpers";
 
-export function CompactTextOptions() {
+export function CompactTextOptions({ disabled = false }: { disabled?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(0);
 
@@ -30,6 +30,7 @@ export function CompactTextOptions() {
   }, []);
 
   const controls = [
+    <TextIgnoreWhitespaceControl key="whitespace" />,
     <TextPrecisionControl key="precision" />,
     <TextLayoutControl key="layout" />,
     <TextWordWrapControl key="wrap" />,
@@ -37,7 +38,7 @@ export function CompactTextOptions() {
     <div key="font" className="w-48"><TextFontFamilyControl /></div>
   ];
 
-  return <div ref={containerRef} className="relative flex min-w-0 flex-1 items-center gap-3 self-stretch">
+  return <div ref={containerRef} inert={disabled} aria-disabled={disabled} className={cn("relative flex min-w-0 flex-1 items-center gap-3 self-stretch", disabled && "opacity-50")}>
     {controls.map((control, index) => <div
       key={control.key}
       aria-hidden={index >= visibleCount}

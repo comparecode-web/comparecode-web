@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { VirtualItem } from "@tanstack/react-virtual";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -8,6 +8,8 @@ import { useDiffVirtualizer } from "@/features/compare/text/hooks/useDiffVirtual
 import { SplitRow } from "./SplitRow";
 import { useCalculateSplitRows } from "@/features/compare/text/hooks/useCalculateSplitRows";
 import { UI_CONSTANTS } from "@/config/constants";
+import { ComparisonResult } from "@/features/compare/text/types/diff";
+import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
 
 export function SplitView() {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
@@ -15,10 +17,25 @@ export function SplitView() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fakeScrollRef = useRef<HTMLDivElement>(null);
-  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+  const [hoveredBlock, setHoveredBlock] = useState<{ result: ComparisonResult | null; id: string | null }>({ result: null, id: null });
+  const hoveredBlockId = hoveredBlock.result === comparisonResult ? hoveredBlock.id : null;
+  const setHoveredBlockId = (id: string | null) => setHoveredBlock({ result: comparisonResult, id });
   const [selectionSide, setSelectionSide] = useState<"left" | "right" | null>(null);
+  const selectedBlockId = comparisonResult?.blocks.find((block) => block.isSelected)?.id ?? null;
+  const { activeMoveId, activateMove } = useMoveFocus(comparisonResult);
 
-  const rows = useCalculateSplitRows(comparisonResult, settings);
+  useEffect(() => {
+    if (!selectionSide) return;
+    const clearSelectionSide = () => setSelectionSide(null);
+    window.addEventListener("pointerup", clearSelectionSide);
+    window.addEventListener("blur", clearSelectionSide);
+    return () => {
+      window.removeEventListener("pointerup", clearSelectionSide);
+      window.removeEventListener("blur", clearSelectionSide);
+    };
+  }, [selectionSide]);
+
+  const rows = useCalculateSplitRows(comparisonResult);
 
   const maxLineChars = useMemo(() => {
     let max = 0;
@@ -39,7 +56,7 @@ export function SplitView() {
 
   const estimateSize = (index: number) => {
     const row = rows[index];
-    if (row.type === "header-controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0;
+    if (row.type === "header-controls") return (row.block.move ? 28 : 0) + (row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0);
     if (row.type === "controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT : 0;
     return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
@@ -57,7 +74,7 @@ export function SplitView() {
 
   const lineNumChars = Math.max(
     UI_CONSTANTS.LINE_NUM_MIN_CHARS,
-    Math.max(leftText?.split(/\r?\n/).length || 0, rightText?.split(/\r?\n/).length || 0).toString().length
+    Math.max(leftText?.split(/\r\n|\r|\n/).length || 0, rightText?.split(/\r\n|\r|\n/).length || 0).toString().length
   );
 
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
@@ -95,6 +112,9 @@ export function SplitView() {
                 virtualRow={virtualRow}
                 settings={settings}
                 hoveredBlockId={hoveredBlockId}
+                selectedBlockId={selectedBlockId}
+                activeMoveId={activeMoveId}
+                onActivateMove={activateMove}
                 setHoveredBlockId={setHoveredBlockId}
                 selectBlock={selectBlock}
                 mergeBlock={mergeBlock}

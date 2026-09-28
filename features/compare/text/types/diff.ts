@@ -21,14 +21,13 @@ export enum Side {
 export interface TextFragment {
   kind: DiffChangeType;
   text: string;
-  isWhitespaceChange: boolean;
 }
 
 export interface ChangeLine {
   fragments: Array<TextFragment>;
   lineNumber: number | null;
   kind: DiffChangeType;
-  isInModifiedBlock: boolean;
+  lineEndingLabel?: string;
 }
 
 export interface ChangeBlock {
@@ -38,13 +37,27 @@ export interface ChangeBlock {
   newLines: Array<ChangeLine>;
   startIndexOld: number;
   startIndexNew: number;
-  isWhitespaceChange: boolean;
+  startOffsetOld: number;
+  endOffsetOld: number;
+  startOffsetNew: number;
+  endOffsetNew: number;
+  removalCount: number;
+  additionCount: number;
+  move?: {
+    id: string;
+    role: "from" | "to";
+    counterpartStartLine: number;
+    counterpartEndLine: number;
+    counterpartBlockId: string;
+    modified: boolean;
+    number?: number;
+  };
   isSelected?: boolean;
-  isHovered?: boolean;
 }
 
 export interface ComparisonResult {
   blocks: Array<ChangeBlock>;
+  limited: boolean;
 }
 
 export interface MinimapSegment {

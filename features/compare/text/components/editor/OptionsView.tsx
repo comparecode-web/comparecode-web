@@ -40,7 +40,7 @@ export function OptionsView() {
 }
 
 function ComparisonSection() {
-  const { settings, updateSettings, resetSectionToDefaults } = useSettingsStore();
+  const { settings, resetSectionToDefaults } = useSettingsStore();
   const isSectionDirty = isSettingsSectionDirty(settings, COMPARISON_SECTION_KEYS);
 
   return (
@@ -49,14 +49,16 @@ function ComparisonSection() {
       isDirty={isSectionDirty}
       onReset={() => resetSectionToDefaults(COMPARISON_SECTION_KEYS)}
     >
-      <Switch
-        checked={settings.ignoreWhitespace}
-        onChange={(e) => updateSettings({ ignoreWhitespace: e.target.checked })}
-        label="Ignore whitespace"
-      />
+      <TextIgnoreWhitespaceControl />
       <TextPrecisionControl />
     </OptionsSection>
   );
+}
+
+export function TextIgnoreWhitespaceControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <Switch checked={settings.ignoreWhitespace}
+    onChange={(event) => updateSettings({ ignoreWhitespace: event.target.checked })} label="Ignore whitespace" />;
 }
 
 export function TextPrecisionControl() {
