@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { useToastStore } from "@/store/useToastStore";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { defaultSettings } from "@/config/defaults";
+import { BlockType } from "@/features/compare/text/types/diff";
 
 function resetStores() {
   useToastStore.setState({
@@ -79,5 +80,29 @@ describe("useTextStore identical text state", () => {
     useEditorStore.getState().setRightText("different");
 
     expect(useEditorStore.getState().areComparedTextsIdentical).toBe(false);
+  });
+});
+
+describe("active whitespace comparison state", () => {
+  beforeEach(resetStores);
+
+  it("removes selection, navigation targets, and change blocks when whitespace is ignored", () => {
+    const store = useEditorStore.getState();
+    store.setLeftText("  value = 1;\nnext\n");
+    store.setRightText("\tvalue  =  1;\n\nnext\n");
+    store.compare({ ...defaultSettings, ignoreWhitespace: false });
+    const before = useEditorStore.getState();
+    expect(before.totalSelectableBlocks).toBeGreaterThan(0);
+    before.selectBlock(before.comparisonResult!.blocks.find((block) => block.kind !== BlockType.Unchanged)!.id);
+    expect(useEditorStore.getState().currentBlockIndex).toBeGreaterThan(0);
+
+    useEditorStore.getState().compare({ ...defaultSettings, ignoreWhitespace: true });
+    const after = useEditorStore.getState();
+    expect(after.totalSelectableBlocks).toBe(0);
+    expect(after.currentBlockIndex).toBe(0);
+    expect(after.comparisonResult!.blocks.every((block) => block.kind === BlockType.Unchanged && !block.isSelected)).toBe(true);
+    expect(after.areComparedTextsIdentical).toBe(false);
+    after.selectBlock(after.comparisonResult!.blocks[0].id);
+    expect(useEditorStore.getState().currentBlockIndex).toBe(0);
   });
 });

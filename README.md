@@ -37,7 +37,7 @@ When contributing, keep module boundaries strict: implement module-specific chan
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **State Management:** Zustand
-- **Diff Engine:** `diff`
+- **Diff Engine:** Local bounded Myers sequence diff with Unicode-aware tokenization and move detection
 - **Local Database:** Dexie.js (IndexedDB)
 - **Markdown Rendering:** `react-markdown`, Remark/Rehype plugins, Mermaid, KaTeX
 - **Rich Paste Conversion:** Turndown

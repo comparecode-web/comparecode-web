@@ -7,14 +7,13 @@ import clsx from "clsx";
 
 interface DiffMinimapProps {
   blocks: Array<ChangeBlock>;
-  ignoreWhitespace: boolean;
   onSegmentClick: (blockId: string, offsetPct: number) => void;
 }
 
-export function DiffMinimap({ blocks, ignoreWhitespace, onSegmentClick }: DiffMinimapProps) {
+export function DiffMinimap({ blocks, onSegmentClick }: DiffMinimapProps) {
   const segments = useMemo(() => {
-    return calculateMinimapSegments(blocks, ignoreWhitespace);
-  }, [blocks, ignoreWhitespace]);
+    return calculateMinimapSegments(blocks);
+  }, [blocks]);
 
   const getLeftColor = (kind: BlockType, isSelected: boolean) => {
     if (kind === BlockType.Removed || kind === BlockType.Modified) return isSelected ? "bg-minimap-removed-selected" : "bg-minimap-removed";

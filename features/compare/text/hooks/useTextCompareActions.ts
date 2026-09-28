@@ -53,7 +53,7 @@ export function useTextCompareActions() {
       const { comparisonResult } = useEditorStore.getState();
 
       if (comparisonResult) {
-        const selectableBlocks = comparisonResult.blocks.filter(b => b.kind !== BlockType.Unchanged && !(settings.ignoreWhitespace && b.isWhitespaceChange));
+        const selectableBlocks = comparisonResult.blocks.filter(b => b.kind !== BlockType.Unchanged);
 
         if (prevIndex <= selectableBlocks.length) {
           selectBlock(selectableBlocks[prevIndex - 1].id);

@@ -88,11 +88,7 @@ export function ComparisonView() {
     if (storeRefs.current.leftText || storeRefs.current.rightText) {
       storeRefs.current.executeCompare(storeRefs.current.settings, false, true);
     }
-  }, [settings.precision]);
-
-  useEffect(() => {
-    storeRefs.current.selectBlock(null);
-  }, [settings.ignoreWhitespace]);
+  }, [settings.precision, settings.ignoreWhitespace]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -221,6 +217,17 @@ export function ComparisonView() {
     <div className={cn("flex w-full min-h-0 flex-col bg-bg-primary relative", !hideBody && "h-full")}>
       {!hideBody && <ComparisonToolbar />}
       {!hideBody && <IdenticalTextInfoBar isVisible={areComparedTextsIdentical} />}
+      {!hideBody && comparisonResult?.limited && (
+        <div role="status" className="border-b border-info-border bg-info-bg px-3 py-2 text-sm text-info">
+          This comparison is large or complex. A simpler line diff is shown for some sections.
+        </div>
+      )}
+      {!hideBody && comparisonResult && !comparisonResult.limited && !areComparedTextsIdentical &&
+        leftText !== rightText && comparisonResult.blocks.every((block) => block.kind === "Unchanged") && (
+        <div role="status" className="border-b border-info-border bg-info-bg px-3 py-2 text-sm text-info">
+          No differences under the current comparison settings.
+        </div>
+      )}
 
       {!hideBody && (
         <div id="diff-container" className="flex flex-col flex-1 min-h-0 overflow-hidden relative" style={{ fontSize: `${settings.fontSize}px`, fontFamily: settings.fontFamily }}>
@@ -240,7 +247,6 @@ export function ComparisonView() {
               <div className="pointer-events-auto h-full py-2">
                 <DiffMinimap
                   blocks={comparisonResult.blocks}
-                  ignoreWhitespace={settings.ignoreWhitespace}
                   onSegmentClick={handleSegmentClick}
                 />
               </div>
