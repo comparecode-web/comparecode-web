@@ -8,6 +8,7 @@ import { MarkdownHistoryView } from "./MarkdownHistoryView";
 import { MarkdownLayoutControl, MarkdownOptionsView } from "./MarkdownOptionsView";
 import { MarkdownSplitView } from "./MarkdownSplitView";
 import { MarkdownToolbar } from "./MarkdownToolbar";
+import { Button } from "@/components/ui/Button";
 import { useMarkdownFormattingActions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
@@ -41,6 +42,7 @@ function MarkdownLoadingView() {
 export function MarkdownView() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const markdownText = useMarkdownStore((state) => state.markdownText);
+  const resetMarkdownText = useMarkdownStore((state) => state.resetMarkdownText);
   const setMarkdownText = useMarkdownStore((state) => state.setMarkdownText);
   const undoMarkdownText = useMarkdownStore((state) => state.undoMarkdownText);
   const redoMarkdownText = useMarkdownStore((state) => state.redoMarkdownText);
@@ -55,11 +57,17 @@ export function MarkdownView() {
   const isMarkdownUILoaded = useMarkdownUIStore((state) => state.isLoaded);
   const loadPersistedMarkdownUIState = useMarkdownUIStore((state) => state.loadPersistedMarkdownUIState);
   const isMarkdownReady = isMarkdownLoaded && isMarkdownUILoaded;
+  const hasContent = isMarkdownReady && markdownText.trim().length > 0;
   const toggleOptionsPanel = useCallback(() => {
+    if (!hasContent) return;
     const uiState = useMarkdownUIStore.getState();
     uiState.setIsOptionsPanelOpen(uiState.optionsPanelTab !== "options" || !uiState.isOptionsPanelOpen);
     uiState.setOptionsPanelTab("options");
-  }, []);
+  }, [hasContent]);
+
+  useEffect(() => {
+    if (isMarkdownReady && !hasContent && isOptionsPanelOpen && optionsPanelTab === "options") setIsOptionsPanelOpen(false);
+  }, [isMarkdownReady, hasContent, isOptionsPanelOpen, optionsPanelTab, setIsOptionsPanelOpen]);
 
   useOptionsPanelShortcut(toggleOptionsPanel);
 
@@ -88,11 +96,11 @@ export function MarkdownView() {
       activePanelTab={optionsPanelTab}
       onPanelTabChange={setOptionsPanelTab}
       contentClassName="w-full max-w-full"
-      compactControls={!(isOptionsPanelOpen && optionsPanelTab === "options") && <div className="flex items-center gap-2"><span className="hidden text-xs text-text-secondary @lg/workspace:inline">Layout</span><MarkdownLayoutControl /></div>}
+      compactControls={<div className="flex min-w-0 flex-1 items-center gap-3 self-stretch"><Button size="sm" variant="primary" className="shrink-0 whitespace-nowrap" onClick={resetMarkdownText}>Test text</Button>{!(isOptionsPanelOpen && optionsPanelTab === "options") && <div className="hidden items-center gap-2 @xl/workspace:flex"><span className="hidden text-xs text-text-secondary @2xl/workspace:inline">Layout</span><fieldset disabled={!hasContent} className={!hasContent ? "opacity-50" : undefined}><MarkdownLayoutControl /></fieldset></div>}</div>}
       toolTitle="Markdown preview"
       toolIcon={MdArticle}
       tabs={[
-        { value: "options", title: "Options", icon: MdTune, content: <MarkdownOptionsView /> },
+        { value: "options", title: "Options", icon: MdTune, content: <MarkdownOptionsView />, isDisabled: !hasContent },
         { value: "history", title: "Markdown history", placement: "right", icon: MdHistory, content: <MarkdownHistoryView /> }
       ]}
     >

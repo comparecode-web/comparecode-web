@@ -11,7 +11,7 @@ External modules must use the public entry point at `features/markdown/index.ts`
 1. `MarkdownView` loads persisted content and UI state, wires formatting actions, schedules content saves, and composes the workspace.
 2. `MarkdownToolbar` sends semantic formatting actions through `useMarkdownFormattingActions`.
 3. `markdownEditorCommands.ts` applies deterministic text and selection transformations.
-4. `MarkdownEditorPane` owns textarea interaction, file import, and rich paste handling.
+4. `MarkdownEditorPane` owns textarea interaction, file import, and rich paste handling. Its file drop feedback uses the shared `FileDropZone` component also used by Text Compare.
 5. `MarkdownSplitView` coordinates editor, preview, resizing, and optional synchronized scrolling.
 6. `MarkdownPreviewPane` parses frontmatter, normalizes supported syntax, renders Markdown, and maps specialized blocks to feature components.
 
@@ -41,6 +41,8 @@ Markdown content and persisted UI preferences are durable local data. Undo/redo 
 Treat file content, clipboard HTML, raw Markdown HTML, Mermaid source, links, and images as untrusted input at their relevant boundaries.
 
 ## UI Boundaries
+
+After both content and UI hydration complete, the Markdown Options tab, compact Layout control, and `O` shortcut require non-whitespace content. Empty content closes an open Options panel, while Markdown History remains available. The first compact-toolbar action is always `Test text`, using the canonical `resetMarkdownText` store action; the former reset action inside Options is removed.
 
 Use `ToolWorkspaceShell` and shared primitives from `components/ui`. Keep Markdown-only components and product rules in the feature. Changes to shared controls, responsive shell behavior, or theme tokens must also use `$comparecode-ui-components`.
 

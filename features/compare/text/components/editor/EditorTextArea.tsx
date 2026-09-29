@@ -1,4 +1,6 @@
 import { memo, useEffect, useRef } from "react";
+import { MdFileOpen } from "react-icons/md";
+import { FileDropZone } from "@/components/ui/FileDropZone";
 
 interface EditorTextAreaProps {
   label: string;
@@ -8,9 +10,11 @@ interface EditorTextAreaProps {
   fontSize: number;
   fontFamily: string;
   isWordWrapEnabled: boolean;
+  onFileDrop?: (files: FileList) => void;
+  onOpenFile?: () => void;
 }
 
-export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontSize, fontFamily, isWordWrapEnabled }: EditorTextAreaProps) => {
+export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontSize, fontFamily, isWordWrapEnabled, onFileDrop, onOpenFile }: EditorTextAreaProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialSyncDone = useRef(false);
 
@@ -28,9 +32,14 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
   }, [value, onChange]);
 
   return (
-    <div className="flex min-w-0 flex-col flex-1 min-h-0">
-      <div className="flex items-center gap-2 mb-1 sm:hidden">
+    <FileDropZone
+      className="flex min-w-0 flex-col flex-1 min-h-0"
+      label={`Drop file into ${label.toLowerCase()} text`}
+      onFilesDrop={(files) => onFileDrop?.(files)}
+    >
+      <div className="mb-1 flex items-center justify-between gap-2 sm:hidden">
         <span className="font-bold text-text-primary text-xs">{label}</span>
+        <button type="button" aria-label={`Import ${label.toLowerCase()} text file`} title="Import" onClick={onOpenFile} className="inline-flex size-8 items-center justify-center rounded-md text-lg text-text-primary hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary"><MdFileOpen /></button>
       </div>
       <textarea
         ref={textareaRef}
@@ -45,7 +54,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
         placeholder={placeholder}
         spellCheck={false}
       />
-    </div>
+    </FileDropZone>
   );
 });
 
