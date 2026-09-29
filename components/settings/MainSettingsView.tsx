@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 import { MdSettings } from "react-icons/md";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageContent } from "@/components/layout/PageContent";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { getThemeHighlightDefaults } from "@/config/themes";
 import { getThemeDefaultsAsCustomColors } from "@/utils/highlightColors";
@@ -57,17 +59,9 @@ export function MainSettingsView() {
   };
 
   return (
-    <div className="@container/settings h-full min-w-0 w-full overflow-y-auto bg-bg-secondary custom-scrollbar">
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-8 sm:pt-8">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <MdSettings className="text-xl sm:text-2xl text-text-secondary" />
-          <h2 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">Settings</h2>
-        </div>
-        <p className="mt-2 text-sm text-text-secondary">Make CompareCode your own. Changes are saved automatically.</p>
-      </div>
-
-      <div className="p-4 sm:p-8">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <PageContent className="@container/settings">
+        <PageHeader title="Settings" description="Make CompareCode your own. Changes are saved automatically." icon={MdSettings} />
+        <div className="flex w-full flex-col gap-6">
           <OptionsSection title="Appearance" description="Theme and text difference highlights." isDirty={isAppearanceSectionDirty} onReset={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}>
             <div className="grid items-start gap-6 pt-4 @3xl/settings:grid-cols-2">
             <div className="@container/colors min-w-0 space-y-4">
@@ -205,12 +199,10 @@ export function MainSettingsView() {
             </div>
           </OptionsSection>
         </div>
-      </div>
-
       <div className="p-4 text-center text-xs font-medium text-text-secondary shrink-0">
         Version 1.0.0
         <a href="/licenses/third-party.txt" target="_blank" rel="noopener noreferrer" className="mx-auto mt-2 block w-fit rounded text-accent-primary hover:underline focus-visible:outline-2 focus-visible:outline-accent-primary">Open-source licenses</a>
       </div>
-    </div>
+      </PageContent>
   );
 }

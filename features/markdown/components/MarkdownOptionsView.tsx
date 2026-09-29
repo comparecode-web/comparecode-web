@@ -1,12 +1,10 @@
 "use client";
 
-import { MdRestartAlt, MdEdit, MdVerticalSplit, MdPreview } from "react-icons/md";
+import { MdEdit, MdVerticalSplit, MdPreview } from "react-icons/md";
 import { Switch } from "@/components/ui/Switch";
-import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/Slider";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { OptionsSection } from "@/components/settings/OptionsSection";
-import { useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { type MarkdownUISettingKey, useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 import { isMarkdownSettingsSectionDirty } from "@/features/markdown/utils/markdownSettingsReset";
 import type { MarkdownViewMode } from "@/features/markdown/types/markdown";
@@ -15,7 +13,6 @@ const PREVIEW_SECTION_KEYS: Array<MarkdownUISettingKey> = ["isSyncScrollEnabled"
 const LAYOUT_SECTION_KEYS: Array<MarkdownUISettingKey> = ["viewMode", "editorPaneWidthPercent"];
 
 export function MarkdownOptionsView() {
-  const resetMarkdownText = useMarkdownStore((state) => state.resetMarkdownText);
   const isSyncScrollEnabled = useMarkdownUIStore((state) => state.isSyncScrollEnabled);
   const setIsSyncScrollEnabled = useMarkdownUIStore((state) => state.setIsSyncScrollEnabled);
   const isWordWrapEnabled = useMarkdownUIStore((state) => state.isWordWrapEnabled);
@@ -77,17 +74,6 @@ export function MarkdownOptionsView() {
         />
       </OptionsSection>
 
-      <div className="mt-1 flex flex-col gap-2 pt-1">
-        <Button
-          variant="primary"
-          size="md"
-          onClick={resetMarkdownText}
-          leftIcon={<MdRestartAlt className="text-lg" />}
-          className="w-full"
-        >
-          Reset default text
-        </Button>
-      </div>
     </div>
   );
 }

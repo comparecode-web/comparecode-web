@@ -83,6 +83,40 @@ describe("useTextStore identical text state", () => {
   });
 });
 
+describe("text file import state", () => {
+  beforeEach(resetStores);
+
+  it("fills only the selected input before the first comparison", () => {
+    useEditorStore.getState().importText("left", "old\n");
+    useEditorStore.getState().importText("right", "new\r\n");
+    const state = useEditorStore.getState();
+    expect(state.leftText).toBe("old\n");
+    expect(state.rightText).toBe("new\r\n");
+    expect(state.comparisonResult).toBeNull();
+  });
+
+  it("replaces an input without comparing and clears the stale result and merge session", () => {
+    const store = useEditorStore.getState();
+    store.setLeftText("old");
+    store.setRightText("new");
+    store.compare(defaultSettings);
+    const firstBlock = useEditorStore.getState().comparisonResult?.blocks.find((block) => block.kind !== BlockType.Unchanged);
+    store.selectBlock(firstBlock?.id ?? null);
+    store.setHistorySessionId("prior-session");
+    store.importText("right", "old");
+    const state = useEditorStore.getState();
+    expect(state.leftText).toBe("old");
+    expect(state.rightText).toBe("old");
+    expect(state.comparisonResult).toBeNull();
+    expect(state.areComparedTextsIdentical).toBe(false);
+    expect(state.currentBlockIndex).toBe(0);
+    expect(state.totalSelectableBlocks).toBe(0);
+    expect(state.historySessionId).toBeNull();
+    state.compare(defaultSettings);
+    expect(useEditorStore.getState().areComparedTextsIdentical).toBe(true);
+  });
+});
+
 describe("active whitespace comparison state", () => {
   beforeEach(resetStores);
 

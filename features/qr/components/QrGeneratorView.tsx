@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageContent } from "@/components/layout/PageContent";
 import { MdDownload, MdLink, MdQrCode2, MdTextFields, MdWifi } from "react-icons/md";
 import { OptionsSection } from "@/components/settings/OptionsSection";
 import { Button } from "@/components/ui/Button";
@@ -107,15 +109,8 @@ export function QrGeneratorView() {
   };
 
   return (
-    <div className="h-full min-h-0 w-full overflow-y-auto bg-bg-secondary custom-scrollbar">
-      <div className="mx-auto w-full max-w-7xl p-3 sm:p-5 lg:p-7">
-        <header className="mb-5 flex min-w-0 items-start gap-3 sm:mb-7">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-accent-primary/25 bg-accent-primary/10 text-accent-primary"><MdQrCode2 className="text-2xl" /></span>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-text-primary sm:text-2xl">QR code generator</h1>
-            <p className="mt-1 text-sm leading-6 text-text-secondary">Create a static QR code in your browser. Your content is not uploaded or saved.</p>
-          </div>
-        </header>
+    <PageContent>
+        <PageHeader title="QR code generator" description="Create a static QR code in your browser. Your content is not uploaded or saved." icon={MdQrCode2} />
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
           <div className="min-w-0 space-y-5">
@@ -181,7 +176,6 @@ export function QrGeneratorView() {
             {exportMessage && <p role="status" className="mt-3 text-xs text-text-secondary">{exportMessage}</p>}
           </section>
         </div>
-      </div>
-    </div>
+      </PageContent>
   );
 }
