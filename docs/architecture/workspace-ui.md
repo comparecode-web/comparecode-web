@@ -26,6 +26,8 @@ Container queries govern option grids, image controls, diff toolbar labels, and 
 
 ## Settings and History
 
+`components/layout/PageHeader.tsx` owns the common heading, icon box, description spacing, and `h1` semantics for QR, History, and Settings. `components/layout/PageContent.tsx` gives all three pages the QR page's shared `max-w-7xl` content width and responsive gutters, including Settings sections. History counters wrap as optional header actions.
+
 `OptionsSection` is the common section/reset composition. Reset actions are icon-only even in Settings; descriptive section headings do not change the reset presentation. Root `AGENTS.md` owns the sentence-case, shortcut-label, reset-button, and tooltip-free navigation policies. Each caller retains its own canonical reset key set. Settings adds a static `DiffColorPreview` using the same four diff CSS tokens as real comparisons. The existing `ThemeProvider` resolves themes and custom overrides. The preview does not compare text, mutate settings, or write history.
 
 `components/history/historySorting.ts` is presentation-only:

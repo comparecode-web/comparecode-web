@@ -1,9 +1,10 @@
 "use client";
 
 import type React from "react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { MdUploadFile } from "react-icons/md";
 import { IconButton } from "@/components/ui/IconButton";
+import { FileDropZone } from "@/components/ui/FileDropZone";
 import {
   findFirstSupportedMarkdownTextFile,
   MarkdownFileImportError,
@@ -35,8 +36,6 @@ export function MarkdownEditorPane({
 }: MarkdownEditorPaneProps) {
   const gutterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const dragDepthRef = useRef(0);
-  const [isDraggingFile, setIsDraggingFile] = useState(false);
   const isWordWrapEnabled = useMarkdownUIStore((state) => state.isWordWrapEnabled);
   const fontSize = useMarkdownUIStore((state) => state.fontSize);
   const pushToast = useToastStore((state) => state.pushToast);
@@ -48,8 +47,6 @@ export function MarkdownEditorPane({
     fontSize: `${fontSize}px`,
     lineHeight: "1.5"
   };
-
-  const isFileDrag = (dataTransfer: DataTransfer) => Array.from(dataTransfer.types).includes("Files");
 
   const importFile = async (file: File) => {
     try {
@@ -105,56 +102,6 @@ export function MarkdownEditorPane({
     void importFile(file);
   };
 
-  const resetDragState = () => {
-    dragDepthRef.current = 0;
-    setIsDraggingFile(false);
-  };
-
-  const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isFileDrag(event.dataTransfer)) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    dragDepthRef.current += 1;
-    setIsDraggingFile(true);
-  };
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isFileDrag(event.dataTransfer)) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.dataTransfer.dropEffect = "copy";
-  };
-
-  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isFileDrag(event.dataTransfer)) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
-    if (dragDepthRef.current === 0) {
-      setIsDraggingFile(false);
-    }
-  };
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isFileDrag(event.dataTransfer)) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    resetDragState();
-    handleFiles(event.dataTransfer.files);
-  };
-
   const handleScroll = (event: React.UIEvent<HTMLTextAreaElement>) => {
     if (gutterRef.current) {
       gutterRef.current.scrollTop = event.currentTarget.scrollTop;
@@ -203,12 +150,10 @@ export function MarkdownEditorPane({
   };
 
   return (
-    <div
-      className="relative flex h-full w-full min-w-0 max-w-full overflow-hidden bg-bg-primary"
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+    <FileDropZone
+      className="flex h-full w-full min-w-0 max-w-full overflow-hidden bg-bg-primary"
+      label="Drop Markdown or text file to import"
+      onFilesDrop={handleFiles}
     >
       <div
         ref={gutterRef}
@@ -254,11 +199,6 @@ export function MarkdownEditorPane({
           event.target.value = "";
         }}
       />
-      {isDraggingFile && (
-        <div className="pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-md border-2 border-dashed border-accent-primary bg-accent-primary/10 text-sm font-bold text-accent-primary backdrop-blur-[1px]">
-          Drop Markdown or text file to import
-        </div>
-      )}
-    </div>
+    </FileDropZone>
   );
 }

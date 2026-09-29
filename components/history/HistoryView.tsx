@@ -4,6 +4,8 @@ import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageContent } from "@/components/layout/PageContent";
 import { useHistoryStore } from "@/store/useHistoryStore";
 import { useTextHistoryRestore } from "@/features/compare/text";
 import { useImageHistoryRestore } from "@/features/compare/image";
@@ -147,23 +149,14 @@ export function HistoryView() {
   }, [toggleBookmark]);
 
   return (
-    <div className="@container/history h-full min-w-0 w-full overflow-y-auto bg-bg-secondary p-3 sm:p-6 custom-scrollbar">
-      <div className="mx-auto w-full max-w-7xl space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-4 py-2">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <MdHistory className="text-xl sm:text-2xl text-text-secondary" />
-          <div><h2 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">History</h2><p className="mt-1 text-sm text-text-secondary">Revisit your comparisons, saved in this browser.</p></div>
-        </div>
-
-        {items.length > 0 && (
+    <PageContent className="@container/history" contentClassName="space-y-5">
+      <PageHeader title="History" description="Revisit your comparisons, saved in this browser." icon={MdHistory} actions={items.length > 0 && (
           <div className="flex flex-wrap gap-3 rounded-xl border border-border-default bg-bg-primary px-4 py-3 text-sm font-semibold">
             <span className="text-text-secondary">Text: {textHistoryCount}</span>
             <span className="text-text-secondary">Image: {imageHistoryCount}</span>
             <span className="text-accent-primary" title="Bookmarked items in the current filter">Bookmarked: {bookmarkedCount}</span>
           </div>
-        )}
-
-      </div>
+        )} />
         {items.length > 0 && (
           <div className="relative z-30 flex flex-wrap items-center gap-3 rounded-xl border border-border-default bg-bg-primary p-3 shadow-sm" data-tool-controls>
               <div className="flex items-center gap-2">
@@ -233,7 +226,6 @@ export function HistoryView() {
           </div>
         )}
       </div>
-      </div>
-    </div>
+      </PageContent>
   );
 }

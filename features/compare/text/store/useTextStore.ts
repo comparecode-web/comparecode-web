@@ -22,6 +22,7 @@ interface EditorState {
   bumpHistoryRefreshKey: () => void;
   setLeftText: (text: string) => void;
   setRightText: (text: string) => void;
+  importText: (side: "left" | "right", text: string) => void;
   swapTexts: () => void;
   clearContent: () => void;
   compare: (settings: CompareSettings) => void;
@@ -98,6 +99,24 @@ export const useEditorStore = create<EditorState>((set, get) => {
   setLeftText: (text: string) => set({ leftText: text, areComparedTextsIdentical: false }),
 
   setRightText: (text: string) => set({ rightText: text, areComparedTextsIdentical: false }),
+
+  importText: (side, text) => {
+    invalidatePendingHistorySession();
+    const current = get();
+    const leftText = side === "left" ? text : current.leftText;
+    const rightText = side === "right" ? text : current.rightText;
+    comparedInputs = null;
+    set({
+      leftText,
+      rightText,
+      comparisonResult: null,
+      areComparedTextsIdentical: false,
+      historySessionId: null,
+      historyRefreshKey: current.historyRefreshKey + 1,
+      totalSelectableBlocks: 0,
+      currentBlockIndex: 0
+    });
+  },
 
   swapTexts: () => {
     const { leftText, rightText } = get();

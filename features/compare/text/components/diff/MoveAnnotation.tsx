@@ -26,7 +26,7 @@ export function MoveAnnotation({ block, split = false, onActivate }: {
           onActivate(block);
         }}
       >
-        <span className="flex h-5 shrink-0 items-center rounded-sm bg-accent-primary px-1.5 text-white">Move {move.number}</span>
+        <span className="flex h-5 shrink-0 items-center rounded-sm bg-accent-primary px-1.5 text-white">#{move.number}</span>
         <span className="min-w-0 truncate">{label} lines {move.counterpartStartLine}–{move.counterpartEndLine}{move.modified ? " · edited" : ""}</span>
         {pointsDown ? <MdArrowDownward aria-hidden="true" /> : <MdArrowUpward aria-hidden="true" />}
       </button>

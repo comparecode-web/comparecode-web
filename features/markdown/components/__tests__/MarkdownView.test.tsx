@@ -114,4 +114,19 @@ describe("MarkdownView", () => {
 
     expect(useMarkdownUIStore.getState().isOptionsPanelOpen).toBe(true);
   });
+
+  it("disables options for whitespace-only content and restores them with Test text", async () => {
+    window.localStorage.setItem("comparecode.markdownPreview.content.v1", "   ");
+    useMarkdownStore.setState({ markdownText: "   ", isLoaded: true });
+    useMarkdownUIStore.setState({ isLoaded: true, isOptionsPanelOpen: true, optionsPanelTab: "options" });
+    render(<MarkdownView />);
+
+    await waitFor(() => expect(useMarkdownUIStore.getState().isOptionsPanelOpen).toBe(false));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Options" })).toBeDisabled());
+    fireEvent.keyDown(document, { key: "o" });
+    expect(useMarkdownUIStore.getState().isOptionsPanelOpen).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Test text" }));
+    expect(screen.getByRole("button", { name: "Options" })).toBeEnabled();
+  });
 });

@@ -28,7 +28,7 @@ function isMacPlatform(): boolean {
   return /Mac|iPhone|iPod|iPad/i.test(navigator.platform);
 }
 
-export function ComparisonView() {
+export function ComparisonView({ onImport }: { onImport: (side: "left" | "right") => void }) {
   const {
     comparisonResult,
     areComparedTextsIdentical,
@@ -85,7 +85,7 @@ export function ComparisonView() {
   });
 
   useEffect(() => {
-    if (storeRefs.current.leftText || storeRefs.current.rightText) {
+    if (storeRefs.current.comparisonResult) {
       storeRefs.current.executeCompare(storeRefs.current.settings, false, true);
     }
   }, [settings.precision, settings.ignoreWhitespace]);
@@ -215,7 +215,7 @@ export function ComparisonView() {
 
   return (
     <div className={cn("flex w-full min-h-0 flex-col bg-bg-primary relative", !hideBody && "h-full")}>
-      {!hideBody && <ComparisonToolbar />}
+      {!hideBody && <ComparisonToolbar onImport={onImport} />}
       {!hideBody && <IdenticalTextInfoBar isVisible={areComparedTextsIdentical} />}
       {!hideBody && comparisonResult?.limited && (
         <div role="status" className="border-b border-info-border bg-info-bg px-3 py-2 text-sm text-info">
