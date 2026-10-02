@@ -22,16 +22,10 @@ export function clampNumber(value: number, min: number, max: number): number {
 }
 
 export function createDefaultAlignmentTransform(original: ImageFileMeta, modified: ImageFileMeta): ImageAffineTransform {
-  const scale = Math.min(original.width / modified.width, original.height / modified.height);
-
   return {
+    ...createIdentityAlignmentTransform(original, modified),
     x: original.width / 2,
-    y: original.height / 2,
-    scaleX: Number.isFinite(scale) && scale > 0 ? scale : 1,
-    scaleY: Number.isFinite(scale) && scale > 0 ? scale : 1,
-    rotationDeg: 0,
-    flipX: false,
-    flipY: false
+    y: original.height / 2
   };
 }
 
@@ -115,10 +109,12 @@ export function getPairKey(original: ImageFileMeta | null, modified: ImageFileMe
   if (!original || !modified) return null;
 
   return [
+    original.url,
     original.name,
     original.size,
     original.width,
     original.height,
+    modified.url,
     modified.name,
     modified.size,
     modified.width,
@@ -135,11 +131,5 @@ export function hasSameAspectRatio(width1: number, height1: number, width2: numb
 
 export function imagesNeedAlignmentPrompt(original: ImageFileMeta | null, modified: ImageFileMeta | null): boolean {
   if (!original || !modified) return false;
-  if (original.width === modified.width && original.height === modified.height) return false;
-
-  if (hasSameAspectRatio(original.width, original.height, modified.width, modified.height)) {
-    return false;
-  }
-
-  return true;
+  return original.width !== modified.width || original.height !== modified.height;
 }

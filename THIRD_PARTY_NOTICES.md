@@ -6,7 +6,7 @@ QR Code is a registered trademark of DENSO WAVE INCORPORATED. This notice follow
 
 The [license texts and copyright notices](public/licenses/third-party.txt) accompany the web application at `/licenses/third-party.txt`, accessible through **Settings → Open-source licenses**. Keep this file in deployments. Identical license texts are shared between their explicitly listed owners; the original copyright notices are retained.
 
-The notices cover application libraries and their transitive dependencies, Next.js bundled notices, Material Design / Font Awesome / Ionicons artwork, the OFL fonts, KaTeX fonts, and the libraries embedded in the vendored OpenCV.js build. DOMPurify is used under its Apache-2.0 option. This does not change CompareCode's MIT license.
+The notices cover application libraries and their transitive dependencies, Next.js bundled notices, Material Design / Font Awesome / Ionicons artwork, the OFL fonts, and KaTeX fonts. DOMPurify is used under its Apache-2.0 option. This does not change CompareCode's MIT license.
 
 The local QR generator uses the MIT-licensed `qrcode` package. Its newly introduced package closure, including the PNG encoder, command-line utilities shipped by the package, and TypeScript declarations, is listed in the license text with its copyright notices and MIT or ISC terms.
 

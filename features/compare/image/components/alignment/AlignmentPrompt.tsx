@@ -2,39 +2,18 @@
 
 import { Button } from "@/components/ui/Button";
 import { useImageCompareStore } from "../../store/useImageCompareStore";
-import { estimateAutoAlignment } from "../../services/alignment/autoAlignService";
+import { isAutoAlignmentAvailable } from "../../services/alignment/types";
 
 export function AlignmentPrompt() {
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const alignment = useImageCompareStore((s) => s.alignment);
   const skipAlignmentPrompt = useImageCompareStore((s) => s.skipAlignmentPrompt);
-  const setAlignmentStatus = useImageCompareStore((s) => s.setAlignmentStatus);
-  const applyAlignmentTransform = useImageCompareStore((s) => s.applyAlignmentTransform);
-  const setAlignmentError = useImageCompareStore((s) => s.setAlignmentError);
+  const runAutoAlignment = useImageCompareStore((s) => s.runAutoAlignment);
 
   if (!alignment.isPromptOpen || !alignment.promptPairKey || !originalImage || !modifiedImage) {
     return null;
   }
-
-  const handleAutoAlign = async () => {
-    setAlignmentStatus("aligning");
-    const result = await estimateAutoAlignment(originalImage, modifiedImage, alignment.options);
-    if (result.success && result.transform) {
-      applyAlignmentTransform(result.transform, {
-        method: "auto",
-        confidence: result.confidence ?? null,
-        matchCount: result.matchCount ?? null,
-        timestamp: Date.now()
-      });
-      return;
-    }
-
-    setAlignmentError(
-      result.error?.code ?? "alignment/failed",
-      result.error?.message ?? "Auto align failed. Use manual alignment to place the images precisely."
-    );
-  };
 
   const handleSkip = () => {
     if (alignment.promptPairKey) {
@@ -60,7 +39,7 @@ export function AlignmentPrompt() {
           <Button variant="ghost" onClick={handleSkip} disabled={alignment.status === "aligning"}>
             Skip align
           </Button>
-          <Button onClick={handleAutoAlign} disabled={alignment.status === "aligning"}>
+          <Button onClick={runAutoAlignment} disabled={alignment.status === "aligning" || !isAutoAlignmentAvailable(alignment.options)}>
             Auto align
           </Button>
         </div>

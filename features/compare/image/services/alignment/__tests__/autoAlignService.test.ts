@@ -1,79 +1,97 @@
-import { describe, expect, it } from "vitest";
-import { regularizeNearIdentityScale } from "../autoAlignService";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { estimateAutoAlignment } from "../autoAlignService";
 import type { ImageFileMeta } from "../../../store/useImageCompareStore";
-import type { ImageAffineTransform } from "../types";
 
-const baseMeta: ImageFileMeta = {
-  name: "test.png",
-  size: 1024,
-  type: "image/png",
-  lastModified: 1000,
-  width: 800,
-  height: 450,
-  url: "blob:test",
-  exif: null
-};
+const meta: ImageFileMeta = { name: "image.png", size: 100, type: "image/png", width: 1280, height: 720, url: "blob:image", lastModified: 1, exif: null };
+const options = { rotate: true, scale: true, warp: false };
+const transform = { x: 640, y: 360, scaleX: 1, scaleY: 1, rotationDeg: 0, flipX: false, flipY: false };
+let workers: FakeWorker[];
+let failImage = false;
 
-describe("autoAlignService regularizeNearIdentityScale", () => {
-  it("preserves non-exact estimated content scale instead of snapping to dimension ratio", () => {
-    // Original 800x450 vs modified 400x225 -> dimension ratio is 2.00
-    const original: ImageFileMeta = { ...baseMeta, width: 800, height: 450 };
-    const modified: ImageFileMeta = { ...baseMeta, width: 400, height: 225 };
+class FakeImage {
+  naturalWidth = 1280;
+  naturalHeight = 720;
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  set src(value: string) {
+    if (value) Promise.resolve().then(() => failImage ? this.onerror?.() : this.onload?.());
+  }
+}
 
-    // Content scale estimated at 2.04 (e.g. 2% content difference)
-    const transform: ImageAffineTransform = {
-      x: 0,
-      y: 0,
-      scaleX: 2.04,
-      scaleY: 2.04,
-      rotationDeg: 0,
-      flipX: false,
-      flipY: false
-    };
+class FakeWorker {
+  onmessage: ((event: { data: unknown }) => void) | null = null;
+  onerror: (() => void) | null = null;
+  terminate = vi.fn();
+  postMessage = vi.fn();
+  constructor() { workers.push(this); }
+}
 
-    const regularized = regularizeNearIdentityScale(original, modified, transform);
+async function start(signal?: AbortSignal) {
+  const promise = estimateAutoAlignment(meta, meta, options, signal);
+  await vi.waitFor(() => expect(workers).toHaveLength(1));
+  return { promise, worker: workers[0] };
+}
 
-    // Should retain the non-exact content scale estimate
-    expect(regularized.scaleX).toBe(2.04);
-    expect(regularized.scaleY).toBe(2.04);
+describe("auto alignment browser service", () => {
+  beforeEach(() => {
+    workers = [];
+    failImage = false;
+    vi.stubGlobal("Image", FakeImage);
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => ({
+      drawImage: vi.fn(),
+      getImageData: () => ({ data: new Uint8ClampedArray(640 * 360 * 4) })
+    }) as unknown as CanvasRenderingContext2D);
+  });
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+  it("bounds decoding work, transfers pixel buffers and releases a successful worker", async () => {
+    const { promise, worker } = await start();
+    const [request, transfers] = worker.postMessage.mock.calls[0];
+    expect(request.original).toMatchObject({ width: 640, height: 360, sourceWidth: 1280, sourceHeight: 720 });
+    expect(transfers).toHaveLength(2);
+    worker.onmessage?.({ data: { transform, confidence: 0.9, matchCount: 20 } });
+    expect(await promise).toMatchObject({ success: true, transform });
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
   });
 
-  it("regularizes scale only when within subpixel epsilon of expected dimension ratio", () => {
-    const original: ImageFileMeta = { ...baseMeta, width: 800, height: 450 };
-    const modified: ImageFileMeta = { ...baseMeta, width: 400, height: 225 };
-
-    // Scale is 2.0005 (within 0.05% of 2.00)
-    const transform: ImageAffineTransform = {
-      x: 0,
-      y: 0,
-      scaleX: 2.0005,
-      scaleY: 2.0005,
-      rotationDeg: 0,
-      flipX: false,
-      flipY: false
-    };
-
-    const regularized = regularizeNearIdentityScale(original, modified, transform);
-    expect(regularized.scaleX).toBe(2);
-    expect(regularized.scaleY).toBe(2);
+  it("reports insufficient content without applying a guessed transform", async () => {
+    const { promise, worker } = await start();
+    worker.onmessage?.({ data: null });
+    expect(await promise).toMatchObject({ success: false, error: { code: "alignment/no-match" } });
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
   });
 
-  it("regularizes near-zero rotation jitter to exactly 0", () => {
-    const original: ImageFileMeta = { ...baseMeta, width: 800, height: 450 };
-    const modified: ImageFileMeta = { ...baseMeta, width: 400, height: 225 };
+  it("terminates work on abort", async () => {
+    const controller = new AbortController();
+    const { promise, worker } = await start(controller.signal);
+    controller.abort();
+    expect(await promise).toMatchObject({ success: false, error: { code: "alignment/cancelled" } });
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+  });
 
-    const transform: ImageAffineTransform = {
-      x: 0,
-      y: 0,
-      scaleX: 2.04,
-      scaleY: 2.04,
-      rotationDeg: 0.15, // < 0.25 deg jitter
-      flipX: false,
-      flipY: false
-    };
+  it("does not start work for an already aborted request", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    expect(await estimateAutoAlignment(meta, meta, options, controller.signal)).toMatchObject({ success: false });
+    expect(workers).toHaveLength(0);
+  });
 
-    const regularized = regularizeNearIdentityScale(original, modified, transform);
-    expect(regularized.rotationDeg).toBe(0);
-    expect(regularized.scaleX).toBe(2.04);
+  it("cleans up a stalled worker after the deadline", async () => {
+    vi.useFakeTimers();
+    const { promise, worker } = await start();
+    await vi.advanceTimersByTimeAsync(15000);
+    expect(await promise).toMatchObject({ success: false, error: { code: "alignment/failed" } });
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports worker and image decode failures", async () => {
+    const { promise, worker } = await start();
+    worker.onerror?.();
+    expect(await promise).toMatchObject({ success: false });
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+    failImage = true;
+    expect(await estimateAutoAlignment(meta, meta, options)).toMatchObject({ success: false });
+    expect(workers).toHaveLength(1);
   });
 });

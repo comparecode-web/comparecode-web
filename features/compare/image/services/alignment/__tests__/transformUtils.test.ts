@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   hasSameAspectRatio,
+  createDefaultAlignmentTransform,
   imagesNeedAlignmentPrompt
 } from "../transformUtils";
 import type { ImageFileMeta } from "../../../store/useImageCompareStore";
@@ -17,6 +18,10 @@ const baseMeta: ImageFileMeta = {
 };
 
 describe("transformUtils aspect ratio and prompt logic", () => {
+  it("starts manual alignment centered at natural size without assuming a scale from dimensions", () => {
+    expect(createDefaultAlignmentTransform({ ...baseMeta, width: 640, height: 360 }, { ...baseMeta, width: 320, height: 180 }))
+      .toMatchObject({ x: 320, y: 180, scaleX: 1, scaleY: 1 });
+  });
   describe("hasSameAspectRatio", () => {
     it("returns true for identical dimensions", () => {
       expect(hasSameAspectRatio(1920, 1080, 1920, 1080)).toBe(true);
@@ -49,14 +54,14 @@ describe("transformUtils aspect ratio and prompt logic", () => {
       expect(imagesNeedAlignmentPrompt(orig, mod)).toBe(false);
     });
 
-    it("returns false when images have different dimensions but matching aspect ratios", () => {
+    it("offers alignment for different resolutions even when aspect ratios match", () => {
       const orig = { ...baseMeta, width: 1910, height: 1098 };
       const mod = { ...baseMeta, width: 1024, height: 590 };
-      expect(imagesNeedAlignmentPrompt(orig, mod)).toBe(false);
+      expect(imagesNeedAlignmentPrompt(orig, mod)).toBe(true);
 
       const orig4k = { ...baseMeta, width: 3840, height: 2160 };
       const mod1080 = { ...baseMeta, width: 1920, height: 1080 };
-      expect(imagesNeedAlignmentPrompt(orig4k, mod1080)).toBe(false);
+      expect(imagesNeedAlignmentPrompt(orig4k, mod1080)).toBe(true);
     });
 
     it("returns true when images have different aspect ratios", () => {

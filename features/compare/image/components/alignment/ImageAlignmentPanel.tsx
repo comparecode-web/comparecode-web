@@ -10,9 +10,8 @@ import { Switch } from "@/components/ui/Switch";
 import { getSectionResetButtonClass } from "@/utils/settingsReset";
 import { cn } from "@/utils/uiHelpers";
 import { useImageCompareStore } from "../../store/useImageCompareStore";
-import { estimateAutoAlignment } from "../../services/alignment/autoAlignService";
-import { DEFAULT_ALIGNMENT_STATE, ImageAffineTransform } from "../../services/alignment/types";
-import { clampNumber, createDefaultAlignmentTransform, normalizeTransform } from "../../services/alignment/transformUtils";
+import { DEFAULT_ALIGNMENT_STATE, ImageAffineTransform, isAutoAlignmentAvailable } from "../../services/alignment/types";
+import { clampNumber, createDefaultAlignmentTransform, getTransformedBounds, normalizeTransform } from "../../services/alignment/transformUtils";
 
 type TransformOption = "rotate" | "scale";
 
@@ -25,6 +24,8 @@ interface StageSize {
   width: number;
   height: number;
   scale: number;
+  offsetX: number;
+  offsetY: number;
 }
 
 interface SnapGuide {
@@ -142,11 +143,11 @@ export function ImageAlignmentPanel() {
   const setAlignmentPreviewZoom = useImageCompareStore((s) => s.setAlignmentPreviewZoom);
   const setAlignmentSnappingEnabled = useImageCompareStore((s) => s.setAlignmentSnappingEnabled);
   const setAlignmentAspectRatioLocked = useImageCompareStore((s) => s.setAlignmentAspectRatioLocked);
-  const setAlignmentStatus = useImageCompareStore((s) => s.setAlignmentStatus);
-  const setAlignmentError = useImageCompareStore((s) => s.setAlignmentError);
+  const runAutoAlignment = useImageCompareStore((s) => s.runAutoAlignment);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
-  const [stageSize, setStageSize] = useState<StageSize>({ width: 1, height: 1, scale: 1 });
+  const errorRef = useRef<HTMLDivElement | null>(null);
+  const [stageSize, setStageSize] = useState<StageSize>({ width: 1, height: 1, scale: 1, offsetX: 0, offsetY: 0 });
   const [viewportPan, setViewportPan] = useState({ x: 0, y: 0 });
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [activeGuides, setActiveGuides] = useState<SnapGuide[]>([]);
@@ -158,16 +159,27 @@ export function ImageAlignmentPanel() {
   }, [alignment.appliedTransform, alignment.draftTransform, modifiedImage, originalImage]);
 
   useEffect(() => {
-    if (!alignment.isPanelOpen || !originalImage || !stageRef.current) return;
+    if (alignment.isPanelOpen && alignment.error) errorRef.current?.scrollIntoView({ block: "nearest" });
+  }, [alignment.error, alignment.isPanelOpen]);
+
+  useEffect(() => {
+    if (!alignment.isPanelOpen || !originalImage || !modifiedImage || !stageRef.current) return;
 
     const resize = () => {
       const rect = stageRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const scale = Math.min(rect.width / originalImage.width, rect.height / originalImage.height) * alignment.previewZoom;
+      const bounds = getTransformedBounds(alignment.appliedTransform ?? createDefaultAlignmentTransform(originalImage, modifiedImage), modifiedImage.width, modifiedImage.height);
+      const minX = Math.min(0, bounds.x), minY = Math.min(0, bounds.y);
+      const maxX = Math.max(originalImage.width, bounds.x + bounds.width);
+      const maxY = Math.max(originalImage.height, bounds.y + bounds.height);
+      const padding = parseFloat(getComputedStyle(stageRef.current!).paddingLeft) * 2;
+      const scale = Math.min(Math.max(1, rect.width - padding) / (maxX - minX), Math.max(1, rect.height - padding) / (maxY - minY)) * alignment.previewZoom;
       setStageSize({
         width: originalImage.width * scale,
         height: originalImage.height * scale,
-        scale
+        scale,
+        offsetX: (originalImage.width - maxX - minX) * scale / 2,
+        offsetY: (originalImage.height - maxY - minY) * scale / 2
       });
     };
 
@@ -176,7 +188,7 @@ export function ImageAlignmentPanel() {
     resize();
 
     return () => observer.disconnect();
-  }, [alignment.isPanelOpen, alignment.previewZoom, originalImage]);
+  }, [alignment.appliedTransform, alignment.isPanelOpen, alignment.previewZoom, modifiedImage, originalImage]);
 
   useEffect(() => {
     if (!alignment.isPanelOpen) return;
@@ -365,26 +377,6 @@ export function ImageAlignmentPanel() {
     });
   };
 
-  const runAutoAlign = async () => {
-    if (!originalImage || !modifiedImage) return;
-    setAlignmentStatus("aligning");
-    const result = await estimateAutoAlignment(originalImage, modifiedImage, alignment.options);
-    if (result.success && result.transform) {
-      setAlignmentDraftTransform(result.transform);
-      applyAlignmentTransform(result.transform, {
-        method: "auto",
-        confidence: result.confidence ?? null,
-        matchCount: result.matchCount ?? null,
-        timestamp: Date.now()
-      });
-      return;
-    }
-    setAlignmentError(
-      result.error?.code ?? "alignment/failed",
-      result.error?.message ?? "Auto align failed. Use manual alignment to place the images precisely."
-    );
-  };
-
   if (!alignment.isPanelOpen || !originalImage || !modifiedImage || !draftTransform) {
     return null;
   }
@@ -421,7 +413,7 @@ export function ImageAlignmentPanel() {
       <div className="flex min-h-0 w-full flex-col overflow-hidden rounded-xl border border-border-default bg-bg-primary shadow-xl md:flex-row">
         <div
           ref={stageRef}
-          className={cn("relative min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-secondary cursor-grab active:cursor-grabbing", isSpacePressed && "cursor-grabbing")}
+          className={cn("relative min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-secondary p-10 cursor-grab active:cursor-grabbing", isSpacePressed && "cursor-grabbing")}
           onWheel={handleWheel}
           onPointerDown={startPan}
           onPointerMove={handlePointerMove}
@@ -433,7 +425,7 @@ export function ImageAlignmentPanel() {
             style={{
               width: stageSize.width,
               height: stageSize.height,
-              transform: `translate(-50%, -50%) translate(${viewportPan.x}px, ${viewportPan.y}px)`
+              transform: `translate(-50%, -50%) translate(${viewportPan.x + stageSize.offsetX}px, ${viewportPan.y + stageSize.offsetY}px)`
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -521,7 +513,7 @@ export function ImageAlignmentPanel() {
 
           <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-4">
             {alignment.error && (
-              <div className="mb-4 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+              <div ref={errorRef} role="alert" className="mb-4 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
                 {alignment.error.message}
               </div>
             )}
@@ -658,7 +650,7 @@ export function ImageAlignmentPanel() {
 
             <section className="mt-5 rounded-md border border-accent-primary/30 bg-accent-primary/10 p-3">
               <h3 className="text-sm font-bold text-text-primary">Auto align</h3>
-              <p className="mt-1 text-xs text-text-secondary">Let CompareCode estimate the initial rotation and scale, then fine-tune manually if needed.</p>
+              <p className="mt-1 text-xs text-text-secondary">Match shared image details to estimate position, rotation and scale, then fine-tune manually if needed.</p>
               <p className="mt-3 text-xs font-semibold text-text-secondary">Allowed transformations</p>
               <SelectionBar<TransformOption>
                 selectionMode="multiple"
@@ -672,7 +664,7 @@ export function ImageAlignmentPanel() {
                 className="mt-2"
                 buttonClassName="px-2"
               />
-              <Button className="mt-3 w-full" onClick={runAutoAlign} disabled={alignment.status === "aligning"}>
+              <Button className="mt-3 w-full" onClick={runAutoAlignment} disabled={alignment.status === "aligning" || !isAutoAlignmentAvailable(alignment.options)}>
                 {alignment.status === "aligning" ? "Aligning..." : "Auto align images"}
               </Button>
             </section>
