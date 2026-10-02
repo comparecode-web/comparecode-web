@@ -14,6 +14,10 @@ export interface ImageAlignmentOptions {
   warp: boolean;
 }
 
+export function isAutoAlignmentAvailable(options: ImageAlignmentOptions): boolean {
+  return !options.warp && (options.rotate || options.scale);
+}
+
 export interface ImageAlignmentError {
   code: string;
   message: string;
