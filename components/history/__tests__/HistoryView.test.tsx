@@ -22,10 +22,6 @@ const restoreMocks = vi.hoisted(() => ({
   restoreImageHistoryItem: vi.fn()
 }));
 
-vi.mock("@formkit/auto-animate/react", () => ({
-  useAutoAnimate: () => [vi.fn(), vi.fn()]
-}));
-
 vi.mock("next/navigation", () => ({
   useRouter: () => routerMock
 }));

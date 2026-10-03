@@ -1,4 +1,5 @@
 import { db } from "@/services/db";
+import { backupSessionKey, normalizeBackupSession, parseHistoryBackup, type HistoryBackup, type HistoryBackupSession } from "./historyBackup";
 import {
   DiffHistoryItem,
   HistoryActionDirection,
@@ -20,6 +21,43 @@ interface LegacyTextPair {
 }
 
 export class HistoryService {
+  public static async exportBackupAsync(sessionId?: string): Promise<HistoryBackup> {
+    return db.transaction("r", db.history, db.historySteps, async () => {
+      const [items, steps] = await Promise.all([
+        sessionId === undefined ? db.history.toArray() : db.history.where("id").equals(sessionId).toArray(),
+        sessionId === undefined ? db.historySteps.toArray() : db.historySteps.where("sessionId").equals(sessionId).toArray()
+      ]);
+      if (sessionId !== undefined && items.length === 0) throw new Error("This comparison no longer exists. Refresh history and try again.");
+      const grouped = new Map<string, HistoryStepItem[]>();
+      for (const step of steps) { const list = grouped.get(step.sessionId) ?? []; list.push(step); grouped.set(step.sessionId, list); }
+      return { format: "comparecode-history", version: 1, exportedAt: new Date().toISOString(), sessions: items.map(item => normalizeBackupSession({ item, steps: grouped.get(item.id) ?? [] })) };
+    });
+  }
+
+  public static async importBackupAsync(backup: HistoryBackup): Promise<{ added: number; skipped: number }> {
+    const validated = parseHistoryBackup(JSON.stringify(backup));
+    return db.transaction("rw", db.history, db.historySteps, async () => {
+      const [items, steps] = await Promise.all([db.history.toArray(), db.historySteps.toArray()]);
+      const grouped = new Map<string, HistoryStepItem[]>();
+      for (const step of steps) { const list = grouped.get(step.sessionId) ?? []; list.push(step); grouped.set(step.sessionId, list); }
+      const keys = new Set<string>();
+      for (const item of items) {
+        try { keys.add(backupSessionKey({ item, steps: grouped.get(item.id) ?? [] })); } catch { /* Unexportable legacy sessions remain untouched. */ }
+      }
+      const additions: HistoryBackupSession[] = [];
+      for (const entry of validated.sessions) {
+        const key = backupSessionKey(entry);
+        if (keys.has(key)) continue;
+        keys.add(key);
+        const id = crypto.randomUUID();
+        additions.push({ item: { ...entry.item, id }, steps: entry.steps.map(step => ({ ...step, id: crypto.randomUUID(), sessionId: id })) });
+      }
+      await db.history.bulkAdd(additions.map(entry => entry.item));
+      await db.historySteps.bulkAdd(additions.flatMap(entry => entry.steps));
+      return { added: additions.length, skipped: validated.sessions.length - additions.length };
+    });
+  }
+
   private static toTextSnapshot(originalText: string, modifiedText: string): TextHistorySnapshot {
     return {
       mode: "text",
@@ -44,13 +82,13 @@ export class HistoryService {
 
   private static buildComparableKey(snapshot: CompareHistorySnapshot): string {
     if (snapshot.mode === "text") {
-      return `${snapshot.mode}::${snapshot.originalText}::${snapshot.modifiedText}`;
+      return JSON.stringify([snapshot.mode, snapshot.originalText, snapshot.modifiedText]);
     }
 
     const originalKey = snapshot.originalImageDataUrl || snapshot.originalImageUrl;
     const modifiedKey = snapshot.modifiedImageDataUrl || snapshot.modifiedImageUrl;
 
-    return `${snapshot.mode}::${originalKey}::${modifiedKey}`;
+    return JSON.stringify([snapshot.mode, originalKey, modifiedKey]);
   }
 
   public static async createSessionAsync(snapshot: CompareHistorySnapshot, actionType: HistoryActionType = HistoryActionType.Compare): Promise<string> {

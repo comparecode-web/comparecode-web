@@ -10,7 +10,7 @@ import { MarkdownSplitView } from "./MarkdownSplitView";
 import { MarkdownToolbar } from "./MarkdownToolbar";
 import { Button } from "@/components/ui/Button";
 import { useMarkdownFormattingActions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
-import { scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
+import { flushMarkdownContentSave, scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 
 function MarkdownLoadingView() {
@@ -79,6 +79,15 @@ export function MarkdownView() {
   useEffect(() => {
     loadPersistedMarkdownText();
     loadPersistedMarkdownUIState();
+    const flush = () => flushMarkdownContentSave();
+    const onVisibility = () => { if (document.visibilityState === "hidden") flush(); };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      flush();
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [loadPersistedMarkdownText, loadPersistedMarkdownUIState]);
 
   useEffect(() => {

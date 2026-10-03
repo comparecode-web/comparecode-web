@@ -61,6 +61,15 @@ function restoreMarkdownActions() {
 }
 
 describe("MarkdownView", () => {
+  it("preserves the newest draft through an immediate unmount and remount", async () => {
+    const first = render(<MarkdownView />);
+    const textarea = await screen.findByRole("textbox");
+    fireEvent.change(textarea, { target: { value: "New draft before navigation" } });
+    first.unmount();
+    expect(localStorage.getItem("comparecode.markdownPreview.content.v1")).toBe("New draft before navigation");
+    render(<MarkdownView />);
+    expect(await screen.findByRole("textbox")).toHaveValue("New draft before navigation");
+  });
   beforeEach(() => {
     resetMarkdownState();
   });

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useToastStore } from "@/store/useToastStore";
 import { markdownDefaultContent } from "@/features/markdown/services/markdownDefaultContent";
 import {
   loadMarkdownContent,
@@ -74,6 +75,7 @@ export const useMarkdownStore = create<MarkdownState>((set) => ({
   canUndo: false,
   canRedo: false,
   loadPersistedMarkdownText: () => {
+    if (useMarkdownStore.getState().isLoaded) return;
     const history = loadMarkdownHistoryState();
     set({
       markdownText: loadMarkdownContent(),
@@ -271,14 +273,26 @@ export const useMarkdownStore = create<MarkdownState>((set) => ({
 }));
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingSave: string | null = null;
+
+export function flushMarkdownContentSave(): void {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = null;
+  if (pendingSave === null) return;
+  try {
+    saveMarkdownContent(pendingSave);
+    pendingSave = null;
+    useToastStore.getState().dismissToastByDedupeKey("markdown-save-failed");
+  } catch {
+    useToastStore.getState().pushToast({ message: "Your Markdown could not be saved in this browser. Download it to keep a copy.", tone: "error", icon: "error", durationMs: null, isDismissible: true, dedupeKey: "markdown-save-failed" });
+  }
+}
 
 export function scheduleMarkdownContentSave(value: string): void {
+  pendingSave = value;
   if (saveTimer) {
     clearTimeout(saveTimer);
   }
 
-  saveTimer = setTimeout(() => {
-    saveMarkdownContent(value);
-    saveTimer = null;
-  }, 400);
+  saveTimer = setTimeout(flushMarkdownContentSave, 400);
 }

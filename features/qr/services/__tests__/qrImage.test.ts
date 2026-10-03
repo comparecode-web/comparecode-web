@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import { buildQrPayload, DEFAULT_QR_WEBSITE_URL, type QrContent } from "../qrPayload";
-import { createQrSvg, createQrSymbol, DEFAULT_QR_COLORS, drawQrCanvas, getQrColorError, getQrColorWarning, QR_BORDER } from "../qrImage";
+import { createQrSvg, createQrSymbol, DEFAULT_QR_COLORS, drawQrCanvas, getQrColorError, QR_BORDER } from "../qrImage";
 
 // Reference matrices: https://github.com/nayuki/QR-Code-generator/blob/3c6d0b3cefb4e049dc337e82237c9644399716a8/python/qrcodegen.py
 // All use error correction M and mask 2; Wi-Fi uses an alphanumeric prefix followed by a UTF-8 byte segment.
@@ -104,14 +104,10 @@ describe("QR image generation", () => {
     }
   });
 
-  it("rejects invalid color syntax but only warns about difficult-to-scan colors", () => {
+  it("rejects invalid color syntax and accepts all valid hex color combinations", () => {
     expect(getQrColorError(DEFAULT_QR_COLORS)).toBeNull();
-    expect(getQrColorWarning(DEFAULT_QR_COLORS)).toBeNull();
     expect(getQrColorError({ dark: "red", light: "#ffffff" })).toMatch(/hex/);
-    expect(getQrColorWarning({ dark: "red", light: "#ffffff" })).toBeNull();
     expect(getQrColorError({ dark: "#ffffff", light: "#000000" })).toBeNull();
-    expect(getQrColorWarning({ dark: "#ffffff", light: "#000000" })).toMatch(/darker/);
     expect(getQrColorError({ dark: "#aaaaaa", light: "#ffffff" })).toBeNull();
-    expect(getQrColorWarning({ dark: "#aaaaaa", light: "#ffffff" })).toMatch(/contrast/);
   });
 });

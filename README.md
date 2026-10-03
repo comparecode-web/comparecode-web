@@ -28,7 +28,10 @@ When contributing, keep module boundaries strict: implement module-specific chan
 - **Markdown Preview:** Write Markdown with live preview, line numbers, local draft persistence, GitHub-style formatting, Mermaid diagrams, KaTeX formulas, and rich paste support.
 - **Session Undo/Redo:** Use Markdown undo/redo during the current browser session, with a dedicated history panel.
 - **Local History:** Store recent comparison history locally in the browser.
+- **Portable History:** Export and import comparison history, embedded images, bookmarks, alignment and merge steps using a versioned JSON backup.
+- **Markdown Download:** Save the current draft as a UTF-8 Markdown file.
 - **QR Code Generator:** Create static QR codes for URLs, text, and Wi-Fi with PNG and SVG exports.
+- **QR Styles:** Customize modules, corner borders and centers with linked or independent colors.
 - **No Account Required:** Core workflows run directly in the browser.
 
 ## 🛠 Technology Stack

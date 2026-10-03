@@ -4,6 +4,9 @@ import { useRef, useState, type ReactNode } from "react";
 import { IoMdCodeWorking } from "react-icons/io";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
+import { WorkspaceToolbar } from "@/components/ui/WorkspaceToolbar";
+import { downloadBlob } from "@/utils/downloadBlob";
+import { useMarkdownStore } from "../store/useMarkdownStore";
 import { MenuItem, PopoverMenu } from "@/components/ui/PopoverMenu";
 import type { MarkdownFormatAction } from "@/features/markdown/types/markdown";
 import { type MarkdownFormatOptions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
@@ -35,7 +38,8 @@ import {
   MdWarning,
   MdCancel,
   MdUndo,
-  MdRedo
+  MdRedo,
+  MdDownload
 } from "react-icons/md";
 
 interface MarkdownToolbarProps {
@@ -115,9 +119,10 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
   };
 
   return (
-    <div data-tool-controls className="flex w-full min-w-0 max-w-full shrink-0 flex-col gap-2 overflow-hidden border-b border-border-default bg-bg-secondary px-2 py-2 sm:overflow-visible sm:px-3">
-      <div className="flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-x-auto overflow-y-hidden custom-scrollbar sm:overflow-visible">
-        <div className="flex w-max flex-nowrap items-center gap-1 overflow-visible sm:w-auto sm:flex-1 sm:flex-wrap">
+    <WorkspaceToolbar className="w-full min-w-0 max-w-full overflow-hidden">
+      <div className="flex w-full min-w-0 max-w-full items-center gap-2 overflow-x-auto overflow-y-hidden [scrollbar-width:none]">
+        <div className="flex w-max flex-nowrap items-center gap-0.5">
+          <IconButton variant="primary" size="sm" title="Download Markdown" disabled={isDisabled} onClick={() => downloadBlob(new Blob([useMarkdownStore.getState().markdownText], { type: "text/markdown;charset=utf-8" }), "comparecode-document.md")}><MdDownload className="text-lg" /></IconButton>
           <div className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1">
             <IconButton
               variant="toolbar"
@@ -238,6 +243,6 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
           </div>
         </div>
       </div>
-    </div>
+    </WorkspaceToolbar>
   );
 }
