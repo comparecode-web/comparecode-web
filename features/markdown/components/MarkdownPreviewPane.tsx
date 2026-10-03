@@ -421,7 +421,7 @@ export function MarkdownPreviewPane({ value, previewRef }: MarkdownPreviewPanePr
     <div ref={previewRef} className="h-full min-w-0 overflow-auto overflow-x-hidden bg-bg-primary custom-scrollbar">
       <article
         className={cn(
-          "mx-auto min-w-0 max-w-full overflow-x-hidden px-4 py-4 text-sm leading-7 text-text-primary sm:px-6",
+          "mx-auto min-w-0 max-w-full overflow-x-hidden px-4 py-1 text-sm leading-7 text-text-primary sm:px-6 [&>:first-child]:mt-0",
           "[&_h1]:mb-4 [&_h1]:mt-2 [&_h1]:border-b [&_h1]:border-border-default [&_h1]:pb-2 [&_h1]:text-3xl [&_h1]:font-bold",
           "[&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:border-b [&_h2]:border-border-default [&_h2]:pb-1 [&_h2]:text-2xl [&_h2]:font-semibold",
           "[&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold",

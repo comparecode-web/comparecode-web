@@ -157,7 +157,7 @@ export function MarkdownEditorPane({
     >
       <div
         ref={gutterRef}
-        className="min-h-0 w-12 shrink-0 overflow-hidden border-r border-border-default bg-bg-secondary/70 px-2 py-4 text-right font-mono text-text-secondary select-none sm:py-6"
+        className="min-h-0 w-12 shrink-0 overflow-hidden border-r border-border-default bg-bg-secondary/70 px-2 py-1 text-right font-mono text-text-secondary select-none"
         style={editorStyle}
       >
         {lineNumbers.map((lineNumber) => (
@@ -175,7 +175,7 @@ export function MarkdownEditorPane({
         onKeyDown={handleKeyDown}
         spellCheck={false}
         className={cn(
-          "h-full min-w-0 flex-1 resize-none border-0 bg-bg-primary p-4 font-mono text-text-primary outline-none custom-scrollbar sm:p-6",
+          "h-full min-w-0 flex-1 resize-none border-0 bg-bg-primary px-3 py-1 pr-12 font-mono text-text-primary outline-none custom-scrollbar",
           isWordWrapEnabled ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto"
         )}
         style={editorStyle}

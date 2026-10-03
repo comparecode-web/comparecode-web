@@ -7,22 +7,25 @@ import type { DiffHistoryItem } from "@/types/history";
 import type { MouseEvent } from "react";
 
 describe("HistoryItemCard", () => {
-  it("keeps open, bookmark and delete actions separate", async () => {
+  it("keeps open, bookmark, export and delete actions separate", async () => {
     const user = userEvent.setup();
     const item: DiffHistoryItem = {
       id: "comparison", originalText: "Original content", modifiedText: "Modified content",
       createdAt: "2026-09-01T00:00:00Z", isBookmarked: false
     };
     const onRestore = vi.fn();
+    const onExport = vi.fn();
     const onToggleBookmark = vi.fn((event: MouseEvent) => event.stopPropagation());
     const onDelete = vi.fn((event: MouseEvent) => event.stopPropagation());
     render(<HistoryItemCard item={item} isTransitioning={false} fontFamily={defaultSettings.fontFamily}
       dateFormat={defaultSettings.dateFormat} timeFormat={defaultSettings.timeFormat}
       tickerNowMs={Date.parse("2026-09-20T00:00:00Z")} onRestore={onRestore}
-      onToggleBookmark={onToggleBookmark} onDelete={onDelete} />);
+      onToggleBookmark={onToggleBookmark} onDelete={onDelete} onExport={onExport} />);
 
     await user.click(screen.getByTitle("Bookmark this item"));
     await user.click(screen.getByTitle("Delete this item"));
+    await user.click(screen.getByTitle("Export this comparison"));
+    expect(onExport).toHaveBeenCalledExactlyOnceWith(item.id);
     expect(onToggleBookmark).toHaveBeenCalledWith(expect.anything(), item.id, false);
     expect(onDelete).toHaveBeenCalledWith(expect.anything(), item.id);
     expect(onRestore).not.toHaveBeenCalled();

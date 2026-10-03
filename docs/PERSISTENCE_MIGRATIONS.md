@@ -17,6 +17,16 @@ This document owns persistence boundaries and migration policy. Implementation f
 
 Future import, export, backup, or interchange files become durable external contracts once released and must define their own explicit format version and compatibility rules.
 
+## Portable History Backup v1
+
+`services/historyBackup.ts` owns the JSON interchange boundary: `format: "comparecode-history"`, `version: 1`, an ISO `exportedAt`, and `sessions` containing an `item` and ordered `steps`. `HistoryService` owns consistent two-table export and atomic, additive import. The UI previews counts before import and reports added/skipped counts afterward. The page-level export includes all history, regardless of the current list filter. Each card also exports its own session and steps through an indexed, session-scoped query. Both exports use the same v1 format and import flow. `services/historyDownload.ts` shares file creation, size validation, and download behavior between these actions.
+
+Backups preserve text, embedded image data, image metadata/alignment, bookmarks, timestamps, merge snapshots, and undo cursors. Temporary object URLs are removed. An image record without portable embedded data cannot be exported; the UI reports this rather than issuing a broken backup. Known legacy text records are normalized at this boundary without changing stored records. Application settings and Markdown drafts/session history are not part of this format.
+
+Input is limited to 100 MiB, 10,000 sessions and 100,000 steps. Unknown format versions, malformed fields, missing embedded images, duplicate session IDs, orphan steps and inconsistent sequence/cursor counts are rejected before writes. Import uses fresh session and step IDs and remaps relationships. Identical normalized sessions (ignoring IDs, including their metadata and steps) are skipped; differing sessions never overwrite existing records. Both tables are written in a single Dexie transaction using batched operations. No database version or released storage key changes are required.
+
+Validation covers JSON round trips, legacy normalization, malformed/future formats, delimiter collisions, image portability, alignment, steps and cursors. Browser integration checks must additionally exercise real IndexedDB export/import, duplicate skipping, restoration, and rollback on failed writes.
+
 ## Compatibility Invariants
 
 - Keep persistence ownership at the established service or storage boundary. UI components and feature stores consume normalized current values.

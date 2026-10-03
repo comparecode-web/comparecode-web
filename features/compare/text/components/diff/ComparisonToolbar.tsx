@@ -10,6 +10,7 @@ import { UI_CONSTANTS } from "@/config/constants";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { ExportDialog } from "./ExportDialog";
+import { WorkspaceToolbar } from "@/components/ui/WorkspaceToolbar";
 
 export function ComparisonToolbar({ onImport }: { onImport: (side: "left" | "right") => void }) {
   const { comparisonResult, leftText, rightText } = useEditorStore();
@@ -30,7 +31,7 @@ export function ComparisonToolbar({ onImport }: { onImport: (side: "left" | "rig
     }
   };
 
-  return <div data-tool-controls className="relative z-20 flex min-h-11 shrink-0 flex-wrap items-center gap-x-1 gap-y-0.5 border-b border-border-default bg-bg-secondary px-1.5 py-1 select-none @xl/workspace:flex-nowrap @lg/workspace:px-2">
+  return <WorkspaceToolbar className="flex-wrap gap-y-0.5 @xl/workspace:flex-nowrap @lg/workspace:px-2">
     <div className="flex min-w-0 flex-1 items-center justify-between gap-0.5">
       <span className="shrink-0 text-xs font-bold text-danger @lg/workspace:text-sm"><span className="@3xl/workspace:hidden">-{stats.removals}</span><span className="hidden @3xl/workspace:inline">{stats.removals} removals</span></span>
       <div className="flex shrink-0 items-center gap-0.5">
@@ -50,7 +51,7 @@ export function ComparisonToolbar({ onImport }: { onImport: (side: "left" | "rig
       <ExportDialog result={comparisonResult} original={leftText} modified={rightText} />
       <Button size="sm" variant="danger" className="px-2" aria-label="Clear comparison" disabled={!leftText && !rightText} onClick={executeClear} leftIcon={<MdDelete className="text-lg" />}>Clear</Button>
     </div>
-  </div>;
+  </WorkspaceToolbar>;
 }
 
 function CopyButton({ side, disabled, copied, onClick }: { side: "left" | "right"; disabled: boolean; copied: boolean; onClick: () => void }) {

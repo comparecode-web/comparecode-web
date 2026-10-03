@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef } from "react";
+import { useMemo } from "react";
 
 interface ColorInputProps {
   label: string;
@@ -36,9 +36,6 @@ export function ColorInput({
   onRestoreDefault,
   isDifferentFromDefault = false
 }: ColorInputProps) {
-  const pickerId = useId();
-  const pickerRef = useRef<HTMLInputElement>(null);
-
   const pickerValue = useMemo(() => {
     const fromValue = normalizeHexForPicker(value);
     const fromFallback = normalizeHexForPicker(pickerFallback);
@@ -58,28 +55,13 @@ export function ColorInput({
         />
 
         <input
-          id={pickerId}
-          ref={pickerRef}
           type="color"
           value={pickerValue}
           onChange={(e) => onChange(e.target.value)}
-          className="sr-only"
+          className="h-10 w-10 shrink-0 cursor-pointer rounded-md border border-border-default bg-bg-secondary p-1 hover:border-accent-primary focus-visible:outline-2 focus-visible:outline-accent-primary [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-0 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-0"
+          title={`Pick ${label.toLowerCase()} color`}
           aria-label={`${label} color picker`}
         />
-
-        <button
-          type="button"
-          onClick={() => pickerRef.current?.click()}
-          className="h-10 w-10 shrink-0 rounded-md border border-border-default bg-bg-secondary p-1 transition-colors hover:border-accent-primary"
-          title={`Pick ${label.toLowerCase()} color`}
-          aria-controls={pickerId}
-          aria-label={`Open ${label.toLowerCase()} color picker`}
-        >
-          <span
-            className="block h-full w-full rounded-sm border border-border-default"
-            style={{ backgroundColor: pickerValue }}
-          />
-        </button>
 
         {onRestoreDefault && (
           <button
