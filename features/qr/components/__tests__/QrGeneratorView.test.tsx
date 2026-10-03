@@ -29,7 +29,7 @@ describe("QR code generator", () => {
     expect(screen.getByRole("textbox", { name: "Website URL" })).toHaveValue("https://www.comparecodeweb.com/");
   });
 
-  it("blocks invalid URLs and hex values but permits low-contrast colors with a warning", async () => {
+  it("blocks invalid URLs and hex values but permits low-contrast colors without warnings", async () => {
     const user = userEvent.setup();
     render(<QrGeneratorView />);
     await user.clear(screen.getByRole("textbox", { name: "Website URL" }));
@@ -43,7 +43,8 @@ describe("QR code generator", () => {
     await user.clear(codeColorInput!);
     await user.type(codeColorInput!, "#ffffff");
     expect(screen.getByRole("button", { name: "Download SVG" })).toBeEnabled();
-    expect(screen.getByText(/Choose a darker code color for more reliable scanning/)).toBeInTheDocument();
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.queryByText(/contrast|difficult to scan|reliable scanning|Scan your styled code/)).toBeNull();
     await user.clear(codeColorInput!);
     await user.type(codeColorInput!, "invalid");
     expect(screen.getByRole("button", { name: "Download SVG" })).toBeDisabled();

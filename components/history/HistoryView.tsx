@@ -4,6 +4,8 @@ import { useEffect, useCallback, useMemo, useState } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
 import { AnimatedHistoryList } from "./AnimatedHistoryList";
 import { HistoryTransfer } from "./HistoryTransfer";
+import { downloadHistoryBackup } from "@/services/historyDownload";
+import { useToastStore } from "@/store/useToastStore";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageContent } from "@/components/layout/PageContent";
@@ -41,6 +43,18 @@ export function HistoryView() {
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [historySort, setHistorySort] = useState<HistorySort>("default");
   const [sortDirection, setSortDirection] = useState<HistorySortDirection>("desc");
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = useCallback(async (id: string) => {
+    setIsExporting(true);
+    try {
+      await downloadHistoryBackup(id);
+    } catch (error) {
+      useToastStore.getState().pushToast({ message: error instanceof Error ? error.message : "The comparison could not be exported.", tone: "error" });
+    } finally {
+      setIsExporting(false);
+    }
+  }, []);
 
   const filteredItems = useMemo(() => (
     historyFilter === "all"
@@ -156,6 +170,8 @@ export function HistoryView() {
                 onRestore={handleRestore}
                 onToggleBookmark={handleToggleBookmark}
                 onDelete={handleDeleteItem}
+                onExport={handleExport}
+                isExporting={isExporting}
               />
             )}
           </AnimatedHistoryList>

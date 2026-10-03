@@ -23,17 +23,23 @@ export function eyeShape(x: number, y: number, size: number, shape: QrEyeShape):
   return roundedShape(x, y, size, shape === "rounded" ? size * .22 : 0);
 }
 
-export function qrShapePaths(symbol: QRCode, style: QrStyle, colors: { dark: string; light: string }, border: number): Array<{ d: string; fill: string }> {
+export interface QrShapePath {
+  d: string;
+  fill: string;
+  shapeRendering: "crispEdges" | "geometricPrecision";
+}
+
+export function qrShapePaths(symbol: QRCode, style: QrStyle, colors: { dark: string; light: string }, border: number): QrShapePath[] {
   if (!["square", "rounded", "dots", "connected"].includes(style.modules) || !["square", "rounded", "circle"].includes(style.border) || !["square", "rounded", "circle"].includes(style.center)) throw new Error("Unsupported QR shape.");
   const size = symbol.modules.size;
   const eyes = [[0, 0], [size - 7, 0], [0, size - 7]];
-  const paths: Array<{ d: string; fill: string }> = [];
+  const paths: QrShapePath[] = [];
   const modules: string[] = [];
   const dark = (row: number, col: number) => row >= 0 && col >= 0 && row < size && col < size && symbol.modules.get(row, col) === 1;
   for (let row = 0; row < size; row++) for (let col = 0; col < size; col++) {
     if (!dark(row, col) || eyes.some(([x, y]) => col >= x && col < x + 7 && row >= y && row < y + 7)) continue;
     const x = col + border, y = row + border;
-    const shape = symbol.modules.isReserved(row, col) ? "square" : style.modules;
+    const shape = style.modules;
     if (shape === "dots") modules.push(eyeShape(x, y, 1, "circle"));
     else if (shape === "connected") {
       modules.push(roundedShape(x, y, 1, .35));
@@ -43,11 +49,12 @@ export function qrShapePaths(symbol: QRCode, style: QrStyle, colors: { dark: str
       if (dark(row - 1, col)) modules.push(`M${x} ${y}h1v.5h-1Z`);
     } else modules.push(roundedShape(x, y, 1, shape === "rounded" ? .25 : 0));
   }
-  paths.push({ d: modules.join(""), fill: colors.dark });
+  paths.push({ d: modules.join(""), fill: colors.dark, shapeRendering: style.modules === "square" ? "crispEdges" : "geometricPrecision" });
   for (const [x, y] of eyes) {
-    paths.push({ d: eyeShape(x + border, y + border, 7, style.border), fill: style.borderColor ?? colors.dark });
-    paths.push({ d: eyeShape(x + border + 1, y + border + 1, 5, style.border), fill: colors.light });
-    paths.push({ d: eyeShape(x + border + 2, y + border + 2, 3, style.center), fill: style.centerColor ?? colors.dark });
+    const borderRendering = style.border === "square" ? "crispEdges" : "geometricPrecision";
+    paths.push({ d: eyeShape(x + border, y + border, 7, style.border), fill: style.borderColor ?? colors.dark, shapeRendering: borderRendering });
+    paths.push({ d: eyeShape(x + border + 1, y + border + 1, 5, style.border), fill: colors.light, shapeRendering: borderRendering });
+    paths.push({ d: eyeShape(x + border + 2, y + border + 2, 3, style.center), fill: style.centerColor ?? colors.dark, shapeRendering: style.center === "square" ? "crispEdges" : "geometricPrecision" });
   }
   return paths;
 }

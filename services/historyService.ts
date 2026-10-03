@@ -21,9 +21,13 @@ interface LegacyTextPair {
 }
 
 export class HistoryService {
-  public static async exportBackupAsync(): Promise<HistoryBackup> {
+  public static async exportBackupAsync(sessionId?: string): Promise<HistoryBackup> {
     return db.transaction("r", db.history, db.historySteps, async () => {
-      const [items, steps] = await Promise.all([db.history.toArray(), db.historySteps.toArray()]);
+      const [items, steps] = await Promise.all([
+        sessionId === undefined ? db.history.toArray() : db.history.where("id").equals(sessionId).toArray(),
+        sessionId === undefined ? db.historySteps.toArray() : db.historySteps.where("sessionId").equals(sessionId).toArray()
+      ]);
+      if (sessionId !== undefined && items.length === 0) throw new Error("This comparison no longer exists. Refresh history and try again.");
       const grouped = new Map<string, HistoryStepItem[]>();
       for (const step of steps) { const list = grouped.get(step.sessionId) ?? []; list.push(step); grouped.set(step.sessionId, list); }
       return { format: "comparecode-history", version: 1, exportedAt: new Date().toISOString(), sessions: items.map(item => normalizeBackupSession({ item, steps: grouped.get(item.id) ?? [] })) };

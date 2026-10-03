@@ -5,7 +5,7 @@ import { MdDownload, MdUploadFile } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 import { HistoryService } from "@/services/historyService";
 import { MAX_HISTORY_BACKUP_BYTES, parseHistoryBackup, type HistoryBackup } from "@/services/historyBackup";
-import { downloadBlob } from "@/utils/downloadBlob";
+import { downloadHistoryBackup } from "@/services/historyDownload";
 
 export function HistoryTransfer({ onImported }: { onImported: () => Promise<void> }) {
   const input = useRef<HTMLInputElement>(null);
@@ -20,13 +20,11 @@ export function HistoryTransfer({ onImported }: { onImported: () => Promise<void
   };
   return <section className="space-y-3 rounded-xl border border-border-default bg-bg-primary p-3" aria-label="History backup">
     <div className="flex flex-wrap items-center gap-2">
-      <Button size="sm" variant="outline" disabled={busy} leftIcon={<MdDownload />} onClick={() => void run(async () => {
-        const backup = await HistoryService.exportBackupAsync();
-        const blob = new Blob([JSON.stringify(backup)], { type: "application/json" });
-        if (blob.size > MAX_HISTORY_BACKUP_BYTES) throw new Error("This history exceeds the 100 MiB backup limit.");
-        downloadBlob(blob, "comparecode-history.json"); setMessage(`Exported ${backup.sessions.length} comparisons.`);
+      <Button size="sm" variant="primary" disabled={busy} leftIcon={<MdDownload />} onClick={() => void run(async () => {
+        const count = await downloadHistoryBackup();
+        setMessage(`Exported ${count} comparisons.`);
       })}>Export history</Button>
-      <Button size="sm" variant="outline" disabled={busy} leftIcon={<MdUploadFile />} onClick={() => input.current?.click()}>Import history</Button>
+      <Button size="sm" variant="primary" disabled={busy} leftIcon={<MdUploadFile />} onClick={() => input.current?.click()}>Import history</Button>
       <span className="text-xs text-text-secondary">Includes all comparisons, images, bookmarks and merge steps.</span>
       <input ref={input} type="file" accept=".json,application/json" className="hidden" aria-label="Choose history backup" onChange={event => {
         const file = event.target.files?.[0]; event.target.value = ""; setPending(null);

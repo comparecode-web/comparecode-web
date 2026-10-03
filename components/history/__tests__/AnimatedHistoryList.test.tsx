@@ -23,9 +23,10 @@ describe("history motion", () => {
     const { rerender, unmount } = render(<AnimatedHistoryList items={items}>{content}</AnimatedHistoryList>);
     rerender(<AnimatedHistoryList items={[items[0]]}>{content}</AnimatedHistoryList>);
     const exit = animations.at(-1)!;
+    const beforeReturn = animations.length;
     rerender(<AnimatedHistoryList items={items}>{content}</AnimatedHistoryList>);
     expect(exit.cancel).toHaveBeenCalled();
-    act(() => animations.slice(-2).forEach(animation => animation.onfinish?.()));
+    act(() => animations.slice(beforeReturn).forEach(animation => animation.onfinish?.()));
     expect(screen.getAllByRole("button")).toHaveLength(2);
     unmount();
     Reflect.deleteProperty(HTMLElement.prototype, "animate");
@@ -52,5 +53,48 @@ describe("history motion", () => {
     expect(screen.queryByRole("button")).toBeNull();
     unmount();
     Reflect.deleteProperty(HTMLElement.prototype, "animate");
+  });
+  it("replays distinct entrances on style changes and honors preview speed", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    const animate = vi.fn(() => ({ cancel: vi.fn(), onfinish: null, playbackRate: 1 }));
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    const content = (item: DiffHistoryItem) => <button>{item.id}</button>;
+    const { rerender, unmount } = render(<AnimatedHistoryList items={items} motion="fade">{content}</AnimatedHistoryList>);
+    try {
+      animate.mockClear();
+      rerender(<AnimatedHistoryList items={items} motion="scale" playbackRate={.5}>{content}</AnimatedHistoryList>);
+      expect(animate).toHaveBeenCalledTimes(2);
+      expect(animate).toHaveBeenCalledWith([{ opacity: 0, transform: "scale(.9)" }, { opacity: 1, transform: "none" }], expect.anything());
+      expect(animate.mock.results[0].value.playbackRate).toBe(.5);
+      animate.mockClear();
+      rerender(<AnimatedHistoryList items={items} motion="scale" playbackRate={.5} replayKey={1}>{content}</AnimatedHistoryList>);
+      expect(animate).toHaveBeenCalledTimes(2);
+    } finally {
+      unmount();
+      Reflect.deleteProperty(HTMLElement.prototype, "animate");
+    }
+  });
+  it("keeps completed exits transparent until React removes their nodes", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    const animate = vi.fn(() => ({ cancel: vi.fn(), onfinish: null as (() => void) | null, playbackRate: 1 }));
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    const content = (item: DiffHistoryItem) => <button>{item.id}</button>;
+    const { container, rerender, unmount } = render(<AnimatedHistoryList items={items}>{content}</AnimatedHistoryList>);
+    try {
+      expect(animate).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ duration: 560, easing: "cubic-bezier(.2,1.4,.35,1)" }));
+      expect(animate.mock.results[0].value.playbackRate).toBe(1);
+      animate.mockClear();
+      rerender(<AnimatedHistoryList items={[]}>{content}</AnimatedHistoryList>);
+      expect(animate).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ fill: "both" }));
+      const nodes = container.querySelectorAll<HTMLElement>("[data-history-id]");
+      for (const node of nodes) expect(node.style.opacity).toBe("0");
+      act(() => animate.mock.results.forEach(result => result.value.onfinish?.()));
+      expect(container.querySelector("[data-history-id]")).toBeNull();
+      rerender(<AnimatedHistoryList items={items}>{content}</AnimatedHistoryList>);
+      for (const node of container.querySelectorAll<HTMLElement>("[data-history-id]")) expect(node.style.opacity).toBe("");
+    } finally {
+      unmount();
+      Reflect.deleteProperty(HTMLElement.prototype, "animate");
+    }
   });
 });

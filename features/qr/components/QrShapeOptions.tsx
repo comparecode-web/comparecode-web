@@ -19,7 +19,6 @@ export function QrShapeOptions({ value, onChange, codeColor }: { value: QrStyle;
       </fieldset>)}
       <Checkbox label="Use code color for corners" checked={linked} onChange={event => onChange({ ...value, borderColor: event.target.checked ? null : codeColor, centerColor: event.target.checked ? null : codeColor })} />
       {!linked && <div className="grid gap-4 sm:grid-cols-2"><ColorInput label="Corner border color" value={value.borderColor ?? codeColor} onChange={borderColor => onChange({ ...value, borderColor })} /><ColorInput label="Corner center color" value={value.centerColor ?? codeColor} onChange={centerColor => onChange({ ...value, centerColor })} /></div>}
-      <p className="text-xs text-text-secondary">Scan your styled code before sharing or printing. Keep strong contrast and a clear border.</p>
     </div>
   </OptionsSection>;
 }

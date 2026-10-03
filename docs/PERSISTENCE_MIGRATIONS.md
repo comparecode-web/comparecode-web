@@ -19,7 +19,7 @@ Future import, export, backup, or interchange files become durable external cont
 
 ## Portable History Backup v1
 
-`services/historyBackup.ts` owns the JSON interchange boundary: `format: "comparecode-history"`, `version: 1`, an ISO `exportedAt`, and `sessions` containing an `item` and ordered `steps`. `HistoryService` owns consistent two-table export and atomic, additive import. The UI previews counts before import and reports added/skipped counts afterward. Exports always include all history, regardless of the current list filter.
+`services/historyBackup.ts` owns the JSON interchange boundary: `format: "comparecode-history"`, `version: 1`, an ISO `exportedAt`, and `sessions` containing an `item` and ordered `steps`. `HistoryService` owns consistent two-table export and atomic, additive import. The UI previews counts before import and reports added/skipped counts afterward. The page-level export includes all history, regardless of the current list filter. Each card also exports its own session and steps through an indexed, session-scoped query. Both exports use the same v1 format and import flow. `services/historyDownload.ts` shares file creation, size validation, and download behavior between these actions.
 
 Backups preserve text, embedded image data, image metadata/alignment, bookmarks, timestamps, merge snapshots, and undo cursors. Temporary object URLs are removed. An image record without portable embedded data cannot be exported; the UI reports this rather than issuing a broken backup. Known legacy text records are normalized at this boundary without changing stored records. Application settings and Markdown drafts/session history are not part of this format.
 

@@ -122,7 +122,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
     <WorkspaceToolbar className="w-full min-w-0 max-w-full overflow-hidden">
       <div className="flex w-full min-w-0 max-w-full items-center gap-2 overflow-x-auto overflow-y-hidden [scrollbar-width:none]">
         <div className="flex w-max flex-nowrap items-center gap-0.5">
-          <IconButton variant="toolbar" size="sm" title="Download Markdown" disabled={isDisabled} onClick={() => downloadBlob(new Blob([useMarkdownStore.getState().markdownText], { type: "text/markdown;charset=utf-8" }), "comparecode-document.md")}><MdDownload className="text-lg" /></IconButton>
+          <IconButton variant="primary" size="sm" title="Download Markdown" disabled={isDisabled} onClick={() => downloadBlob(new Blob([useMarkdownStore.getState().markdownText], { type: "text/markdown;charset=utf-8" }), "comparecode-document.md")}><MdDownload className="text-lg" /></IconButton>
           <div className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1">
             <IconButton
               variant="toolbar"

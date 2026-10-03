@@ -21,7 +21,6 @@ import {
   createQrSymbol,
   DEFAULT_QR_COLORS,
   getQrStyleError,
-  getQrColorWarning,
   type QrErrorCorrection,
   type QrImageColors
 } from "../services/qrImage";
@@ -69,7 +68,6 @@ export function QrGeneratorView() {
 
   const payload = useMemo(() => buildQrPayload(content), [content]);
   const colorError = getQrStyleError(colors, style);
-  const colorWarning = getQrColorWarning(colors) || getQrColorWarning({ dark: style.borderColor ?? colors.dark, light: colors.light }) || getQrColorWarning({ dark: style.centerColor ?? colors.dark, light: colors.light });
   const generated = useMemo(() => {
     if (!payload.value) return { symbol: null, error: null };
     try {
@@ -127,7 +125,6 @@ export function QrGeneratorView() {
               </div>
               <div className="mt-4"><SelectDropdown label="PNG size" value={String(pngTargetSize)} onChange={(value) => { setPngTargetSize(Number(value)); setExportMessage(null); }} options={pngSizes.map((size) => ({ value: String(size), label: `${size} px` }))} /></div>
               {colorError && <p role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger">{colorError}</p>}
-              {colorWarning && <p role="status" className="mt-3 rounded-lg border border-info-border bg-info-bg p-3 text-sm text-text-primary">{colorWarning} You can still download this code.</p>}
             </OptionsSection>
 
             <QrShapeOptions value={style} codeColor={colors.dark} onChange={value => { setStyle(value); setExportMessage(null); }} />

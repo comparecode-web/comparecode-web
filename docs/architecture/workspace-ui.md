@@ -4,7 +4,7 @@
 
 `components/ui/WorkspaceToolbar.tsx` owns the Text comparison and Markdown formatting toolbar surface, inset and minimum height. Controls keep their feature-specific behavior. `SelectionBar` supports inline or stacked icon/label composition; QR shape tiles use the stacked variant.
 
-`components/history/AnimatedHistoryList.tsx` owns keyed card entrance, exit and positional animations using the browser Web Animations API. Soft slide is the production default. Exiting cards become inert, interrupted animations are cancelled, and reduced motion or unavailable animation APIs produce immediate updates. The development-only `/dev/history-motion` route uses the same list and cards with disposable in-memory samples and five motion choices. It returns not found in production and is excluded from navigation and the sitemap.
+`components/history/AnimatedHistoryList.tsx` owns keyed card entrance, exit and positional animations using the browser Web Animations API. Gentle spring at normal speed is the shared production and preview default. Exiting cards become inert and retain zero opacity after their animation finishes until React removes them, preventing a final visible frame. Returning cards clear that exit opacity. Interrupted animations are cancelled, and reduced motion or unavailable animation APIs produce immediate updates. The development-only `/dev/history-motion` route uses the same animation owner with compact sample rows, five distinct motion choices, replay on selection, an explicit replay action, and normal/half-speed playback. These preview controls do not persist or change production speed. It returns not found in production and is excluded from navigation and the sitemap.
 
 ## Application Navigation
 
@@ -45,7 +45,7 @@ Container queries govern option grids, image controls, diff toolbar labels, and 
 - Invalid/missing dates sort last in their group in either direction; ties preserve incoming order.
 - Sorting never mutates records or the input array. Mode and direction live only in `HistoryView` component state.
 
-Filtering precedes sorting. Text/Image totals describe all loaded items; the bookmarked count describes the current filter. Delete All continues to cover the entire database, including hidden records. History cards retain existing thumbnails and previews, restore on row activation, and provide an explicit keyboard-accessible Open comparison action. Bookmark/delete handlers preserve event isolation.
+Filtering precedes sorting. Text/Image totals describe all loaded items; the bookmarked count describes the current filter. Delete All continues to cover the entire database, including hidden records. History cards retain existing thumbnails and previews, restore on row activation, and provide an explicit keyboard-accessible Open comparison action. Bookmark, export and delete use identical square `IconButton` geometry and preserve event isolation. The Text/Image badge sits at the upper-right corner. At wide layouts, previews and Open comparison are vertically centered against the full metadata column, including the created timestamp.
 
 See [UI sizing and units](ui-sizing.md) for scalable sizes, CSS/JavaScript breakpoint alignment, and deliberate pixel-based geometry.
 

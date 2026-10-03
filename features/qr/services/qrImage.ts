@@ -11,30 +11,9 @@ export function createQrSymbol(value: string, errorCorrectionLevel: QrErrorCorre
   return QRCode.create(value, { errorCorrectionLevel });
 }
 
-function luminance(color: string): number {
-  const channels = [1, 3, 5].map((index) => {
-    const channel = Number.parseInt(color.slice(index, index + 2), 16) / 255;
-    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-  });
-  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
-}
-
 export function getQrColorError({ dark, light }: QrImageColors): string | null {
   if (!/^#[0-9a-fA-F]{6}$/.test(dark) || !/^#[0-9a-fA-F]{6}$/.test(light)) {
     return "Enter six-digit hex colors for the code and background.";
-  }
-  return null;
-}
-
-export function getQrColorWarning({ dark, light }: QrImageColors): string | null {
-  if (getQrColorError({ dark, light })) return null;
-  const darkLuminance = luminance(dark);
-  const lightLuminance = luminance(light);
-  if (darkLuminance >= lightLuminance) {
-    return "The code color is as light as or lighter than its background and may be difficult to scan. Choose a darker code color for more reliable scanning.";
-  }
-  if ((lightLuminance + 0.05) / (darkLuminance + 0.05) < 4.5) {
-    return "These colors have low contrast and may be difficult to scan. Choose colors with stronger contrast for more reliable scanning.";
   }
   return null;
 }
@@ -50,7 +29,7 @@ export function createQrSvg(symbol: QrSymbol, colors: QrImageColors, style: QrSt
   const total = moduleCount + QR_BORDER * 2;
   if (!isClassicQrStyle(style)) {
     const paths = qrShapePaths(symbol, style, colors, QR_BORDER);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${total}" height="${total}"><path fill="${colors.light}" d="M0 0h${total}v${total}H0z"/>${paths.map(path => `<path fill="${path.fill}" d="${path.d}"/>`).join("")}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="1024" height="1024"><path fill="${colors.light}" d="M0 0h${total}v${total}H0z"/>${paths.map(path => `<path fill="${path.fill}" d="${path.d}" shape-rendering="${path.shapeRendering}"/>`).join("")}</svg>`;
   }
   const runs: string[] = [];
 
