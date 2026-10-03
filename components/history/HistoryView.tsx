@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { MdHistory, MdDelete, MdHistoryToggleOff } from "react-icons/md";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { AnimatedHistoryList } from "./AnimatedHistoryList";
+import { HistoryTransfer } from "./HistoryTransfer";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageContent } from "@/components/layout/PageContent";
@@ -15,7 +16,6 @@ import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { HistoryItemCard } from "./HistoryItemCard";
 import { DiffHistoryItem } from "@/types/history";
 import { useLiveTimeTicker } from "@/hooks/useLiveTimeTicker";
-import { cn } from "@/utils/uiHelpers";
 import type { CompareMode } from "@/features/compare/shared/types/compareMode";
 import { HISTORY_SORT_OPTIONS, sortHistoryItems, type HistorySort, type HistorySortDirection } from "./historySorting";
 
@@ -37,16 +37,10 @@ export function HistoryView() {
   const { restoreImageHistoryItem } = useImageHistoryRestore();
   const router = useRouter();
   const settings = useSettingsStore((state) => state.settings);
-  const [listRef, setListAutoAnimateEnabled] = useAutoAnimate<HTMLDivElement>({ duration: 300, easing: 'ease-out' });
   const tickerNowMs = useLiveTimeTicker(items.map((item) => item.lastActionAt ?? item.updatedAt ?? item.createdAt));
-  const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [historySort, setHistorySort] = useState<HistorySort>("default");
   const [sortDirection, setSortDirection] = useState<HistorySortDirection>("desc");
-  const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
-  const movingResetTimerRef = useRef<number | null>(null);
-  const filterAnimationFrameRef = useRef<number | null>(null);
-  const filterAnimationTimerRef = useRef<number | null>(null);
 
   const filteredItems = useMemo(() => (
     historyFilter === "all"
@@ -62,47 +56,9 @@ export function HistoryView() {
     loadHistory();
   }, [loadHistory]);
 
-  useEffect(() => {
-    return () => {
-      if (movingResetTimerRef.current !== null) {
-        window.clearTimeout(movingResetTimerRef.current);
-      }
-      if (filterAnimationFrameRef.current !== null) {
-        window.cancelAnimationFrame(filterAnimationFrameRef.current);
-      }
-      if (filterAnimationTimerRef.current !== null) {
-        window.clearTimeout(filterAnimationTimerRef.current);
-      }
-    };
-  }, []);
-
   const handleHistoryFilterChange = useCallback((value: string) => {
-    const nextFilter = value as HistoryFilter;
-    if (nextFilter === historyFilter) {
-      return;
-    }
-
-    setListAutoAnimateEnabled(false);
-    setIsFilterTransitioning(true);
-    setHistoryFilter(nextFilter);
-
-    if (filterAnimationFrameRef.current !== null) {
-      window.cancelAnimationFrame(filterAnimationFrameRef.current);
-    }
-    if (filterAnimationTimerRef.current !== null) {
-      window.clearTimeout(filterAnimationTimerRef.current);
-    }
-
-    filterAnimationFrameRef.current = window.requestAnimationFrame(() => {
-      setIsFilterTransitioning(false);
-      filterAnimationFrameRef.current = null;
-    });
-
-    filterAnimationTimerRef.current = window.setTimeout(() => {
-      setListAutoAnimateEnabled(true);
-      filterAnimationTimerRef.current = null;
-    }, 220);
-  }, [historyFilter, setListAutoAnimateEnabled]);
+    setHistoryFilter(value as HistoryFilter);
+  }, []);
 
   const handleRestore = useCallback((item: DiffHistoryItem) => {
     const compareMode = getHistoryItemMode(item);
@@ -131,21 +87,7 @@ export function HistoryView() {
 
   const handleToggleBookmark = useCallback(async (e: React.MouseEvent, id: string, currentStatus: boolean) => {
     e.stopPropagation();
-    setMovingItemId(id);
-
-    if (movingResetTimerRef.current !== null) {
-      window.clearTimeout(movingResetTimerRef.current);
-      movingResetTimerRef.current = null;
-    }
-
-    try {
-      await toggleBookmark(id, currentStatus);
-    } finally {
-      movingResetTimerRef.current = window.setTimeout(() => {
-        setMovingItemId((current) => (current === id ? null : current));
-        movingResetTimerRef.current = null;
-      }, 400);
-    }
+    await toggleBookmark(id, currentStatus);
   }, [toggleBookmark]);
 
   return (
@@ -157,6 +99,7 @@ export function HistoryView() {
             <span className="text-accent-primary" title="Bookmarked items in the current filter">Bookmarked: {bookmarkedCount}</span>
           </div>
         )} />
+        <HistoryTransfer onImported={loadHistory} />
         {items.length > 0 && (
           <div className="relative z-30 flex flex-wrap items-center gap-3 rounded-xl border border-border-default bg-bg-primary p-3 shadow-sm" data-tool-controls>
               <div className="flex items-center gap-2">
@@ -189,7 +132,7 @@ export function HistoryView() {
           </div>
         )}
       <div className="min-h-40">
-        {items.length === 0 ? (
+        <AnimatedHistoryList items={sortedItems} empty={items.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center">
             <MdHistoryToggleOff className="mb-4 text-5xl sm:text-6xl text-text-secondary" />
             <h3 className="text-base sm:text-lg font-semibold text-text-secondary">No history yet</h3>
@@ -201,19 +144,11 @@ export function HistoryView() {
             <h3 className="text-base sm:text-lg font-semibold text-text-secondary">No matching history items</h3>
             <p className="mt-1 text-xs sm:text-sm text-text-secondary">Try switching the history filter to All.</p>
           </div>
-        ) : (
-          <div
-            ref={listRef}
-            className={cn(
-              "flex w-full flex-col gap-3 transition-[opacity,transform] duration-200 ease-out",
-              isFilterTransitioning ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
-            )}
-          >
-            {sortedItems.map((item) => (
+        ) : null}>
+            {(item) => (
               <HistoryItemCard
                 key={item.id}
                 item={item}
-                isTransitioning={movingItemId === item.id}
                 fontFamily={settings.fontFamily}
                 dateFormat={settings.dateFormat}
                 timeFormat={settings.timeFormat}
@@ -222,9 +157,8 @@ export function HistoryView() {
                 onToggleBookmark={handleToggleBookmark}
                 onDelete={handleDeleteItem}
               />
-            ))}
-          </div>
-        )}
+            )}
+          </AnimatedHistoryList>
       </div>
       </PageContent>
   );

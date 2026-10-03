@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { markdownDefaultContent } from "@/features/markdown/services/markdownDefaultContent";
-import { scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
+import { flushMarkdownContentSave, scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
+import { useToastStore } from "@/store/useToastStore";
 
 function resetMarkdownStore() {
   useMarkdownStore.setState({
@@ -16,6 +17,16 @@ function resetMarkdownStore() {
 }
 
 describe("useMarkdownStore", () => {
+  it("keeps a failed save pending and reports it until a retry succeeds", () => {
+    const write = vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => { throw new DOMException("Full", "QuotaExceededError"); });
+    scheduleMarkdownContentSave("Retain this draft");
+    flushMarkdownContentSave();
+    expect(useToastStore.getState().activeToasts.some(toast => toast.dedupeKey === "markdown-save-failed")).toBe(true);
+    write.mockRestore();
+    flushMarkdownContentSave();
+    expect(localStorage.getItem("comparecode.markdownPreview.content.v1")).toBe("Retain this draft");
+    expect(useToastStore.getState().activeToasts.some(toast => toast.dedupeKey === "markdown-save-failed")).toBe(false);
+  });
   beforeEach(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();

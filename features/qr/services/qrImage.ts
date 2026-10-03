@@ -1,4 +1,5 @@
 import QRCode, { type QRCode as QrSymbol } from "qrcode";
+import { DEFAULT_QR_STYLE, isClassicQrStyle, qrShapePaths, type QrStyle } from "./qrShapes";
 
 export type QrErrorCorrection = "L" | "M" | "Q" | "H";
 export type QrImageColors = { dark: string; light: string };
@@ -38,9 +39,19 @@ export function getQrColorWarning({ dark, light }: QrImageColors): string | null
   return null;
 }
 
-export function createQrSvg(symbol: QrSymbol, colors: QrImageColors): string {
+export function getQrStyleError(colors: QrImageColors, style: QrStyle): string | null {
+  return getQrColorError(colors) || getQrColorError({ dark: style.borderColor ?? colors.dark, light: style.centerColor ?? colors.dark });
+}
+
+export function createQrSvg(symbol: QrSymbol, colors: QrImageColors, style: QrStyle = DEFAULT_QR_STYLE): string {
+  const error = getQrStyleError(colors, style);
+  if (error) throw new Error(error);
   const moduleCount = symbol.modules.size;
   const total = moduleCount + QR_BORDER * 2;
+  if (!isClassicQrStyle(style)) {
+    const paths = qrShapePaths(symbol, style, colors, QR_BORDER);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${total}" height="${total}"><path fill="${colors.light}" d="M0 0h${total}v${total}H0z"/>${paths.map(path => `<path fill="${path.fill}" d="${path.d}"/>`).join("")}</svg>`;
+  }
   const runs: string[] = [];
 
   for (let row = 0; row < moduleCount; row += 1) {
@@ -58,7 +69,9 @@ export function createQrSvg(symbol: QrSymbol, colors: QrImageColors): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" shape-rendering="crispEdges"><path fill="${colors.light}" d="M0 0h${total}v${total}H0z"/><path fill="${colors.dark}" d="${runs.join("")}"/></svg>`;
 }
 
-export function drawQrCanvas(symbol: QrSymbol, colors: QrImageColors, targetSize: number): HTMLCanvasElement {
+export function drawQrCanvas(symbol: QrSymbol, colors: QrImageColors, targetSize: number, style: QrStyle = DEFAULT_QR_STYLE): HTMLCanvasElement {
+  const error = getQrStyleError(colors, style);
+  if (error) throw new Error(error);
   const total = symbol.modules.size + QR_BORDER * 2;
   const edges = Array.from({ length: total + 1 }, (_, index) => Math.floor(index * targetSize / total));
   const canvas = document.createElement("canvas");
@@ -69,6 +82,14 @@ export function drawQrCanvas(symbol: QrSymbol, colors: QrImageColors, targetSize
 
   context.fillStyle = colors.light;
   context.fillRect(0, 0, canvas.width, canvas.height);
+  if (!isClassicQrStyle(style)) {
+    context.scale(targetSize / total, targetSize / total);
+    for (const path of qrShapePaths(symbol, style, colors, QR_BORDER)) {
+      context.fillStyle = path.fill;
+      context.fill(new Path2D(path.d));
+    }
+    return canvas;
+  }
   context.fillStyle = colors.dark;
   for (let row = 0; row < symbol.modules.size; row += 1) {
     for (let column = 0; column < symbol.modules.size; column += 1) {
@@ -84,8 +105,8 @@ export function drawQrCanvas(symbol: QrSymbol, colors: QrImageColors, targetSize
   return canvas;
 }
 
-export async function createQrPng(symbol: QrSymbol, colors: QrImageColors, targetSize: number): Promise<Blob> {
-  const canvas = drawQrCanvas(symbol, colors, targetSize);
+export async function createQrPng(symbol: QrSymbol, colors: QrImageColors, targetSize: number, style: QrStyle = DEFAULT_QR_STYLE): Promise<Blob> {
+  const canvas = drawQrCanvas(symbol, colors, targetSize, style);
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);

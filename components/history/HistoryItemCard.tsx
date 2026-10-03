@@ -17,7 +17,7 @@ function formatImageDimensions(width?: number, height?: number): string {
 
 interface HistoryItemCardProps {
   item: DiffHistoryItem;
-  isTransitioning: boolean;
+  isTransitioning?: boolean;
   fontFamily: string;
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
@@ -32,8 +32,8 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
   const createdAt = item.createdAt;
   const imageSnapshot = item.snapshot?.mode === "image" ? item.snapshot : null;
   const isImageSnapshot = imageSnapshot !== null;
-  const originalPreviewImageUrl = imageSnapshot?.originalThumbnailDataUrl || imageSnapshot?.originalImageUrl || "";
-  const modifiedPreviewImageUrl = imageSnapshot?.modifiedThumbnailDataUrl || imageSnapshot?.modifiedImageUrl || "";
+  const originalPreviewImageUrl = imageSnapshot?.originalThumbnailDataUrl || imageSnapshot?.originalImageDataUrl || imageSnapshot?.originalImageUrl || "";
+  const modifiedPreviewImageUrl = imageSnapshot?.modifiedThumbnailDataUrl || imageSnapshot?.modifiedImageDataUrl || imageSnapshot?.modifiedImageUrl || "";
   const originalDimensions = formatImageDimensions(imageSnapshot?.originalImageWidth, imageSnapshot?.originalImageHeight);
   const modifiedDimensions = formatImageDimensions(imageSnapshot?.modifiedImageWidth, imageSnapshot?.modifiedImageHeight);
   const originalImageName = imageSnapshot?.originalImageName || "Original image";

@@ -1,5 +1,11 @@
 # Workspace UI Architecture
 
+## Shared Toolbars and History Motion
+
+`components/ui/WorkspaceToolbar.tsx` owns the Text comparison and Markdown formatting toolbar surface, inset and minimum height. Controls keep their feature-specific behavior. `SelectionBar` supports inline or stacked icon/label composition; QR shape tiles use the stacked variant.
+
+`components/history/AnimatedHistoryList.tsx` owns keyed card entrance, exit and positional animations using the browser Web Animations API. Soft slide is the production default. Exiting cards become inert, interrupted animations are cancelled, and reduced motion or unavailable animation APIs produce immediate updates. The development-only `/dev/history-motion` route uses the same list and cards with disposable in-memory samples and five motion choices. It returns not found in production and is excluded from navigation and the sitemap.
+
 ## Application Navigation
 
 `app/(workspace)/layout.tsx` owns the persistent application frame. `WorkspaceSidebarProvider` stores only navigation presentation state in React memory, independently of feature stores. `NavigationSidebar` uses one route definition for Home, Text, Image, Markdown, QR code generator, History, and Settings. Destination selection retains `router.replace`; restoring a comparison from History retains `router.push`.

@@ -14,6 +14,7 @@ interface SelectionBarBaseProps<T extends string> {
   options: Array<SelectionBarOption<T>>;
   className?: string;
   buttonClassName?: string;
+  contentLayout?: "inline" | "stacked";
   disabled?: boolean;
 }
 
@@ -35,6 +36,7 @@ export const SelectionBar = <T extends string>({
   options,
   className,
   buttonClassName,
+  contentLayout = "inline",
   disabled = false,
   selectionMode = "single",
   value,
@@ -95,7 +97,7 @@ export const SelectionBar = <T extends string>({
               buttonClassName
             )}
           >
-            <span className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span className={cn("inline-flex items-center justify-center gap-1.5 whitespace-nowrap", contentLayout === "stacked" && "flex-col")}>
               {option.icon && <span aria-hidden="true" className="inline-flex shrink-0 text-base">{option.icon}</span>}
               {option.label}
             </span>

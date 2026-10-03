@@ -2,17 +2,8 @@ import type { ChangeLine, ComparisonResult, TextFragment } from "@/features/comp
 import { BlockType, DiffChangeType } from "@/features/compare/text/types/diff";
 import { calculateSplitRows } from "@/features/compare/text/hooks/useCalculateSplitRows";
 import { encodeImagePdf } from "./pdfDocument";
-
-export function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+import { downloadBlob } from "@/utils/downloadBlob";
+export { downloadBlob } from "@/utils/downloadBlob";
 
 export function downloadText(text: string, side: "original" | "modified"): void {
   downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `comparecode-${side}.txt`);

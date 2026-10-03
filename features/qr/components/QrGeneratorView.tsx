@@ -11,13 +11,16 @@ import { ColorInput } from "@/components/ui/ColorInput";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { QrContentFields } from "./QrContentFields";
+import { QrShapeOptions } from "./QrShapeOptions";
+import { DEFAULT_QR_STYLE, type QrStyle } from "../services/qrShapes";
+import { downloadBlob } from "@/utils/downloadBlob";
 import { buildQrPayload, DEFAULT_QR_WEBSITE_URL, type QrContent } from "../services/qrPayload";
 import {
   createQrPng,
   createQrSvg,
   createQrSymbol,
   DEFAULT_QR_COLORS,
-  getQrColorError,
+  getQrStyleError,
   getQrColorWarning,
   type QrErrorCorrection,
   type QrImageColors
@@ -55,18 +58,8 @@ function hasInput(content: QrContent): boolean {
   }
 }
 
-function saveBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 export function QrGeneratorView() {
+  const [style, setStyle] = useState<QrStyle>(DEFAULT_QR_STYLE);
   const [content, setContent] = useState<QrContent>(emptyContent("url"));
   const [colors, setColors] = useState<QrImageColors>(DEFAULT_QR_COLORS);
   const [errorCorrection, setErrorCorrection] = useState<QrErrorCorrection>("M");
@@ -75,8 +68,8 @@ export function QrGeneratorView() {
   const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const payload = useMemo(() => buildQrPayload(content), [content]);
-  const colorError = getQrColorError(colors);
-  const colorWarning = getQrColorWarning(colors);
+  const colorError = getQrStyleError(colors, style);
+  const colorWarning = getQrColorWarning(colors) || getQrColorWarning({ dark: style.borderColor ?? colors.dark, light: colors.light }) || getQrColorWarning({ dark: style.centerColor ?? colors.dark, light: colors.light });
   const generated = useMemo(() => {
     if (!payload.value) return { symbol: null, error: null };
     try {
@@ -85,7 +78,7 @@ export function QrGeneratorView() {
       return { symbol: null, error: "This content is too long for a QR code at the selected error correction level." };
     }
   }, [payload.value, errorCorrection]);
-  const svg = useMemo(() => generated.symbol && !colorError ? createQrSvg(generated.symbol, colors) : null, [generated.symbol, colors, colorError]);
+  const svg = useMemo(() => generated.symbol && !colorError ? createQrSvg(generated.symbol, colors, style) : null, [generated.symbol, colors, colorError, style]);
   const previewUrl = svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}` : null;
   const activeError = (hasInput(content) ? payload.error : null) ?? generated.error ?? colorError;
   const canDownload = Boolean(generated.symbol && svg && !activeError);
@@ -100,8 +93,8 @@ export function QrGeneratorView() {
     try {
       const blob = format === "svg"
         ? new Blob([svg], { type: "image/svg+xml;charset=utf-8" })
-        : await createQrPng(generated.symbol, colors, pngTargetSize);
-      saveBlob(blob, `comparecode-qr-code.${format}`);
+        : await createQrPng(generated.symbol, colors, pngTargetSize, style);
+      downloadBlob(blob, `comparecode-qr-code.${format}`);
       setExportMessage(`${format.toUpperCase()} downloaded.`);
     } catch {
       setExportMessage("The QR code could not be downloaded. Try again.");
@@ -137,6 +130,7 @@ export function QrGeneratorView() {
               {colorWarning && <p role="status" className="mt-3 rounded-lg border border-info-border bg-info-bg p-3 text-sm text-text-primary">{colorWarning} You can still download this code.</p>}
             </OptionsSection>
 
+            <QrShapeOptions value={style} codeColor={colors.dark} onChange={value => { setStyle(value); setExportMessage(null); }} />
             <OptionsSection title="Error correction" description="Higher levels survive more damage but hold less content. Percentages are approximate." isDirty={errorCorrection !== "M"} onReset={() => { setErrorCorrection("M"); setExportMessage(null); }}>
               <SelectDropdown label="Level" value={errorCorrection} onChange={(level) => { setErrorCorrection(level as QrErrorCorrection); setExportMessage(null); }} options={errorCorrectionOptions} />
             </OptionsSection>

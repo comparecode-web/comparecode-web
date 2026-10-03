@@ -29,6 +29,12 @@ The preview pipeline uses Remark plugins, raw HTML parsing, the feature-owned sa
 - `store/useMarkdownUIStore.ts` owns view mode, split size, scroll sync, editor font size, wrapping, and Options/Markdown History panel state.
 - `services/markdownStorage.ts` owns the released local-storage and session-storage keys and their serialized shapes.
 
+Content hydration occurs once per store lifetime. Pending durable saves are flushed on workspace unmount, page hide, and document visibility loss so navigating back cannot replace a newer draft with an older stored value. The existing keys and formats are unchanged.
+
+A failed content write keeps the draft pending and displays a persistent toast suggesting Markdown download. A subsequent successful save dismisses the warning.
+
+The toolbar's Download Markdown action exports the current store text as UTF-8 `comparecode-document.md`, including edits still waiting for autosave. Downloads use the shared `utils/downloadBlob.ts` browser helper. The Markdown formatting toolbar and Text comparison toolbar share `components/ui/WorkspaceToolbar.tsx` for their 2.75rem minimum height, padding, border, and surface. Markdown line numbers and editor text share the same small vertical inset. The Markdown toolbar stays on one horizontally scrollable row; keyboard focus reveals controls outside the visible area and popup menus remain in portals.
+
 Markdown content and persisted UI preferences are durable local data. Undo/redo history is session-scoped. Changes to keys, stored shapes, defaults, compatibility readers, or durability must also use `$comparecode-data-migration` and follow `docs/PERSISTENCE_MIGRATIONS.md`.
 
 ## Import, Paste, and Formatting
