@@ -24,7 +24,7 @@ Keep canvas and pixel-processing rules in image services or focused image utilit
 - `services/alignment/transformUtils.ts` owns affine transform calculations, normalization, bounds, and image-pair identity.
 - `services/alignment/registrationEngine.ts` owns deterministic, dependency-free registration of bounded RGBA buffers.
 - `services/alignment/autoAlignService.ts` decodes bounded work images and manages the cancellable `autoAlign.worker.ts` lifecycle.
-- `useImageCompareStore.runAutoAlignment` is the single request owner for both entry points. Components must not estimate or apply automatic results independently.
+- `useImageCompareStore.runAutoAlignment` is the single request owner for the toolbar, prompt, and adjustment panel. Components must not estimate or apply automatic results independently.
 - `AlignmentPrompt` and `ImageAlignmentPanel` own the user-facing alignment workflow.
 
 Preserve coordinate-system assumptions across preview, applied transforms, canvas rendering, diff generation, and saved history. A transform change must be checked in every affected consumer rather than patched in one view only.
@@ -71,11 +71,20 @@ Image comparison is canvas- and browser-dependent. Treat pointer gestures, zoom,
 
 The feature keeps its own compact comparison toolbar above the canvas within the common application navigation. Mode controls use a segmented control in wide image containers and a dropdown in narrow ones; both use the same canonical mode setter. The metadata area scrolls independently with a bounded height. Hiding metadata retains its component while removing hidden controls from navigation. On narrow screens, alignment controls sit below the preview with an independently scrolling form rather than covering the preview. These layout changes must not update image identity, zoom/pan state, or stored transforms. See [Workspace UI](workspace-ui.md) for common navigation and popups.
 
+The toolbar's Auto align action opens a confirmation before running; Adjust alignment is a primary action that opens the editor for manual refinement. `AutoAlignButton` owns the confirmation used by both the toolbar and the adjustment panel, binds it to the current image pair, and calls the existing store action only after confirmation. The initial different-dimensions prompt already provides confirmation and does not need another dialog. All entry points use the existing request lifecycle, including the manual recovery panel on failure. Download snapshot is a primary icon button at every width and indicates pending export work.
+
+The adjustment dialog groups Preview (Zoom and Overlay opacity), Manual adjustments, and Auto align in `OptionsSection` cards with independent resets. The preview reset restores zoom, opacity, and pan; the automatic reset restores allowed transformations; manual and full-alignment resets retain their existing scopes. Preview opacity affects only the modified preview layer, independently of Fade and snapshot export. Size fields switch between percentages (initially) and source-image pixels without modifying the transform. Proportional scaling shows one slider; unlocked scaling shows one per axis. Cancel and Apply remain outside the scrolling form. The modified preview image must not inherit a maximum width from the original image's stage: differing image sizes must retain their source aspect ratios. Metadata opens and closes with a bounded grid-height/opacity transition, honors reduced motion, and remains inert while collapsed.
+
+The upload workspace uses two equal grid cells within the available height, including when only one image has loaded. The image preview is contained within its cell without contributing intrinsic image height to layout. Dropzones retain click, keyboard, drop, and paste behavior. An automation browser may intercept native file chooser dialogs; this is independent of the upload component.
+
+`AlignmentWorkspace` uses the selected split-controls layout: Preview and Auto align cards on the left, the image stage in the center, and Manual adjustments on the right. At narrow widths, the control panels stack below the stage and scroll independently. The footer remains outside these scroll areas, wraps when needed, and retains the red, labelled Reset alignment action alongside Cancel and Apply. Only section resets are icon-only. The exploratory development layouts and their fixture-serving routes have been removed; scholar images remain external browser-test fixtures.
+
 ## Validation Map
 
 Metadata cards stack below the image container's two-column breakpoint so file sizes, dimensions, and hashes remain readable on narrow screens.
 
 - Image state and object-URL lifecycle: run `features/compare/image/store/__tests__/useImageCompareStore.test.ts`.
+- Toolbar auto alignment/export and adjustment preview/size controls: run `features/compare/image/components/__tests__`. Check metadata animation, reduced motion, modal focus, preview gestures, and reachable actions at narrow widths in the browser.
 - Diff, alignment, transform, snapshot export, or metadata logic: add or run focused tests for the changed service or utility when deterministic automation is practical.
 - Upload, clipboard, canvas rendering, gestures, responsive layout, and history restoration: use `$comparecode-browser-testing` with task-owned images and browser storage.
 - Complete the repository validation required by `AGENTS.md` for the type of change.

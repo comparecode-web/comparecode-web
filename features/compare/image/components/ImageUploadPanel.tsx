@@ -101,12 +101,12 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
           </div>
           <p className="text-xs text-text-secondary truncate" title={image.name}>{image.name}</p>
         </div>
-        <div className="relative rounded-lg border border-border-default bg-bg-secondary overflow-hidden flex flex-1 items-center justify-center min-h-30">
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-border-default bg-bg-secondary">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image.url}
             alt={image.name}
-            className="h-full w-full object-contain"
+            className="absolute inset-0 h-full w-full object-contain"
           />
         </div>
       </div>
@@ -119,20 +119,25 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
       <div
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onPaste={handlePaste}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          "flex min-h-56 flex-1 cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-4 transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary",
+          "flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-3 transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary @2xl/image:gap-4 @2xl/image:p-4",
           isDragging
             ? "border-accent-primary bg-accent-primary/10"
             : "border-border-default bg-bg-secondary hover:border-accent-primary hover:bg-hover-overlay"
         )}
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-hover-overlay">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-hover-overlay @2xl/image:size-12">
           <MdCloudUpload className="text-2xl text-text-secondary" />
         </div>
         <div className="text-center">
@@ -187,7 +192,7 @@ export function ImageUploadPanel({ compact = false }: ImageUploadPanelProps) {
   }
 
   return (
-    <div className="flex min-h-full flex-col gap-4 @2xl/image:flex-row">
+    <div className="grid h-full min-h-0 grid-rows-2 gap-3 @2xl/image:grid-cols-2 @2xl/image:grid-rows-1">
       <ImageUploadSlot
         label="Original"
         image={originalImage}

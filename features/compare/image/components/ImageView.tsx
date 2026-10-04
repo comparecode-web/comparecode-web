@@ -120,7 +120,7 @@ export function ImageView() {
   return (
     <div className="@container/image flex h-full min-w-0 w-full flex-col gap-3 overflow-hidden bg-bg-secondary p-2">
       {!bothLoaded ? (
-        <div className="flex-1 min-h-0 overflow-auto custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <ImageUploadPanel />
         </div>
       ) : (
@@ -137,6 +137,8 @@ export function ImageView() {
             <div className="flex items-center justify-center">
               <Button size="sm"
                 onClick={toggleMetadataPanel}
+                aria-expanded={isMetadataPanelOpen}
+                aria-controls="image-metadata"
                 title={isMetadataPanelOpen ? "Hide metadata" : "Show metadata"}
               >
                 <MdInfo className="text-base shrink-0" />
@@ -147,19 +149,23 @@ export function ImageView() {
           </div>
 
           <div
-            hidden={!isMetadataPanelOpen}
+            id="image-metadata"
+            aria-hidden={!isMetadataPanelOpen}
+            inert={!isMetadataPanelOpen}
             className={cn(
-              "min-h-0 shrink flex-col overflow-hidden rounded-xl bg-bg-primary z-10",
+              "grid min-h-0 max-h-[35%] shrink overflow-hidden rounded-xl bg-bg-primary z-10 transition-[grid-template-rows,opacity,margin-top] duration-200 ease-in-out motion-reduce:transition-none",
               isMetadataPanelOpen
-                ? "flex max-h-[35%] border border-border-default shadow-sm"
-                : "hidden"
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0 -mt-3"
             )}
           >
             <div className="min-h-0 overflow-y-auto custom-scrollbar">
-              <ImageMetadataPanel
-                originalImage={originalImage}
-                modifiedImage={modifiedImage}
-              />
+              <div className="rounded-xl border border-border-default">
+                <ImageMetadataPanel
+                  originalImage={originalImage}
+                  modifiedImage={modifiedImage}
+                />
+              </div>
             </div>
           </div>
         </>
