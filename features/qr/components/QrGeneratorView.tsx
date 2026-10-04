@@ -118,7 +118,7 @@ export function QrGeneratorView() {
               <div className="mt-5"><QrContentFields content={content} onChange={updateContent} passwordVisible={passwordVisible} onPasswordVisibleChange={setPasswordVisible} /></div>
             </section>
 
-            <OptionsSection title="Appearance" description="Choose colors and the PNG size." isDirty={colors.dark !== DEFAULT_QR_COLORS.dark || colors.light !== DEFAULT_QR_COLORS.light || pngTargetSize !== 1024} onReset={() => { setColors(DEFAULT_QR_COLORS); setPngTargetSize(1024); setExportMessage(null); }}>
+            <OptionsSection density="comfortable" title="Appearance" description="Choose colors and the PNG size." isDirty={colors.dark !== DEFAULT_QR_COLORS.dark || colors.light !== DEFAULT_QR_COLORS.light || pngTargetSize !== 1024} onReset={() => { setColors(DEFAULT_QR_COLORS); setPngTargetSize(1024); setExportMessage(null); }}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <ColorInput label="Code color" value={colors.dark} onChange={(dark) => { setColors((current) => ({ ...current, dark })); setExportMessage(null); }} />
                 <ColorInput label="Background color" value={colors.light} pickerFallback="#ffffff" onChange={(light) => { setColors((current) => ({ ...current, light })); setExportMessage(null); }} />
@@ -128,7 +128,7 @@ export function QrGeneratorView() {
             </OptionsSection>
 
             <QrShapeOptions value={style} codeColor={colors.dark} onChange={value => { setStyle(value); setExportMessage(null); }} />
-            <OptionsSection title="Error correction" description="Higher levels survive more damage but hold less content. Percentages are approximate." isDirty={errorCorrection !== "M"} onReset={() => { setErrorCorrection("M"); setExportMessage(null); }}>
+            <OptionsSection density="comfortable" title="Error correction" description="Higher levels survive more damage but hold less content. Percentages are approximate." isDirty={errorCorrection !== "M"} onReset={() => { setErrorCorrection("M"); setExportMessage(null); }}>
               <SelectDropdown label="Level" value={errorCorrection} onChange={(level) => { setErrorCorrection(level as QrErrorCorrection); setExportMessage(null); }} options={errorCorrectionOptions} />
             </OptionsSection>
           </div>

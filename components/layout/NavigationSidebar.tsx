@@ -88,16 +88,16 @@ export function NavigationSidebar() {
           <Link href="/" className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-accent-primary @max-[12rem]/navigation:hidden" aria-label="CompareCode home">
             {brand(false)}
           </Link>
-          <button type="button" aria-label="Toggle navigation labels" onClick={() => setDesktopExpanded(!(desktopExpanded ?? window.matchMedia(WORKSPACE_MEDIA.expandedNavigation).matches))} className="ml-auto flex h-10 w-10 min-w-0 items-center justify-center rounded-lg border border-transparent text-text-secondary transition-colors duration-(--duration-short) hover:bg-hover-overlay hover:text-text-primary focus-visible:outline-2 focus-visible:outline-accent-primary motion-reduce:transition-none">
+          <IconButton aria-label="Toggle navigation labels" onClick={() => setDesktopExpanded(!(desktopExpanded ?? window.matchMedia(WORKSPACE_MEDIA.expandedNavigation).matches))} className="ml-auto size-10">
               {desktopExpanded === null ? <><MdChevronRight className="size-5 shrink-0 xl:hidden" /><MdChevronLeft className="hidden size-5 shrink-0 xl:block" /></> : desktopExpanded ? <MdChevronLeft className="size-5 shrink-0" /> : <MdChevronRight className="size-5 shrink-0" />}
-          </button>
+          </IconButton>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">{navigation(false)}</div>
         {footer(false)}
       </aside>
       <dialog ref={dialogRef} aria-label="Navigation" onCancel={() => setMobileOpen(false)} onClose={() => setMobileOpen(false)} onClick={(event) => { if (event.target === event.currentTarget) setMobileOpen(false); }} className="fixed inset-y-0 left-0 m-0 h-dvh max-h-dvh w-[min(88vw,20rem)] max-w-none border-r border-border-default bg-bg-primary p-0 text-text-primary shadow-xl backdrop:bg-black/40">
         <div className="flex min-h-full flex-col">
-          <div className="flex h-16 shrink-0 items-center justify-between border-b border-border-default px-4"><Link href="/" onClick={() => setMobileOpen(false)}>{brand(true)}</Link><IconButton aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="h-11 w-11"><MdClose className="text-xl" /></IconButton></div>
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-border-default px-4"><Link href="/" onClick={() => setMobileOpen(false)}>{brand(true)}</Link><IconButton size="lg" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><MdClose /></IconButton></div>
           {mobileOpen && <><div className="flex-1">{navigation(true)}</div>{footer(true)}</>}
         </div>
       </dialog>

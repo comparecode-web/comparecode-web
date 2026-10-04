@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdTune, MdBorderColor, MdHistory, MdCode } from "react-icons/md";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
 import { FileDropZone } from "@/components/ui/FileDropZone";
+import { Button } from "@/components/ui/Button";
 import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
@@ -147,19 +148,15 @@ export function EditorView() {
 
       <div className="shrink-0 border-t border-border-default bg-bg-secondary px-2 py-1.5 sm:px-3 sm:py-2">
         <div className="flex items-center justify-center">
-          <button
+          <Button size="sm"
             onClick={toggleInputPanel}
             disabled={isInputEditorToggleDisabled}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-md bg-accent-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors duration-(--duration-short) focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2",
-              isInputEditorToggleDisabled ? "cursor-not-allowed opacity-60" : "hover:bg-accent-hover"
-            )}
             title={isInputExpanded ? "Hide input editor (E)" : "Show input editor (E)"}
           >
             <MdBorderColor className="text-base shrink-0" />
             <span>Input editor</span>
             {isInputExpanded ? <MdKeyboardArrowDown className="text-xl shrink-0" /> : <MdKeyboardArrowUp className="text-xl shrink-0" />}
-          </button>
+          </Button>
         </div>
       </div>
 

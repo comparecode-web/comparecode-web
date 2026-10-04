@@ -9,7 +9,7 @@ const eyes: Array<{ value: QrEyeShape; label: string }> = [{ value: "square", la
 
 export function QrShapeOptions({ value, onChange, codeColor }: { value: QrStyle; onChange: (style: QrStyle) => void; codeColor: string }) {
   const linked = value.borderColor === null && value.centerColor === null;
-  return <OptionsSection title="Shape" description="Style the dots and the three corner markers." isDirty={JSON.stringify(value) !== JSON.stringify(DEFAULT_QR_STYLE)} onReset={() => onChange(DEFAULT_QR_STYLE)}>
+  return <OptionsSection density="comfortable" title="Shape" description="Style the dots and the three corner markers." isDirty={JSON.stringify(value) !== JSON.stringify(DEFAULT_QR_STYLE)} onReset={() => onChange(DEFAULT_QR_STYLE)}>
     <div className="space-y-5">
       <fieldset><legend className="mb-2 text-sm font-semibold text-text-primary">Code shape</legend>
         <SelectionBar contentLayout="stacked" value={value.modules} onChange={modules => onChange({ ...value, modules })} className="grid grid-cols-2 sm:grid-cols-4" buttonClassName="min-w-0 px-2 py-3" options={modules.map(option => ({ ...option, icon: <svg viewBox="0 0 5 5" className="size-8" aria-hidden="true"><path fill="currentColor" d={option.value === "dots" ? [0, 2, 4].flatMap(x => [0, 2, 4].map(y => eyeShape(x, y, 1, "circle"))).join("") : option.value === "connected" ? roundedShape(0, 0, 5, 1.2) + roundedShape(1, 1, 3, .8) : [0, 2, 4].flatMap(x => [0, 2, 4].map(y => roundedShape(x, y, 1, option.value === "rounded" ? .3 : 0))).join("")} fillRule="evenodd" /></svg> }))} />

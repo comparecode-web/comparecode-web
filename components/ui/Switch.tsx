@@ -23,7 +23,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     };
 
     return (
-      <label className={cn("flex items-center gap-3 cursor-pointer", containerClassName)} title={title}>
+      <label className={cn("flex items-center gap-3 cursor-pointer", props.disabled && "cursor-not-allowed opacity-50", containerClassName)} title={title}>
         <span className={cn("relative inline-flex shrink-0", sizes[size].track)}>
           <input
             type="checkbox"
@@ -31,7 +31,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             className={cn("peer sr-only", className)}
             {...props}
           />
-          <span className="absolute inset-0 rounded-full border border-border-default bg-bg-secondary transition-colors peer-checked:border-accent-primary peer-checked:bg-accent-primary/20" />
+          <span className="absolute inset-0 rounded-full border border-border-default bg-bg-secondary transition-colors peer-checked:border-accent-primary peer-checked:bg-accent-primary/20 peer-focus-visible:ring-2 peer-focus-visible:ring-accent-primary/45" />
           <span className={cn("absolute left-0.5 top-1/2 -translate-y-1/2 rounded-full bg-text-secondary transition-all peer-checked:bg-accent-primary", sizes[size].thumb)} />
         </span>
         {label && <span className={cn("font-medium text-text-primary", sizes[size].label)}>{label}</span>}

@@ -7,8 +7,8 @@ import { MarkdownStatsBar } from "./MarkdownStatsBar";
 import { useMarkdownScrollSync } from "@/features/markdown/hooks/useMarkdownScrollSync";
 import { useResizableMarkdownSplit } from "@/features/markdown/hooks/useResizableMarkdownSplit";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
-import { cn } from "@/utils/uiHelpers";
 import { WORKSPACE_MEDIA } from "@/config/responsive";
+import { Button } from "@/components/ui/Button";
 
 interface MarkdownSplitViewProps {
   value: string;
@@ -133,19 +133,14 @@ export function MarkdownSplitView({
       <div ref={containerRef} className="flex w-full min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden bg-bg-primary">
         <div className="flex w-full min-w-0 max-w-full shrink-0 items-center gap-1 overflow-hidden border-b border-border-default bg-bg-secondary p-1">
           {(["editor", "preview"] as const).map((pane) => (
-            <button
+            <Button size="sm"
               key={pane}
-              type="button"
               onClick={() => setMobileSplitPane(pane)}
-              className={cn(
-                "h-8 w-28 min-w-0 rounded px-3 text-sm font-semibold transition-colors",
-                mobileSplitPane === pane
-                  ? "bg-accent-primary text-white"
-                  : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
-              )}
+              className="w-28 min-w-0"
+              variant={mobileSplitPane === pane ? "primary" : "ghost"}
             >
               {pane === "editor" ? "Editor" : "Preview"}
-            </button>
+            </Button>
           ))}
         </div>
         <section className="min-h-0 min-w-0 max-w-full flex-1 overflow-hidden">

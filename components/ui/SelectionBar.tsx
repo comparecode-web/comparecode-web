@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/utils/uiHelpers";
+import { controlSizes, type ControlSize } from "./controlStyles";
 
 export type SelectionMode = "single" | "multiple";
 
@@ -16,6 +17,7 @@ interface SelectionBarBaseProps<T extends string> {
   buttonClassName?: string;
   contentLayout?: "inline" | "stacked";
   disabled?: boolean;
+  size?: ControlSize;
 }
 
 interface SelectionBarSingleProps<T extends string> extends SelectionBarBaseProps<T> {
@@ -37,6 +39,7 @@ export const SelectionBar = <T extends string>({
   className,
   buttonClassName,
   contentLayout = "inline",
+  size = "sm",
   disabled = false,
   selectionMode = "single",
   value,
@@ -88,7 +91,8 @@ export const SelectionBar = <T extends string>({
             disabled={optionDisabled}
             onClick={() => handleSelect(option.value)}
             className={cn(
-              "relative flex min-w-max flex-1 items-center justify-center border-r border-border-default px-3 py-1.5 text-sm transition-colors outline-none last:border-r-0",
+              "relative flex min-w-max flex-1 items-center justify-center border-r border-border-default transition-colors outline-none last:border-r-0",
+              controlSizes[size].field,
               "focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-accent-primary/45",
               selected
                 ? "bg-bg-selected text-accent-primary font-semibold"

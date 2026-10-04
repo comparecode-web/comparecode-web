@@ -1,13 +1,17 @@
 "use client";
 
 import { PointerEvent, WheelEvent, useEffect, useMemo, useRef, useState } from "react";
-import { MdClose, MdDelete, MdFlip, MdLock, MdLockOpen, MdRestartAlt, MdRotateRight } from "react-icons/md";
+import { MdDelete, MdFlip, MdLock, MdLockOpen, MdRotateRight } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { Slider } from "@/components/ui/Slider";
 import { Switch } from "@/components/ui/Switch";
-import { getSectionResetButtonClass } from "@/utils/settingsReset";
+import { ResetButton } from "@/components/ui/ResetButton";
+import { Dialog } from "@/components/ui/Dialog";
+import { DialogHeader } from "@/components/ui/DialogHeader";
+import { FormField } from "@/components/ui/FormField";
+import { Input } from "@/components/ui/Input";
 import { cn } from "@/utils/uiHelpers";
 import { useImageCompareStore } from "../../store/useImageCompareStore";
 import { DEFAULT_ALIGNMENT_STATE, ImageAffineTransform, isAutoAlignmentAvailable } from "../../services/alignment/types";
@@ -194,15 +198,12 @@ export function ImageAlignmentPanel() {
     if (!alignment.isPanelOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeAlignmentPanel();
-        return;
-      }
+      if (event.defaultPrevented) return;
       if (event.code === "Space" && event.target instanceof HTMLElement && !["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(event.target.tagName)) {
         event.preventDefault();
         setIsSpacePressed(true);
       }
-      if (!draftTransform) return;
+      if (!draftTransform || (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [role=menu], [role=listbox]"))) return;
       const amount = event.shiftKey ? 10 : 1;
       if (event.key === "ArrowLeft") setAlignmentDraftTransform({ ...draftTransform, x: draftTransform.x - amount });
       if (event.key === "ArrowRight") setAlignmentDraftTransform({ ...draftTransform, x: draftTransform.x + amount });
@@ -409,8 +410,8 @@ export function ImageAlignmentPanel() {
   const selectedOptions = getOptionValues(alignment.options);
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-black/55 p-3 sm:p-5">
-      <div className="flex min-h-0 w-full flex-col overflow-hidden rounded-xl border border-border-default bg-bg-primary shadow-xl md:flex-row">
+    <Dialog open={alignment.isPanelOpen} onOpenChange={open => { if (!open) closeAlignmentPanel(); }} aria-labelledby="alignment-panel-title" className="h-[calc(100dvh-1.5rem)] max-h-none w-[calc(100%-1.5rem)] overflow-hidden sm:h-[calc(100dvh-2.5rem)] sm:w-[calc(100%-2.5rem)]">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden md:flex-row">
         <div
           ref={stageRef}
           className={cn("relative min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-secondary p-10 cursor-grab active:cursor-grabbing", isSpacePressed && "cursor-grabbing")}
@@ -504,12 +505,7 @@ export function ImageAlignmentPanel() {
         </div>
 
         <aside className="flex min-h-0 w-full shrink-0 flex-col border-t border-border-default bg-bg-primary max-md:max-h-[60%] md:w-80 md:border-l md:border-t-0 lg:w-96">
-          <div className="flex shrink-0 items-center gap-2 border-b border-border-default px-4 py-3">
-            <h2 className="text-base font-bold text-text-primary">Align images</h2>
-            <IconButton onClick={closeAlignmentPanel} size="sm" className="ml-auto" title="Close alignment panel">
-              <MdClose className="text-xl" />
-            </IconButton>
-          </div>
+          <DialogHeader title="Align images" titleId="alignment-panel-title" closeLabel="Close alignment panel" onClose={closeAlignmentPanel} className="py-3" />
 
           <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-4">
             {alignment.error && (
@@ -522,9 +518,7 @@ export function ImageAlignmentPanel() {
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold text-text-secondary">Zoom</span>
                 <span className="text-sm font-bold text-text-primary">{formatPercent(alignment.previewZoom)}</span>
-                <IconButton size="sm" onClick={() => setAlignmentPreviewZoom(DEFAULT_ALIGNMENT_STATE.previewZoom)} className={getSectionResetButtonClass(isZoomDirty)} title="Restore zoom default">
-                  <MdRestartAlt className="text-lg" />
-                </IconButton>
+                <ResetButton onClick={() => setAlignmentPreviewZoom(DEFAULT_ALIGNMENT_STATE.previewZoom)} isDirty={isZoomDirty} title="Restore zoom default" />
               </div>
               <Slider
                 min={50}
@@ -539,9 +533,7 @@ export function ImageAlignmentPanel() {
             <section className="mt-5 rounded-md border border-border-default bg-bg-secondary p-3">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-bold text-text-primary">Manual align</h3>
-                <IconButton size="sm" onClick={resetAlignmentDraft} className={getSectionResetButtonClass(isManualAlignDirty)} title="Restore manual alignment defaults">
-                  <MdRestartAlt className="text-lg" />
-                </IconButton>
+                <ResetButton onClick={resetAlignmentDraft} isDirty={isManualAlignDirty} title="Restore manual alignment defaults" />
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -692,7 +684,7 @@ export function ImageAlignmentPanel() {
           </div>
         </aside>
       </div>
-    </div>
+    </Dialog>
   );
 }
 
@@ -711,9 +703,15 @@ function formatNumberFieldValue(value: number): string {
 
 function NumberField({ label, value, step, suffix, onChange }: NumberFieldProps) {
   const [draftValue, setDraftValue] = useState<string | null>(null);
+  const cancelCommit = useRef(false);
   const inputValue = draftValue ?? formatNumberFieldValue(value);
 
   const commitValue = () => {
+    if (cancelCommit.current) {
+      cancelCommit.current = false;
+      setDraftValue(null);
+      return;
+    }
     const normalizedValue = Number(inputValue.replace(",", "."));
     if (!Number.isFinite(normalizedValue)) {
       setDraftValue(null);
@@ -725,10 +723,11 @@ function NumberField({ label, value, step, suffix, onChange }: NumberFieldProps)
   };
 
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs font-semibold text-text-secondary">{label}</span>
+    <FormField label={label}>{field => (
       <span className="flex items-center overflow-hidden rounded-md border border-border-default bg-bg-secondary">
-        <input
+        <Input
+          {...field}
+          size="sm"
           type="text"
           inputMode="decimal"
           value={inputValue}
@@ -741,14 +740,17 @@ function NumberField({ label, value, step, suffix, onChange }: NumberFieldProps)
               event.currentTarget.blur();
             }
             if (event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
+              cancelCommit.current = true;
               setDraftValue(null);
               event.currentTarget.blur();
             }
           }}
-          className="min-w-0 flex-1 bg-transparent px-2 py-1.5 text-sm text-text-primary outline-none"
+          className="flex-1 rounded-none border-0 bg-transparent px-2 focus-visible:ring-inset"
         />
         <span className="border-l border-border-default px-2 text-xs font-semibold text-text-secondary">{suffix}</span>
       </span>
-    </label>
+    )}</FormField>
   );
 }

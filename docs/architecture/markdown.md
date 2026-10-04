@@ -48,13 +48,15 @@ Treat file content, clipboard HTML, raw Markdown HTML, Mermaid source, links, an
 
 ## UI Boundaries
 
+Formatting actions use shared buttons. Table insertion uses `Popover` with `FormField`/`Input`; alert actions use `PopoverMenu`/`MenuItem`. Both retain feature-owned formatting and editor focus restoration. The document editor and split resize handle remain specialized. See [Shared UI components](ui-components.md).
+
 After both content and UI hydration complete, the Markdown Options tab, compact Layout control, and `O` shortcut require non-whitespace content. Empty content closes an open Options panel, while Markdown History remains available. The first compact-toolbar action is always `Test text`, using the canonical `resetMarkdownText` store action; the former reset action inside Options is removed.
 
 Use `ToolWorkspaceShell` and shared primitives from `components/ui`. Keep Markdown-only components and product rules in the feature. Changes to shared controls, responsive shell behavior, or theme tokens must also use `$comparecode-ui-components`.
 
 Preserve selection and focus after formatting, undo/redo checkpoints, split resizing, scroll synchronization, and editor/preview/split parity.
 
-Options opens above the editor in the shell's scrollable details area. The icon-labelled Editor/Split/Preview selection bar appears in the compact toolbar with details closed and moves into Layout when open. Session history opens from the icon beside Options in an animated, non-modal right sidebar. The toolbar and editor/preview subtree stay mounted when shell controls change. The mobile view uses its available container width rather than the viewport width, preventing overflow beside application navigation. Formatting popups use the shared portal-based `PopoverMenu` so toolbars cannot clip them. The `O` shortcut opens Options and respects tool controls and modal navigation. See [Workspace UI](workspace-ui.md).
+Options opens above the editor in the shell's scrollable details area. The icon-labelled Editor/Split/Preview selection bar appears in the compact toolbar with details closed and moves into Layout when open. Session history opens from the icon beside Options in an animated, non-modal right sidebar. The toolbar and editor/preview subtree stay mounted when shell controls change. The mobile view uses its available container width rather than the viewport width, preventing overflow beside application navigation. Formatting popups use the shared portal-based `Popover` foundation so toolbars cannot clip them. The `O` shortcut opens Options and respects tool controls and modal navigation. See [Workspace UI](workspace-ui.md).
 
 ## Validation Map
 

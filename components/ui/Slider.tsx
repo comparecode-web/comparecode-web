@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/utils/uiHelpers";
+import { controlFocus, controlDisabled } from "./controlStyles";
 
 export interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -20,7 +21,7 @@ export const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         <input
           type="range"
           ref={ref}
-          className={cn("w-full custom-slider", className)}
+          className={cn("w-full custom-slider rounded", controlFocus, controlDisabled, className)}
           {...props}
         />
       </div>

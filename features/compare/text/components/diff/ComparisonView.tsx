@@ -16,6 +16,7 @@ import { SplitView } from "./SplitView";
 import { UnifiedView } from "./UnifiedView";
 import { DiffMinimap } from "./DiffMinimap";
 import { cn } from "@/utils/uiHelpers";
+import { IconButton } from "@/components/ui/IconButton";
 import { useToastStore } from "@/store/useToastStore";
 import type { PushToastParams } from "@/store/useToastStore";
 import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
@@ -257,39 +258,39 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
           {hasResult && (settings.isJumpButtonsVisible || settings.isMergeJumpButtonsVisible) && <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-default bg-bg-primary p-2 [@media(min-width:40rem)_and_(min-height:32rem)]:contents">
           {settings.isJumpButtonsVisible && (
             <div className="z-30 flex items-center gap-2 [@media(min-width:40rem)_and_(min-height:32rem)]:absolute [@media(min-width:40rem)_and_(min-height:32rem)]:bottom-4 [@media(min-width:40rem)_and_(min-height:32rem)]:right-16 [@media(min-width:40rem)_and_(min-height:32rem)]:flex-col">
-              <button
+              <IconButton size="lg" variant="primary" shape="circle"
                 onClick={scrollToTop}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                className="shadow-md"
                 title="Jump to top"
               >
                 <MdKeyboardDoubleArrowUp className="text-2xl" />
-              </button>
-              <button
+              </IconButton>
+              <IconButton size="lg" variant="primary" shape="circle"
                 onClick={scrollToBottom}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                className="shadow-md"
                 title="Jump to bottom"
               >
                 <MdKeyboardDoubleArrowDown className="text-2xl" />
-              </button>
+              </IconButton>
             </div>
           )}
 
           {settings.isMergeJumpButtonsVisible && (
             <div className="z-30 flex items-center gap-2 [@media(min-width:40rem)_and_(min-height:32rem)]:absolute [@media(min-width:40rem)_and_(min-height:32rem)]:top-4 [@media(min-width:40rem)_and_(min-height:32rem)]:right-16 [@media(min-width:40rem)_and_(min-height:32rem)]:flex-col">
-              <button
+              <IconButton size="lg" variant="primary" shape="circle"
                 onClick={jumpToPreviousBlock}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                className="shadow-md"
                 title="Jump to previous difference"
               >
                 <MdKeyboardArrowUp className="text-2xl" />
-              </button>
-              <button
+              </IconButton>
+              <IconButton size="lg" variant="primary" shape="circle"
                 onClick={jumpToNextBlock}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-primary text-white shadow-md hover:bg-accent-hover transition-colors duration-(--duration-short)"
+                className="shadow-md"
                 title="Jump to next difference"
               >
                 <MdKeyboardArrowDown className="text-2xl" />
-              </button>
+              </IconButton>
             </div>
           )}
           </div>}

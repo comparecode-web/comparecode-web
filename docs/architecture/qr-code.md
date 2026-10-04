@@ -6,6 +6,8 @@
 
 The route renders a server page with the interactive `QrGeneratorView` client component. `NavigationSidebar` and the home page link to the route; `config/seo.ts` and `app/sitemap.ts` describe it to search engines.
 
+Content fields compose shared `Input`, `Textarea` and `FormField`; choice and color controls reuse the same primitives as other tools. Page sections explicitly choose comfortable `OptionsSection` density. QR encoding and validation remain feature-owned. See [Shared UI components](ui-components.md).
+
 ## Data flow
 
 1. `QrGeneratorView` holds the active content form and appearance options in page-local React state. The Website form starts with `https://www.comparecodeweb.com/` so a QR preview is ready immediately. Nothing is written to IndexedDB, local storage, session storage, a URL, or an API. Navigating away or reloading restores defaults.

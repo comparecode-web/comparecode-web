@@ -5,6 +5,8 @@ import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
 import { EditorTextArea } from "./EditorTextArea";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface InputViewProps {
   onImportFiles: (side: "left" | "right", files: FileList) => void;
@@ -33,11 +35,11 @@ export function InputView({ onImportFiles, onOpenFile }: InputViewProps) {
             <span className="font-bold text-text-primary text-sm hidden sm:inline">Original text</span>
             <span className="font-bold text-text-primary text-sm sm:hidden">Input editor</span>
           </div>
-          <button type="button" aria-label="Import original text file" title="Import" onClick={() => onOpenFile("left")} className="hidden size-8 items-center justify-center rounded-md text-lg text-text-primary hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary sm:inline-flex"><MdFileOpen /></button>
+          <IconButton size="sm" aria-label="Import original text file" title="Import" onClick={() => onOpenFile("left")} className="hidden sm:inline-flex"><MdFileOpen /></IconButton>
         </div>
         <div className="hidden flex-1 items-center justify-between gap-2 sm:flex">
           <div className="flex items-center gap-2"><MdDescription className="text-text-secondary text-lg" /><span className="font-bold text-text-primary text-sm">Modified text</span></div>
-          <button type="button" aria-label="Import modified text file" title="Import" onClick={() => onOpenFile("right")} className="inline-flex size-8 items-center justify-center rounded-md text-lg text-text-primary hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary"><MdFileOpen /></button>
+          <IconButton size="sm" aria-label="Import modified text file" title="Import" onClick={() => onOpenFile("right")}><MdFileOpen /></IconButton>
         </div>
       </div>
 
@@ -67,15 +69,14 @@ export function InputView({ onImportFiles, onOpenFile }: InputViewProps) {
       </div>
 
       <div className="flex justify-center mt-2 sm:mt-4 shrink-0">
-        <button
+        <Button size="lg"
           onClick={handleCompare}
           disabled={isCompareDisabled}
-          className="flex items-center gap-2 bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-md font-semibold transition-colors shadow-sm text-sm sm:text-base"
+          leftIcon={<MdSearch />}
         >
-          <MdSearch className="text-xl" />
           <span className="hidden sm:inline">Check it!</span>
           <span className="sm:hidden">Compare</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -8,6 +8,9 @@ import { WorkspaceToolbar } from "@/components/ui/WorkspaceToolbar";
 import { downloadBlob } from "@/utils/downloadBlob";
 import { useMarkdownStore } from "../store/useMarkdownStore";
 import { MenuItem, PopoverMenu } from "@/components/ui/PopoverMenu";
+import { Popover } from "@/components/ui/Popover";
+import { FormField } from "@/components/ui/FormField";
+import { Input } from "@/components/ui/Input";
 import type { MarkdownFormatAction } from "@/features/markdown/types/markdown";
 import { type MarkdownFormatOptions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
 import { markdownTableLimits } from "@/features/markdown/services/markdownEditorCommands";
@@ -125,7 +128,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
           <IconButton variant="primary" size="sm" title="Download Markdown" disabled={isDisabled} onClick={() => downloadBlob(new Blob([useMarkdownStore.getState().markdownText], { type: "text/markdown;charset=utf-8" }), "comparecode-document.md")}><MdDownload className="text-lg" /></IconButton>
           <div className="flex shrink-0 items-center gap-1 border-r border-border-default pr-1">
             <IconButton
-              variant="toolbar"
+              variant="ghost"
               size="sm"
               onClick={onUndo}
               disabled={isDisabled || !canUndo}
@@ -134,7 +137,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
               <span className="text-lg"><MdUndo /></span>
             </IconButton>
             <IconButton
-              variant="toolbar"
+              variant="ghost"
               size="sm"
               onClick={onRedo}
               disabled={isDisabled || !canRedo}
@@ -148,7 +151,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
               {group.map((item) => (
                 <IconButton
                   key={item.action}
-                  variant="toolbar"
+                  variant="ghost"
                   size="sm"
                   onClick={() => onFormat(item.action)}
                   disabled={isDisabled}
@@ -163,7 +166,7 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
           <div className="relative flex shrink-0 items-center border-r border-border-default pr-1">
             <IconButton
               ref={tableTriggerRef}
-              variant="toolbar"
+              variant="ghost"
               size="sm"
               onClick={() => setIsTableMenuOpen((current) => !current)}
               disabled={isDisabled}
@@ -171,33 +174,29 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
             >
               <span className="text-lg"><MdTableChart /></span>
             </IconButton>
-            <PopoverMenu isOpen={isTableMenuOpen} onOpenChange={setIsTableMenuOpen} triggerRef={tableTriggerRef} className="w-52 p-3">
+            <Popover isOpen={isTableMenuOpen} onOpenChange={setIsTableMenuOpen} triggerRef={tableTriggerRef} className="w-52 p-3">
               <div className="mb-2 text-xs font-bold text-text-secondary">
                 Insert table
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
-                  Columns
-                  <input
+                <FormField label="Columns">{field => <Input
+                    {...field}
+                    size="sm"
                     type="number"
                     min={markdownTableLimits.minColumns}
                     max={markdownTableLimits.maxColumns}
                     value={tableColumns}
                     onChange={(event) => handleTableNumberChange(event.target.value, markdownTableLimits.minColumns, markdownTableLimits.maxColumns, setTableColumns)}
-                    className="h-8 rounded border border-border-default bg-bg-secondary px-2 text-sm text-text-primary outline-none focus:border-accent-primary"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
-                  Rows
-                  <input
+                  />}</FormField>
+                <FormField label="Rows">{field => <Input
+                    {...field}
+                    size="sm"
                     type="number"
                     min={markdownTableLimits.minRows}
                     max={markdownTableLimits.maxRows}
                     value={tableRows}
                     onChange={(event) => handleTableNumberChange(event.target.value, markdownTableLimits.minRows, markdownTableLimits.maxRows, setTableRows)}
-                    className="h-8 rounded border border-border-default bg-bg-secondary px-2 text-sm text-text-primary outline-none focus:border-accent-primary"
-                  />
-                </label>
+                  />}</FormField>
               </div>
               <div className="mt-2 text-xs text-text-secondary">
                 Max {markdownTableLimits.maxColumns} columns, {markdownTableLimits.maxRows} rows.
@@ -205,19 +204,19 @@ export function MarkdownToolbar({ onFormat, onUndo, onRedo, canUndo, canRedo, is
               <Button
                 size="sm"
                 onClick={() => {
-                  onFormat("table", { tableRows, tableColumns });
-                  setIsTableMenuOpen(false);
+                    onFormat("table", { tableRows, tableColumns });
+                    setIsTableMenuOpen(false);
                 }}
                 className="mt-3 w-full"
               >
                 Insert
               </Button>
-            </PopoverMenu>
+            </Popover>
           </div>
           <div className="relative flex shrink-0 items-center">
             <IconButton
               ref={alertTriggerRef}
-              variant="toolbar"
+              variant="ghost"
               size="sm"
               onClick={() => setIsAlertMenuOpen((current) => !current)}
               disabled={isDisabled}
