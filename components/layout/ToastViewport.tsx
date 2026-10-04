@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { MdCheckCircleOutline, MdClose, MdErrorOutline, MdInfoOutline, MdRedo, MdUndo, MdWarningAmber } from "react-icons/md";
 import { ToastItem, useToastStore } from "@/store/useToastStore";
 import { cn } from "@/utils/uiHelpers";
+import { IconButton } from "@/components/ui/IconButton";
 
 function getToneClasses(tone: ToastItem["tone"]): string {
   if (tone === "success") {
@@ -125,15 +126,14 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       <ToastIcon toast={toast} />
       <span className="min-w-0 flex-1 leading-5">{toast.message}</span>
       {toast.isDismissible && (
-        <button
-          type="button"
+        <IconButton
           onClick={() => dismissToast(toast.id)}
-          className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+          className="ml-1 size-5 rounded-sm"
           aria-label="Dismiss notification"
           title="Dismiss notification"
         >
           <MdClose className="h-4 w-4" aria-hidden="true" />
-        </button>
+        </IconButton>
       )}
     </div>
   );

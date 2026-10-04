@@ -1,4 +1,8 @@
 import { useMemo } from "react";
+import { FormField } from "./FormField";
+import { Input } from "./Input";
+import { Button } from "./Button";
+import { cn } from "@/utils/uiHelpers";
 
 interface ColorInputProps {
   label: string;
@@ -43,14 +47,14 @@ export function ColorInput({
   }, [pickerFallback, value]);
 
   return (
-    <label className="flex min-w-0 flex-col gap-1">
-      <span className="text-xs font-semibold text-text-secondary">{label}</span>
+    <FormField label={label}>{field => (
       <div className="flex min-w-0 items-center gap-2">
-        <input
+        <Input
+          {...field}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-w-0 w-full flex-1 bg-bg-secondary text-text-primary border border-border-default rounded-md px-3 py-2 text-sm outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
+          className="flex-1"
           placeholder={placeholder}
         />
 
@@ -58,28 +62,23 @@ export function ColorInput({
           type="color"
           value={pickerValue}
           onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-10 shrink-0 cursor-pointer rounded-md border border-border-default bg-bg-secondary p-1 hover:border-accent-primary focus-visible:outline-2 focus-visible:outline-accent-primary [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-0 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-0"
+          className="size-9 shrink-0 cursor-pointer rounded-md border border-border-default bg-bg-secondary p-1 hover:border-accent-primary focus-visible:outline-2 focus-visible:outline-accent-primary [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-0 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-0"
           title={`Pick ${label.toLowerCase()} color`}
           aria-label={`${label} color picker`}
         />
 
         {onRestoreDefault && (
-          <button
-            type="button"
+          <Button
+            variant="outline"
             onClick={onRestoreDefault}
-            className={[
-              "h-10 shrink-0 rounded-md border px-2 text-xs font-semibold transition-colors",
-              isDifferentFromDefault
-                ? "border-accent-primary/60 bg-accent-primary/10 text-accent-primary hover:border-accent-primary"
-                : "border-border-default bg-bg-secondary text-text-secondary hover:border-accent-primary hover:text-accent-primary"
-            ].join(" ")}
+            className={cn("px-2 text-xs", isDifferentFromDefault && "border-accent-primary/60 bg-accent-primary/10 text-accent-primary hover:border-accent-primary")}
             title={`Restore ${label.toLowerCase()} to theme default`}
             aria-label={`Restore ${label.toLowerCase()} to theme default`}
           >
             Restore
-          </button>
+          </Button>
         )}
       </div>
-    </label>
+    )}</FormField>
   );
 }

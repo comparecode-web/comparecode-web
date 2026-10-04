@@ -123,13 +123,13 @@ export function HistoryView() {
                 onChange={handleHistoryFilterChange}
                 options={HISTORY_FILTER_OPTIONS}
                 className="w-32 sm:w-40"
-                triggerClassName="h-8 py-1 pl-2 pr-7 text-xs sm:h-9 sm:text-sm"
+                size="sm"
                 menuClassName="min-w-40"
               />
               </div>
               <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-text-secondary">Sort:</span>
-              <SelectDropdown value={historySort} options={HISTORY_SORT_OPTIONS} onChange={(value) => setHistorySort(value as HistorySort)} className="w-36 sm:w-40" />
+              <SelectDropdown size="sm" value={historySort} options={HISTORY_SORT_OPTIONS} onChange={setHistorySort} className="w-36 sm:w-40" />
               </div>
               {historySort !== "default" && <Button variant="outline" size="sm" onClick={() => setSortDirection((value) => value === "desc" ? "asc" : "desc")}>{sortDirection === "desc" ? "Newest first" : "Oldest first"}</Button>}
               <span className="mr-auto text-xs text-text-secondary">Bookmarks first · Bookmarked count follows filter</span>

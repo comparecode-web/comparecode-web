@@ -7,14 +7,18 @@ description: Implement or review CompareCode shared React UI components, theme-a
 
 Keep shared UI behavior reusable, semantic, responsive, and aligned with the existing component and theme system.
 
+Read `docs/architecture/ui-components.md` for ownership, defaults, supported variants, exceptions and the development preview before changing shared control contracts. Read `docs/architecture/ui-sizing.md` when dimensions or geometry change.
+
 ## Component Routing
 
 Use this map as a starting point, then inspect current source and production usage before choosing or changing a component:
 
-- Actions: start with `Button` for labelled actions and `IconButton` for icon-only or compact toolbar actions.
+- Actions: use `Button` for labelled actions, `IconButton` for icon-only actions, and `ResetButton` for icon-only resets. Extend `components/ui/controlStyles.ts` for recurring geometry or button styles instead of duplicating them in callers.
+- Form controls: compose `Input` or `Textarea` with `FormField`; keep parsing, validation and persistence with the feature. Specialized document editors retain their own owner.
 - Boolean and ranged input: start with `Checkbox`, `Switch`, `Slider`, and `ColorInput` according to the interaction contract.
 - Choice controls: start with `SelectionBar` for visible compact alternatives and `SelectDropdown` for a collapsed list of options.
-- Popup content: use `PopoverMenu` as the established shared overlay foundation before creating feature-local popup behavior.
+- Popup content: use `Popover` for arbitrary anchored content, `PopoverMenu` and `MenuItem` for action menus, and `Dialog` with `DialogHeader` for modal content. Preserve feature-specific focus restoration after actions.
+- Layout: reuse `PageHeader`, `PageContent`, `WorkspaceToolbar` and `OptionsSection` according to their roles. Choose section density explicitly rather than deriving it from the presence of a description.
 - Feature-specific compositions stay with their owning feature unless multiple independent features genuinely share the same semantic and interaction contract.
 
 The implementation under `components/ui` and its current consumers are authoritative. This routing is not a substitute for searching them.
@@ -35,5 +39,6 @@ The implementation under `components/ui` and its current consumers are authorita
 
 - Add or update focused component tests for meaningful state, keyboard, popup, or interaction behavior.
 - Check representative existing consumers after changing a shared primitive or variant.
+- Exercise `/dev/ui` alongside production consumers when adding or changing reusable states. Keep the preview composed from real components and unavailable in production.
 - Use `$comparecode-browser-testing` for visual, responsive, focus, or interaction validation when static tests are insufficient.
 - Complete the code validation required by the root `AGENTS.md` and report any untested responsive or browser-specific behavior.

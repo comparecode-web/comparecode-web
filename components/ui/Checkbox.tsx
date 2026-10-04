@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/utils/uiHelpers";
+import { controlFocus, controlDisabled } from "./controlStyles";
 
 export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -13,7 +14,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         <input
           type="checkbox"
           ref={ref}
-          className={cn("w-4 h-4 custom-checkbox rounded cursor-pointer", className)}
+          className={cn("w-4 h-4 custom-checkbox rounded cursor-pointer", controlFocus, controlDisabled, className)}
           {...props}
         />
         {label && <span className="text-sm font-medium text-text-primary">{label}</span>}

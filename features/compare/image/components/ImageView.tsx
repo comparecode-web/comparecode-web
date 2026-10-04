@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { MdInfo, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { HistoryService } from "@/services/historyService";
 import { cn } from "@/utils/uiHelpers";
+import { Button } from "@/components/ui/Button";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import { ImageUploadPanel } from "./ImageUploadPanel";
 import { ImageCompareToolbar } from "./ImageCompareToolbar";
@@ -134,15 +135,14 @@ export function ImageView() {
 
           <div className="shrink-0 rounded-xl border border-border-default bg-bg-primary px-2 py-1.5 sm:px-3 sm:py-2">
             <div className="flex items-center justify-center">
-              <button
+              <Button size="sm"
                 onClick={toggleMetadataPanel}
-                className="inline-flex items-center gap-2 rounded-md bg-accent-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors duration-(--duration-short) hover:bg-accent-hover"
                 title={isMetadataPanelOpen ? "Hide metadata" : "Show metadata"}
               >
                 <MdInfo className="text-base shrink-0" />
                 <span>Metadata</span>
                 {isMetadataPanelOpen ? <MdKeyboardArrowDown className="text-xl shrink-0" /> : <MdKeyboardArrowUp className="text-xl shrink-0" />}
-              </button>
+              </Button>
             </div>
           </div>
 

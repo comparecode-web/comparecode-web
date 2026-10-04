@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import { MdFileOpen } from "react-icons/md";
 import { FileDropZone } from "@/components/ui/FileDropZone";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface EditorTextAreaProps {
   label: string;
@@ -39,7 +40,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
     >
       <div className="mb-1 flex items-center justify-between gap-2 sm:hidden">
         <span className="font-bold text-text-primary text-xs">{label}</span>
-        <button type="button" aria-label={`Import ${label.toLowerCase()} text file`} title="Import" onClick={onOpenFile} className="inline-flex size-8 items-center justify-center rounded-md text-lg text-text-primary hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary"><MdFileOpen /></button>
+        <IconButton size="sm" aria-label={`Import ${label.toLowerCase()} text file`} title="Import" onClick={onOpenFile}><MdFileOpen /></IconButton>
       </div>
       <textarea
         ref={textareaRef}

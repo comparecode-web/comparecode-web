@@ -63,6 +63,8 @@ Changes to saved image snapshots, metadata compatibility, IndexedDB records, or 
 
 ## UI Boundaries
 
+The comparison toolbar composes the shared `WorkspaceToolbar` card variant, choices and button family. Zoom/fade controls reuse `Slider` and `ResetButton`. Alignment prompt/panel modals use the shared native `Dialog`; number fields compose `Input` and `FormField` while preserving feature-owned parsing and draft values. Escape cancels a number draft before modal cancellation, and arrow keys in editable fields do not move the image. Canvas manipulation handles remain Image-owned. See [Shared UI components](ui-components.md).
+
 Reuse primitives from `components/ui` and keep Image-only controls inside the feature. Changes to shared controls, responsive behavior, or theme tokens must also use `$comparecode-ui-components`.
 
 Image comparison is canvas- and browser-dependent. Treat pointer gestures, zoom, pan, slider boundaries, image load failures, clipboard input, object URLs, and differing dimensions as material behavior.

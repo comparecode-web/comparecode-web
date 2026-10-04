@@ -1,8 +1,9 @@
 import React from "react";
 import { cn } from "@/utils/uiHelpers";
+import { buttonBase, buttonVariants, controlSizes, type ButtonVariant, type ControlSize } from "./controlStyles";
 
-export type ButtonVariant = "primary" | "danger" | "success" | "ghost" | "outline";
-export type ButtonSize = "sm" | "md" | "lg" | "icon";
+export type { ButtonVariant } from "./controlStyles";
+export type ButtonSize = ControlSize;
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -12,34 +13,18 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", leftIcon, rightIcon, children, disabled, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center gap-1.5 font-semibold rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-
-    const variants: Record<ButtonVariant, string> = {
-      primary: "bg-accent-primary text-white hover:bg-accent-hover shadow-sm",
-      danger: "bg-danger text-white border border-danger/20 hover:bg-danger-hover shadow-sm",
-      success: "bg-success text-white hover:bg-success-hover shadow-sm",
-      ghost: "bg-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary",
-      outline: "bg-transparent border border-border-default text-text-primary hover:bg-hover-overlay",
-    };
-
-    const sizes: Record<ButtonSize, string> = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-4 py-2 text-sm",
-      lg: "px-8 py-2.5 text-base",
-      icon: "p-1.5 text-xl",
-    };
-
+  ({ className, variant = "primary", size = "md", leftIcon, rightIcon, children, disabled, type = "button", ...props }, ref) => {
     return (
       <button
         ref={ref}
+        type={type}
         disabled={disabled}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn(buttonBase, buttonVariants[variant], controlSizes[size].field, className)}
         {...props}
       >
-        {leftIcon && <span className="flex shrink-0">{leftIcon}</span>}
+        {leftIcon && <span className={cn("flex shrink-0", controlSizes[size].iconContent)}>{leftIcon}</span>}
         {children}
-        {rightIcon && <span className="flex shrink-0">{rightIcon}</span>}
+        {rightIcon && <span className={cn("flex shrink-0", controlSizes[size].iconContent)}>{rightIcon}</span>}
       </button>
     );
   }

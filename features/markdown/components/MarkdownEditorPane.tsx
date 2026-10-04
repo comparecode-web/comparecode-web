@@ -181,7 +181,7 @@ export function MarkdownEditorPane({
         style={editorStyle}
       />
       <IconButton
-        variant="toolbar"
+        variant="ghost"
         size="sm"
         onClick={() => fileInputRef.current?.click()}
         title="Import Markdown or text file"

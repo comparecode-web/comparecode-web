@@ -36,20 +36,20 @@ export function ComparisonToolbar({ onImport }: { onImport: (side: "left" | "rig
       <span className="shrink-0 text-xs font-bold text-danger @lg/workspace:text-sm"><span className="@3xl/workspace:hidden">-{stats.removals}</span><span className="hidden @3xl/workspace:inline">{stats.removals} removals</span></span>
       <div className="flex shrink-0 items-center gap-0.5">
         <CopyButton side="left" disabled={!leftText || copiedSide === "left"} copied={copiedSide === "left"} onClick={() => void copy("left")} />
-        <IconButton size="sm" variant="toolbar" className="px-1.5" aria-label="Import original text file" title="Import" onClick={() => onImport("left")}><MdFileOpen className="text-lg" /></IconButton>
+        <IconButton size="sm" aria-label="Import original text file" title="Import" onClick={() => onImport("left")}><MdFileOpen /></IconButton>
       </div>
     </div>
-    <IconButton size="sm" variant="toolbar" className="px-1.5 text-accent-primary" aria-label="Swap sides" title="Swap sides" disabled={!leftText && !rightText} onClick={() => executeSwap(settings)}><MdSwapHoriz className="text-lg" /></IconButton>
+    <IconButton size="sm" className="text-accent-primary" aria-label="Swap sides" title="Swap sides" disabled={!leftText && !rightText} onClick={() => executeSwap(settings)}><MdSwapHoriz /></IconButton>
     <div className="flex min-w-0 flex-1 items-center justify-between gap-0.5">
       <span className="shrink-0 text-xs font-bold text-success @lg/workspace:text-sm"><span className="@3xl/workspace:hidden">+{stats.additions}</span><span className="hidden @3xl/workspace:inline">{stats.additions} additions</span></span>
       <div className="flex shrink-0 items-center gap-0.5">
         <CopyButton side="right" disabled={!rightText || copiedSide === "right"} copied={copiedSide === "right"} onClick={() => void copy("right")} />
-        <IconButton size="sm" variant="toolbar" className="px-1.5" aria-label="Import modified text file" title="Import" onClick={() => onImport("right")}><MdFileOpen className="text-lg" /></IconButton>
+        <IconButton size="sm" aria-label="Import modified text file" title="Import" onClick={() => onImport("right")}><MdFileOpen /></IconButton>
       </div>
     </div>
     <div className="flex w-full shrink-0 items-center justify-end gap-1 border-t border-border-default pt-0.5 @xl/workspace:w-auto @xl/workspace:border-t-0 @xl/workspace:pt-0">
       <ExportDialog result={comparisonResult} original={leftText} modified={rightText} />
-      <Button size="sm" variant="danger" className="px-2" aria-label="Clear comparison" disabled={!leftText && !rightText} onClick={executeClear} leftIcon={<MdDelete className="text-lg" />}>Clear</Button>
+      <Button size="sm" variant="danger" aria-label="Clear comparison" disabled={!leftText && !rightText} onClick={executeClear} leftIcon={<MdDelete />}>Clear</Button>
     </div>
   </WorkspaceToolbar>;
 }

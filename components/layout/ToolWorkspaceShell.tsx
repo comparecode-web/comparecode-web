@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, type ComponentType, type ReactNode } from "react";
 import { MdClose, MdExpandLess, MdExpandMore } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/utils/uiHelpers";
 import { WORKSPACE_MEDIA } from "@/config/responsive";
 
@@ -198,7 +199,7 @@ export function ToolWorkspaceShell<T extends string>({
         <div className="flex h-full min-h-0 w-[min(90vw,20rem)] flex-col border-l border-border-default">
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border-default p-3">
             <h2 className="font-semibold">{historyTab.title}</h2>
-            <Button size="icon" variant="outline" aria-label="Close history" onClick={() => { onPanelOpenChange(false); historyTriggerRef.current?.focus(); }}><MdClose className="text-lg" /></Button>
+            <IconButton size="sm" variant="outline" aria-label="Close history" onClick={() => { onPanelOpenChange(false); historyTriggerRef.current?.focus(); }}><MdClose /></IconButton>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">{historyTab.content}</div>
         </div>

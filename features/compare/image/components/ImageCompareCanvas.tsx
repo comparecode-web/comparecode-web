@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MdRestartAlt } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
-import { getSectionResetButtonClass } from "@/utils/settingsReset";
+import { ResetButton } from "@/components/ui/ResetButton";
+import { Slider } from "@/components/ui/Slider";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import { renderDiff, renderFade, DiffStats } from "../services/ImageDiffService";
 import { buildAffineMatrix, getTransformedBounds } from "../services/alignment/transformUtils";
@@ -254,22 +254,19 @@ function SideBySideView() {
       >
         <span className="text-xs font-semibold text-text-secondary">Zoom</span>
         <span className="w-12 text-right text-xs font-bold text-text-primary">{zoomPercent}%</span>
-        <input
-          type="range"
+        <Slider
           min={MIN_ZOOM * 100}
           max={MAX_ZOOM * 100}
           step={1}
           value={zoomPercent}
           onChange={(e) => setZoom(Number(e.target.value) / 100, false)}
-          className="custom-slider min-w-0 flex-1"
+          containerClassName="min-w-0 flex-1"
         />
-        <button
+        <ResetButton
           onClick={handleResetZoom}
-          className={getSectionResetButtonClass(isZoomDirty)}
+          isDirty={isZoomDirty}
           title="Restore default zoom"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
+        />
       </div>
 
       <div className="flex min-h-0 flex-1 gap-3 w-full">
@@ -334,21 +331,18 @@ function FadeView() {
       >
         <span className="text-xs font-semibold text-text-secondary">Fade</span>
         <span className="w-12 text-right text-xs font-bold text-text-primary">{fadePercent}%</span>
-        <input
-          type="range"
+        <Slider
           min={0}
           max={1000}
           value={fadeValue}
           onChange={(e) => setFadeValue(Number(e.target.value))}
-          className="custom-slider min-w-0 flex-1"
+          containerClassName="min-w-0 flex-1"
         />
-        <button
+        <ResetButton
           onClick={() => setFadeValue(DEFAULT_FADE_VALUE)}
-          className={getSectionResetButtonClass(isFadeDirty)}
+          isDirty={isFadeDirty}
           title="Restore default fade"
-        >
-          <MdRestartAlt className="text-lg" />
-        </button>
+        />
       </div>
 
       <div className="flex-1 min-h-0 rounded-lg border border-border-default bg-bg-secondary flex items-center justify-center overflow-hidden">

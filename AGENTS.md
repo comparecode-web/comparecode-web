@@ -45,6 +45,7 @@
 - Do not make Text depend on Image internals, Image depend on Text internals, or unrelated features depend on Markdown internals.
 - Extend the existing canonical owner instead of duplicating business rules, defaults, persistence keys, mappings, UI policy, or state across components, stores, and services.
 - Reuse existing UI primitives and semantic components before introducing a new component or one-off variant. A new parallel implementation requires a concrete unmet requirement.
+- Follow `docs/architecture/ui-components.md` for shared control ownership, defaults, variants, and composition. Use semantic size/variant props before styling overrides; keep recurring control geometry in the shared owner. Use `/dev/ui` to compare existing states before adding another implementation.
 - Use TypeScript consistently, prefer functional React components and hooks, use Tailwind utilities and existing theme tokens for styling, and use the established Zustand stores for global state.
 - Avoid ad-hoc inline styling and feature-local variants when an existing token, primitive, or composition supports the requirement.
 - Keep browser persistence compatible. Do not silently discard, reinterpret, or reset released IndexedDB or local-storage data without an explicit migration decision.
