@@ -30,6 +30,7 @@
 ## Architecture and Implementation
 
 - Use sentence case for user-facing labels, headings, buttons, and tooltips (for example, "Word wrap" and "Input editor"). Preserve proper names and standard acronyms. Do not force UI text to uppercase through CSS. Keep keyboard shortcuts out of visible control labels; show them in tooltips when useful.
+- Buttons with visible text must not have tooltips, except to show only their keyboard shortcut. Icon-only buttons may have explanatory tooltips, including responsive variants whose text label is hidden; preserve their accessible names. The navigation sidebar's no-tooltip rule still applies.
 - Section reset controls are always icon-only, including Settings. Preserve their reset scope, accessible name, and explanatory tooltip; do not add a visible "Reset section" label. The shared owner is `components/settings/OptionsSection.tsx`.
 - Left navigation sidebar controls must not display tooltips, including in the collapsed state. Preserve their accessible names.
 - Follow `docs/architecture/ui-sizing.md` for unit choices: prefer existing rem-based Tailwind tokens for scalable UI sizing, flexible units for available space, and CSS pixels for measured geometry, hairline borders, and explicit pixel-based content settings. Keep CSS and JavaScript breakpoints aligned; do not mechanically convert every pixel value or change persisted units.
