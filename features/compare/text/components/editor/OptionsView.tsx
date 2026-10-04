@@ -109,7 +109,7 @@ export function TextFontFamilyControl() {
   return <SelectDropdown label="Font family" value={settings.fontFamily}
     onChange={(value) => updateSettings({ fontFamily: value })}
     options={AVAILABLE_FONTS.map((font) => ({ value: font.value, label: font.name }))}
-    triggerClassName="py-1.5 whitespace-nowrap" />;
+    size="sm" triggerClassName="whitespace-nowrap" />;
 }
 
 function LayoutSection() {
@@ -156,7 +156,6 @@ function MergeSection() {
         onChange={(e) => updateSettings({ isContinuousMergeEnabled: e.target.checked })}
         label="Continuous merge"
         title="If enabled, merging will automatically jump to the next merge block."
-        containerClassName="mt-1"
       />
     </OptionsSection>
   );
@@ -179,7 +178,6 @@ function ButtonVisibilitySection() {
         onChange={(e) => updateSettings({ isJumpButtonsVisible: e.target.checked })}
         label="Jump to top/bottom"
         title="Shows floating jump buttons in the diff view so you can quickly jump to the top and bottom."
-        containerClassName="mt-1"
       />
       <Switch
         checked={settings.isMergeJumpButtonsVisible}

@@ -14,6 +14,7 @@ import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { formatDateOnlyWithSettings } from "@/utils/formatters";
 import { isSettingsSectionDirty } from "@/utils/settingsReset";
 import { OptionsSection } from "./OptionsSection";
+import { Button } from "@/components/ui/Button";
 import { ThemeSelect } from "./ThemeSelect";
 import { DiffColorPreview } from "./DiffColorPreview";
 
@@ -62,7 +63,7 @@ export function MainSettingsView() {
     <PageContent className="@container/settings">
         <PageHeader title="Settings" description="Make CompareCode your own. Changes are saved automatically." icon={MdSettings} />
         <div className="flex w-full flex-col gap-6">
-          <OptionsSection title="Appearance" description="Theme and text difference highlights." isDirty={isAppearanceSectionDirty} onReset={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}>
+          <OptionsSection density="comfortable" title="Appearance" description="Theme and text difference highlights." isDirty={isAppearanceSectionDirty} onReset={() => resetSectionToDefaults(APPEARANCE_SECTION_KEYS)}>
             <div className="grid items-start gap-6 pt-4 @3xl/settings:grid-cols-2">
             <div className="@container/colors min-w-0 space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
@@ -101,13 +102,14 @@ export function MainSettingsView() {
 
             {settings.useCustomHighlightColors && (
               <div className="mt-2 space-y-3">
-                <button
-                  type="button"
-                  className="w-full sm:w-auto text-text-secondary hover:text-accent-primary transition-colors px-3 py-1.5 rounded border border-border-default hover:bg-hover-overlay text-sm font-medium"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
                   onClick={handleResetCustomColorsToThemeDefaults}
                 >
                   Reset theme defaults
-                </button>
+                </Button>
 
                 <div className="grid grid-cols-1 gap-4 @min-[32rem]/colors:grid-cols-2">
                   <div className="flex flex-col gap-3">
@@ -171,7 +173,7 @@ export function MainSettingsView() {
             </div>
           </OptionsSection>
 
-          <OptionsSection title="Date & time" description="Choose how dates and times appear across the application." isDirty={isDateTimeSectionDirty} onReset={() => resetSectionToDefaults(DATE_TIME_SECTION_KEYS)}>
+          <OptionsSection density="comfortable" title="Date & time" description="Choose how dates and times appear across the application." isDirty={isDateTimeSectionDirty} onReset={() => resetSectionToDefaults(DATE_TIME_SECTION_KEYS)}>
             <div className="grid gap-6 pt-4 @3xl/settings:grid-cols-2">
 
             <div className="flex min-w-0 flex-col gap-2">

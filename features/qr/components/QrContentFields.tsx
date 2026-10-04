@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/Button";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { Switch } from "@/components/ui/Switch";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { FormField } from "@/components/ui/FormField";
 import { DEFAULT_QR_WEBSITE_URL, type QrContent } from "../services/qrPayload";
-
-const inputClassName = "w-full rounded-lg border border-border-default bg-bg-secondary px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-secondary/60 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20";
 
 interface QrContentFieldsProps {
   content: QrContent;
@@ -20,10 +21,7 @@ function TextField({ label, value, onChange, placeholder, type = "text" }: {
   type?: "text" | "password" | "url";
 }) {
   return (
-    <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-text-primary">
-      {label}
-      <input className={inputClassName} type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} autoComplete="off" spellCheck={false} />
-    </label>
+    <FormField label={label}>{field => <Input {...field} type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} autoComplete="off" spellCheck={false} />}</FormField>
   );
 }
 
@@ -33,10 +31,7 @@ export function QrContentFields({ content, onChange, passwordVisible, onPassword
       return <TextField label="Website URL" type="url" value={content.url} onChange={(url) => onChange({ ...content, url })} placeholder={DEFAULT_QR_WEBSITE_URL} />;
     case "text":
       return (
-        <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-text-primary">
-          Text
-          <textarea className={`${inputClassName} min-h-36 resize-y`} value={content.text} onChange={(event) => onChange({ ...content, text: event.target.value })} placeholder="Enter text to share" spellCheck={false} />
-        </label>
+        <FormField label="Text">{field => <Textarea {...field} className="min-h-36" value={content.text} onChange={(event) => onChange({ ...content, text: event.target.value })} placeholder="Enter text to share" spellCheck={false} />}</FormField>
       );
     case "wifi":
       return (

@@ -7,6 +7,8 @@ import {
   MdTune,
 } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { WorkspaceToolbar } from "@/components/ui/WorkspaceToolbar";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { useToastStore } from "@/store/useToastStore";
@@ -86,7 +88,7 @@ export function ImageCompareToolbar() {
   };
 
   return (
-    <div data-tool-controls className="relative z-30 flex min-h-11 max-h-[40%] shrink-0 flex-wrap items-center gap-2 overflow-y-auto rounded-xl border border-border-default bg-bg-primary px-2 py-1 shadow-sm custom-scrollbar">
+    <WorkspaceToolbar variant="card" className="max-h-[40%] overflow-y-auto custom-scrollbar">
       <div className="hidden min-w-0 @2xl/image:block">
         <SelectionBar<ImageCompareMode>
           options={MODES}
@@ -99,9 +101,9 @@ export function ImageCompareToolbar() {
         label="Comparison mode"
         value={compareMode}
         options={MODES}
-        onChange={(value) => setCompareMode(value as ImageCompareMode)}
+        onChange={setCompareMode}
         className="w-36 @2xl/image:hidden"
-        triggerClassName="py-1.5"
+        size="sm"
       />
 
       {compareMode === "diff" && (
@@ -110,9 +112,9 @@ export function ImageCompareToolbar() {
           <SelectDropdown
             value={diffAlgorithm}
             options={DIFF_ALGORITHMS}
-            onChange={(v) => setDiffAlgorithm(v as DiffAlgorithm)}
+            onChange={setDiffAlgorithm}
             className="w-36 sm:w-44"
-            triggerClassName="py-1.5"
+            size="sm"
           />
         </div>
       )}
@@ -137,7 +139,7 @@ export function ImageCompareToolbar() {
       />
 
       <ClearButton onClear={clearAll} disabled={!hasImages} />
-    </div>
+    </WorkspaceToolbar>
   );
 }
 
@@ -162,14 +164,14 @@ function DownloadSnapshotButton({ onDownload, disabled = false, isDownloading = 
         <span className="hidden @2xl/image:inline">Download snapshot</span>
         <span className="@2xl/image:hidden">Snapshot</span>
       </Button>
-      <button
+      <IconButton
         onClick={onDownload}
-        className="md:hidden p-2 text-text-primary hover:bg-hover-overlay rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="md:hidden"
         title="Download snapshot"
         disabled={disabled || isDownloading}
       >
         <MdDownload className="text-xl" />
-      </button>
+      </IconButton>
     </>
   );
 }
@@ -193,14 +195,15 @@ function ClearButton({ onClear, disabled = false }: ClearButtonProps) {
       >
         Clear
       </Button>
-      <button
+      <IconButton
         onClick={onClear}
-        className="md:hidden p-2 text-danger hover:bg-hover-overlay rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        variant="dangerGhost"
+        className="md:hidden"
         title="Clear comparison"
         disabled={disabled}
       >
         <MdDelete className="text-xl" />
-      </button>
+      </IconButton>
     </>
   );
 }

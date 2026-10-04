@@ -38,7 +38,7 @@ describe("QR code generator", () => {
     expect(screen.getByText("Enter a valid http or https URL.")).toBeInTheDocument();
     await user.clear(screen.getByRole("textbox", { name: "Website URL" }));
     await user.type(screen.getByRole("textbox", { name: "Website URL" }), "https://example.com");
-    const codeColorInput = screen.getByText("Code color").closest("label")?.querySelector('input[type="text"]');
+    const codeColorInput = screen.getByRole("textbox", { name: "Code color" });
     expect(codeColorInput).toBeTruthy();
     await user.clear(codeColorInput!);
     await user.type(codeColorInput!, "#ffffff");
@@ -74,7 +74,7 @@ describe("QR code generator", () => {
     await user.click(within(border).getByRole("radio", { name: "Circle" }));
     expect(preview.getAttribute("src")).not.toBe(original);
     await user.click(screen.getByRole("checkbox", { name: "Use code color for corners" }));
-    const borderColor = screen.getByText("Corner border color").closest("label")!.querySelector('input[type="text"]')!;
+    const borderColor = screen.getByRole("textbox", { name: "Corner border color" });
     await user.clear(borderColor);
     await user.type(borderColor, "invalid");
     expect(screen.getByRole("button", { name: "Download PNG" })).toBeDisabled();

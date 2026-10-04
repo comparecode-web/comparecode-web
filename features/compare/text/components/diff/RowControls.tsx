@@ -2,6 +2,8 @@ import { MdEast, MdWest, MdClose } from "react-icons/md";
 import { ChangeBlock } from "@/features/compare/text/types/diff";
 import { MergeDirection } from "@/types/ui";
 import { AppSettings } from "@/types/settings";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface RowControlsProps {
   block: ChangeBlock;
@@ -30,23 +32,23 @@ export function RowControls({ block, settings, selectBlock, mergeBlock }: RowCon
     <div className="flex items-center mx-1 mb-1 bg-bg-primary relative h-12 z-20 select-none border-b border-l border-r border-border-default rounded-b-xl shadow-sm">
       <div className="sticky left-0 flex items-center w-full px-4 h-full">
         <div className="flex-1 flex justify-end pr-8">
-          <button onClick={handleMergeLeftToRight} className="flex items-center justify-center gap-2 rounded bg-danger px-(--btn-px) h-(--btn-height) text-sm font-semibold text-white hover:bg-danger-hover transition-colors shadow-sm outline-none">
+          <Button size="sm" variant="danger" onClick={handleMergeLeftToRight}>
             <span>Merge</span>
             <MdEast />
-          </button>
+          </Button>
         </div>
 
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-30">
-          <button onClick={handleClose} className="flex items-center justify-center rounded h-(--btn-height) w-(--btn-height) text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors outline-none" title="Close block">
+          <IconButton size="sm" onClick={handleClose} title="Close block">
             <MdClose className="text-xl" />
-          </button>
+          </IconButton>
         </div>
 
         <div className="flex-1 flex justify-start pl-8">
-          <button onClick={handleMergeRightToLeft} className="flex items-center justify-center gap-2 rounded bg-success px-(--btn-px) h-(--btn-height) text-sm font-semibold text-white hover:bg-success-hover transition-colors shadow-sm outline-none">
+          <Button size="sm" variant="success" onClick={handleMergeRightToLeft}>
             <MdWest />
             <span>Merge</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

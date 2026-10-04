@@ -1,38 +1,46 @@
 "use client";
 
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent } from "react";
 import { MdExpandMore } from "react-icons/md";
-import { PopoverMenu } from "@/components/ui/PopoverMenu";
+import { Popover } from "@/components/ui/Popover";
 import { cn } from "@/utils/uiHelpers";
+import { controlSizes, fieldBase, type ControlSize } from "./controlStyles";
 
-export interface SelectDropdownOption {
-  value: string;
+export interface SelectDropdownOption<T extends string = string> {
+  value: T;
   label: string;
 }
 
-interface SelectDropdownProps {
+interface SelectDropdownProps<T extends string> extends Pick<ButtonHTMLAttributes<HTMLButtonElement>, "id" | "aria-describedby" | "aria-invalid"> {
   label?: string;
-  value: string;
-  options: Array<SelectDropdownOption>;
-  onChange: (value: string) => void;
+  value: T;
+  options: ReadonlyArray<SelectDropdownOption<T>>;
+  onChange: (value: T) => void;
+  size?: ControlSize;
+  disabled?: boolean;
   className?: string;
   triggerClassName?: string;
   menuClassName?: string;
 }
 
-export function SelectDropdown({
+export function SelectDropdown<T extends string>({
   label,
   value,
   options,
   onChange,
   className,
   triggerClassName,
-  menuClassName
-}: SelectDropdownProps) {
+  menuClassName,
+  size = "md",
+  disabled = false,
+  ...triggerProps
+}: SelectDropdownProps<T>) {
   const listboxId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  if (disabled && isOpen) setIsOpen(false);
 
   const selectedLabel = useMemo(() => {
     const selected = options.find((option) => option.value === value);
@@ -51,7 +59,7 @@ export function SelectDropdown({
     setIsOpen(true);
   };
 
-  const commitSelection = (nextValue: string) => {
+  const commitSelection = (nextValue: T) => {
     onChange(nextValue);
     setIsOpen(false);
     triggerRef.current?.focus();
@@ -131,8 +139,10 @@ export function SelectDropdown({
   return (
     <div className={cn("relative w-full", className)}>
       <button
+        {...triggerProps}
         ref={triggerRef}
         type="button"
+        disabled={disabled}
         onClick={() => {
           if (isOpen) {
             setIsOpen(false);
@@ -144,25 +154,27 @@ export function SelectDropdown({
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-label={label ? `${label}: ${selectedLabel}` : undefined}
-        aria-expanded={isOpen}
-        aria-controls={isOpen ? listboxId : undefined}
+        aria-expanded={isOpen && !disabled}
+        aria-controls={isOpen && !disabled ? listboxId : undefined}
         className={cn(
-          "w-full bg-bg-secondary text-text-primary border border-border-default rounded-md pl-3 pr-8 py-2 text-sm text-left outline-none focus:border-accent-primary focus-visible:ring-1 focus-visible:ring-accent-primary cursor-pointer transition-colors duration-(--duration-short)",
+          fieldBase,
+          controlSizes[size].field,
+          "pl-3 pr-8 text-left",
           triggerClassName
         )}
       >
         {selectedLabel}
       </button>
       <MdExpandMore className="absolute right-2 top-1/2 -translate-y-1/2 text-xl text-text-secondary pointer-events-none" />
-      <PopoverMenu
-        isOpen={isOpen}
+      <Popover
+        id={listboxId}
+        isOpen={isOpen && !disabled}
         onOpenChange={setIsOpen}
         triggerRef={triggerRef}
         role="listbox"
         onKeyDown={handleListboxKeyDown}
         className={cn("w-full overflow-y-auto bg-bg-secondary py-1 custom-scrollbar", menuClassName)}
       >
-        <div id={listboxId}>
           {options.map((option, index) => {
             const isSelected = option.value === value;
             const isActive = index === safeActiveIndex;
@@ -186,8 +198,7 @@ export function SelectDropdown({
               </button>
             );
           })}
-        </div>
-      </PopoverMenu>
+      </Popover>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
+import { Button } from "@/components/ui/Button";
 
 export function BlockHeaderControls() {
   const { currentBlockIndex, totalSelectableBlocks, jumpToNextBlock, jumpToPreviousBlock } = useEditorStore();
@@ -19,10 +20,10 @@ export function BlockHeaderControls() {
   return (
     <div className="flex items-center justify-center gap-2 @lg/workspace:gap-6 mx-1 mt-1 bg-bg-primary relative h-10 z-20 select-none px-2 @lg/workspace:px-4 border-t border-l border-r border-border-default rounded-t-xl shadow-sm">
       <div className="flex items-center gap-2">
-        <button onClick={handlePrev} className="flex items-center justify-center gap-1 rounded px-(--btn-px) h-(--btn-height) text-xs font-semibold text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors outline-none" title="Jump to previous difference">
+        <Button size="sm" variant="ghost" onClick={handlePrev} title="Jump to previous difference">
           <MdKeyboardArrowUp className="text-lg" />
             <span className="hidden @lg/workspace:inline">Jump previous</span>
-        </button>
+        </Button>
       </div>
 
       <div className="flex shrink-0 items-center gap-2 whitespace-nowrap text-xs font-bold text-text-primary bg-bg-secondary px-3 py-1 rounded-full border border-border-default shadow-sm">
@@ -30,10 +31,10 @@ export function BlockHeaderControls() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={handleNext} className="flex items-center justify-center gap-1 rounded px-(--btn-px) h-(--btn-height) text-xs font-semibold text-text-secondary hover:bg-hover-overlay hover:text-text-primary transition-colors outline-none" title="Jump to next difference">
+        <Button size="sm" variant="ghost" onClick={handleNext} title="Jump to next difference">
           <span className="hidden @lg/workspace:inline">Jump next</span>
           <MdKeyboardArrowDown className="text-lg" />
-        </button>
+        </Button>
       </div>
     </div>
   );

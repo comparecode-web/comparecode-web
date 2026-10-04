@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { MdCloudUpload, MdImage, MdClose } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
-import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { ImageFileMeta, useImageCompareStore } from "../store/useImageCompareStore";
 import { readExifData } from "../utils/exifReader";
 
@@ -89,15 +89,15 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-semibold text-text-secondary">{label}</span>
             <span className={cn("text-xs font-bold shrink-0", dimensionsClassName)}>{`${image.width}x${image.height}`}</span>
-            <Button
+            <IconButton
               variant="danger"
-              size="icon"
+              size="sm"
               onClick={onClear}
               title={`Clear ${label.toLowerCase()} image`}
               className="ml-auto"
             >
               <MdClose className="text-lg" />
-            </Button>
+            </IconButton>
           </div>
           <p className="text-xs text-text-secondary truncate" title={image.name}>{image.name}</p>
         </div>

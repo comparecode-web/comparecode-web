@@ -98,7 +98,6 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             <IconButton
               size="lg"
               onClick={(e) => onToggleBookmark(e, item.id, item.isBookmarked)}
-              className="size-11 p-0"
               title="Bookmark this item"
               aria-pressed={item.isBookmarked}
             >
@@ -108,11 +107,10 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
                 <MdBookmarkBorder className="text-xl text-accent-primary sm:text-2xl" />
               )}
             </IconButton>
-            <IconButton size="lg" className="size-11 p-0" title="Export this comparison" disabled={isExporting} onClick={event => { event.stopPropagation(); onExport(item.id); }}><MdDownload className="text-xl sm:text-2xl" /></IconButton>
+            <IconButton size="lg" title="Export this comparison" disabled={isExporting} onClick={event => { event.stopPropagation(); onExport(item.id); }}><MdDownload className="text-xl sm:text-2xl" /></IconButton>
             <IconButton
               size="lg"
               onClick={(e) => onDelete(e, item.id)}
-              className="size-11 p-0"
               title="Delete this item"
             >
               <MdDelete className="text-xl text-danger sm:text-2xl" />

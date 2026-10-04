@@ -3,6 +3,7 @@
 import { MdDeleteSweep, MdHistoryToggleOff } from "react-icons/md";
 import { useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { cn } from "@/utils/uiHelpers";
+import { Button } from "@/components/ui/Button";
 
 interface MarkdownHistoryItem {
   id: string;
@@ -93,14 +94,13 @@ export function MarkdownHistoryView() {
 
   return (
     <div className="flex flex-col gap-2 p-3 sm:p-4">
-      <button
-        type="button"
+      <Button size="sm" variant="outline"
         onClick={clearMarkdownHistory}
-        className="mb-1 flex h-8 items-center justify-center gap-2 rounded border border-border-default bg-bg-primary px-2 text-xs font-semibold text-text-secondary transition-colors hover:bg-hover-overlay hover:text-text-primary"
+        className="mb-1"
       >
         <MdDeleteSweep className="text-base" />
         <span>Clear session history</span>
-      </button>
+      </Button>
       {items.map((item) => {
         const isCurrent = item.kind === "current";
 

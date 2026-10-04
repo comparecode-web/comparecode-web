@@ -17,6 +17,19 @@ function ControlledSelect() {
 }
 
 describe("SelectDropdown", () => {
+  it("closes when disabled and stays closed when enabled again", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(<SelectDropdown value="one" options={options} onChange={onChange} />);
+    await user.click(screen.getByRole("button", { name: "One" }));
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    rerender(<SelectDropdown disabled value="one" options={options} onChange={onChange} />);
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "One" }));
+    expect(onChange).not.toHaveBeenCalled();
+    rerender(<SelectDropdown value="one" options={options} onChange={onChange} />);
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
   it("caps the list at 14.5rem and dismisses it when its controls become inert", async () => {
     const user = userEvent.setup();
     const { rerender } = render(<div><ControlledSelect /></div>);

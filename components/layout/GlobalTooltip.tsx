@@ -195,6 +195,6 @@ export function GlobalTooltip() {
     >
       {activeTooltip.text}
     </div>,
-    document.body
+    activeTooltip.target.closest("dialog") ?? document.body
   );
 }
