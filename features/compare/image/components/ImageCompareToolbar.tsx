@@ -5,6 +5,7 @@ import {
   MdDelete,
   MdDownload,
   MdTune,
+  MdSync,
 } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
@@ -18,6 +19,7 @@ import {
   DiffAlgorithm,
 } from "../store/useImageCompareStore";
 import { ImageSnapshotService } from "../services/ImageSnapshotService";
+import { AutoAlignButton } from "./alignment/AutoAlignButton";
 
 const MODES: Array<{ value: ImageCompareMode; label: string }> = [
   { value: "side-by-side", label: "Side by side" },
@@ -121,16 +123,28 @@ export function ImageCompareToolbar() {
 
       <div className="flex-1" />
 
+      <AutoAlignButton />
+
       <Button
         variant="primary"
         size="sm"
         onClick={openAlignmentPanel}
         disabled={!hasBothImages}
         leftIcon={<MdTune className="text-lg" />}
-        title="Align images"
+        className="hidden @2xl/image:inline-flex"
       >
-        <span className="hidden @2xl/image:inline">Align images</span>
+        Adjust alignment
       </Button>
+      <IconButton
+        variant="primary"
+        size="sm"
+        onClick={openAlignmentPanel}
+        disabled={!hasBothImages}
+        title="Adjust alignment"
+        className="@2xl/image:hidden"
+      >
+        <MdTune />
+      </IconButton>
 
       <DownloadSnapshotButton
         onDownload={handleDownloadSnapshot}
@@ -151,28 +165,16 @@ interface DownloadSnapshotButtonProps {
 
 function DownloadSnapshotButton({ onDownload, disabled = false, isDownloading = false }: DownloadSnapshotButtonProps) {
   return (
-    <>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onDownload}
-        disabled={disabled || isDownloading}
-        leftIcon={<MdDownload className="text-lg" />}
-        title="Download snapshot"
-        className="hidden md:inline-flex"
-      >
-        <span className="hidden @2xl/image:inline">Download snapshot</span>
-        <span className="@2xl/image:hidden">Snapshot</span>
-      </Button>
-      <IconButton
-        onClick={onDownload}
-        className="md:hidden"
-        title="Download snapshot"
-        disabled={disabled || isDownloading}
-      >
-        <MdDownload className="text-xl" />
-      </IconButton>
-    </>
+    <IconButton
+      onClick={onDownload}
+      variant="primary"
+      size="sm"
+      title="Download snapshot"
+      aria-busy={isDownloading}
+      disabled={disabled || isDownloading}
+    >
+      {isDownloading ? <MdSync className="animate-spin motion-reduce:animate-none" /> : <MdDownload />}
+    </IconButton>
   );
 }
 
@@ -189,7 +191,6 @@ function ClearButton({ onClear, disabled = false }: ClearButtonProps) {
         size="sm"
         onClick={onClear}
         leftIcon={<MdDelete className="text-xl" />}
-        title="Clear comparison"
         disabled={disabled}
         className="hidden md:inline-flex"
       >
