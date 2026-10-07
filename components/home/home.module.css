@@ -1,0 +1,190 @@
+.scroller { flex: 1; min-width: 0; background: var(--bg-secondary); overflow: auto; }
+.icon { display: block; width: 1.5rem; height: 1.5rem; flex: none; font-size: 1.5rem; }
+.canvas { container-type: inline-size; color: var(--text-primary); font-family: var(--font-geist-sans), sans-serif; }
+.content { max-width: 84rem; margin: 0 auto; padding: 0 3rem; }
+.canvas a:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.canvas h1, .canvas h2, .canvas h3, .canvas p { margin: 0; }
+.canvas h1 { font-size: 4rem; letter-spacing: -.055em; font-weight: 550; line-height: 1.125; overflow-wrap: anywhere; }
+.canvas h2 { font-size: 1.875rem; letter-spacing: -.04em; line-height: 1.2; font-weight: 550; overflow-wrap: anywhere; }
+.canvas p { color: var(--text-secondary); font-size: .875rem; line-height: 1.5rem; }
+.eyebrow { display: block; color: var(--text-secondary); font-size: .75rem; font-weight: 500; margin-bottom: 1.5rem; }
+.iconTile { display: block; width: fit-content; flex: none; padding: .5rem; border: 1px solid var(--border-default); border-radius: .5rem; background: var(--bg-primary); color: var(--text-primary); }
+.sectionHeading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-default); }
+.sectionHeading h2 { font-size: .875rem; letter-spacing: 0; font-weight: 600; line-height: 1.5rem; }
+.sectionHeading > span { color: var(--text-secondary); font-size: .75rem; }
+.directory { min-width: 0; }
+.toolLink { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem; border-bottom: 1px solid var(--border-default); background: var(--bg-primary); transition: background-color .15s; }
+.toolLink:last-child { border-bottom: 0; }
+.toolLink:hover { background: var(--bg-selected); }
+.toolLink:hover .iconTile { border-color: var(--accent-primary); color: var(--accent-primary); }
+.toolCopy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.toolCopy h3 { font-size: 1.125rem; font-weight: 600; letter-spacing: -.025em; line-height: 1.5rem; }
+.toolCopy p { margin-top: .5rem; font-size: .8125rem; }
+.toolDetail { display: block; margin-top: .75rem; font-size: .75rem; color: var(--text-secondary); line-height: 1.5; }
+.toolArrow { display: block; flex: none; padding-top: .5rem; color: var(--text-secondary); }
+.toolLink:hover .toolArrow { color: var(--accent-primary); }
+.localNote > p { margin-top: 1rem; font-size: .8125rem; }
+.localNote ul { display: grid; gap: .5rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+.localNote li { display: flex; align-items: flex-start; gap: .5rem; color: var(--text-secondary); font-size: .75rem; line-height: 1.5rem; }
+.workspaceLinks { display: grid; gap: .75rem; }
+.workspaceLinks > a { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem; border: 1px solid var(--border-default); border-radius: .5rem; background: var(--bg-primary); transition: border-color .15s, background-color .15s; }
+.workspaceLinks > a:hover { background: var(--bg-selected); border-color: var(--accent-primary); }
+.workspaceLinks > a > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.workspaceLinks strong { display: block; font-size: .875rem; font-weight: 600; line-height: 1.5rem; }
+.workspaceLinks small { display: block; color: var(--text-secondary); font-size: .75rem; line-height: 1.5; margin-top: .25rem; }
+.workspaceLinks > a > svg:last-child { color: var(--text-secondary); }
+.questions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 3rem; padding: 4rem 0; }
+.questionsIntro > .eyebrow { margin-bottom: 1rem; }
+.questionsIntro p { max-width: 21rem; margin-top: 1rem; font-size: .875rem; }
+.questionsIntro a { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.5rem; color: var(--accent-primary); font-size: .8125rem; }
+.questions > div:last-child { align-self: start; }
+.footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.5rem; padding: 1.5rem 0 2rem; border-top: 1px solid var(--border-default); font-size: .75rem; font-weight: 550; }
+.footer > a { display: inline-flex; align-items: center; gap: .75rem; color: var(--text-secondary); }
+.footer > a:hover { color: var(--text-primary); }
+.compact .toolLink { padding: 1.25rem; }
+.compact .toolDetail { display: none; }
+@container (max-width: 65rem) {
+  .content { padding-inline: 2rem; }
+}
+@container (max-width: 48rem) {
+  .canvas h1 { font-size: 3rem; }
+  .questions { gap: 2rem; }
+}
+@container (max-width: 36rem) {
+  .canvas h1 { font-size: 2.75rem; }
+  .content { padding-inline: 1rem; }
+  .eyebrow { font-size: .6875rem; }
+  .sectionHeading { padding: 1rem; }
+  .sectionHeading > span { display: none; }
+  .toolLink, .compact .toolLink { padding: 1.25rem 1rem; gap: .75rem; }
+  .toolCopy h3 { font-size: 1rem; }
+  .toolCopy p { font-size: .8125rem; }
+  .toolLink > .iconTile { padding: 0; border: 0; border-radius: 0; background: transparent; }
+  .toolArrow { padding-top: 0; }
+  .questions { grid-template-columns: 1fr; padding: 3rem 0; gap: 1.5rem; }
+  .questionsIntro p { max-width: none; }
+}
+
+.modern { --study-line: color-mix(in srgb, var(--border-default) 65%, transparent); }
+.modern > .content { max-width: 82rem; }
+.modernWelcome { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem 2rem; padding: 3rem 0 2.5rem; }
+.modernWelcome > div:first-child { min-width: 0; flex: 1; }
+.modernWelcome .eyebrow { margin-bottom: 1rem; }
+.modernWelcome h1 { font-size: 3.25rem; line-height: 3.75rem; font-weight: 550; }
+.modernWelcome p { margin-top: 1rem; max-width: 35rem; text-wrap: pretty; }
+.modernLayout { display: grid; grid-template-columns: minmax(0, 1fr) 18rem; gap: 2rem; }
+.modernTools { min-width: 0; align-self: start; }
+.modern .sectionHeading { padding: 0 0 1rem; border: 0; }
+.modern .sectionHeading h2, .workspaceHeading h2 { font-size: .8125rem; font-weight: 600; line-height: 1.5rem; letter-spacing: 0; }
+.workspaceHeading { margin-bottom: 1rem; }
+.workspaceHeading > span { display: none; color: var(--text-secondary); font-size: .75rem; }
+.modern .toolLink { align-items: flex-start; padding: 1.5rem; }
+.modern .toolCopy p { margin-top: .375rem; }
+.modern .toolCopy h3 { font-size: 1.0625rem; }
+.modern .workspaceLinks { gap: .75rem; }
+.modern .workspaceLinks > a { border-color: var(--study-line); }
+.modern .workspaceLinks > a > svg:last-child { display: none; }
+.modernAside > .localNote { margin-top: 1.5rem; padding: 1.5rem; border-radius: .75rem; background: var(--bg-primary); }
+.modernAside .localNote h2 { font-size: 1.625rem; line-height: 2rem; letter-spacing: -.04em; }
+.modernAside .localNote ul { margin-top: 1rem; gap: .25rem; }
+.modern .questions { margin-top: 3rem; padding: 3rem 0; border-top: 1px solid var(--study-line); }
+.modern .questionsIntro h2 { font-size: 1.75rem; }
+.modern .questions > div:last-child { border-color: var(--study-line); }
+.modern .footer { border-color: var(--study-line); }
+
+.compact-spectrum .modernWelcome { padding-bottom: 2rem; }
+.compact-spectrum .modernLayout { grid-template-columns: minmax(0, 1fr) 17rem; }
+.compact-spectrum .directory { display: grid; gap: .75rem; }
+.compact-spectrum .toolLink { --tool-color: var(--accent-primary); gap: 1.25rem; border: 1px solid var(--study-line); border-left: 3px solid var(--tool-color); border-radius: .75rem; padding: 1.25rem 1.5rem; background: var(--bg-primary); }
+.compact-spectrum .toolLink:nth-child(2) { --tool-color: var(--markdown-alert-tip-fg); }
+.compact-spectrum .toolLink:nth-child(3) { --tool-color: var(--markdown-alert-important-fg); }
+.compact-spectrum .toolLink:nth-child(4) { --tool-color: var(--markdown-alert-warning-fg); }
+.compact-spectrum .toolLink > .iconTile { padding: .75rem; background: color-mix(in srgb, var(--tool-color) 9%, var(--bg-primary)); color: var(--tool-color); border: 0; border-radius: .75rem; }
+.compact-spectrum .toolLink:hover { background: color-mix(in srgb, var(--tool-color) 4%, var(--bg-primary)); border-color: var(--tool-color); }
+.compact-spectrum .toolArrow { color: var(--tool-color); padding-top: .75rem; }
+.compact-spectrum .toolCopy { padding-top: .25rem; }
+.compact-spectrum .modernAside > .localNote { background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-primary)); border: 1px solid color-mix(in srgb, var(--accent-primary) 15%, var(--bg-primary)); }
+.compact-spectrum .localNote h2 { font-size: 1.5rem; }
+.compact-spectrum .localNote li > svg { color: var(--accent-primary); }
+.compact-spectrum .questions { border-top: 0; padding: 2rem; background: var(--bg-primary); border-radius: 1rem; }
+.compact-spectrum .questions > div:last-child { border: 0; border-radius: 0; }
+.compact-spectrum .questions > div:last-child > div { padding-block: .25rem; }
+.compact-spectrum .questions > div:last-child > div > button { border-radius: .5rem; }
+.compact-spectrum .footer { border: 0; }
+
+@container (max-width: 65rem) {
+  .modernLayout, .compact-spectrum .modernLayout { grid-template-columns: minmax(0, 1fr) 16rem; gap: 1.5rem; }
+}
+@container (max-width: 48rem) {
+  .modernLayout, .compact-spectrum .modernLayout { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .modernWelcome { gap: 1.25rem; }
+  .modernWelcome > div:first-child { flex-basis: 100%; }
+  .modernAside .workspaceLinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .modernAside > .localNote { display: none; }
+}
+@container (max-width: 36rem) {
+  .modernWelcome { padding: 2rem 0; }
+  .modernWelcome h1 { font-size: 2.25rem; line-height: 2.75rem; }
+  .modern .sectionHeading > span { display: none; }
+  .modern .toolLink { padding: 1.25rem 0; gap: .75rem; }
+  .modern .toolCopy h3 { font-size: 1rem; }
+  .modern .toolLink > .iconTile { padding: 0; border: 0; background: transparent; }
+  .modern .toolArrow { padding-top: 0; }
+  .modernAside .workspaceLinks { grid-template-columns: minmax(0, 1fr); }
+  .modern .questions { margin-top: 2rem; padding: 2rem 0; }
+  .modern .questionsIntro h2 { font-size: 1.625rem; }
+  .compact-spectrum .modernWelcome { padding-bottom: 1.5rem; }
+  .compact-spectrum .toolLink { padding: 1.25rem 1rem; }
+  .compact-spectrum .toolCopy { padding-top: 0; }
+  .compact-spectrum .questions { padding: 1.5rem 1rem; }
+}
+
+
+.animated .toolLink { --motion-color: var(--tool-color); }
+.workspaceAnimated .workspaceLink { --motion-color: var(--accent-primary); }
+:is(.animated .toolLink, .workspaceAnimated .workspaceLink) {
+  --motion-active: 0;
+  position: relative;
+  isolation: isolate;
+  transition: border-color 280ms ease;
+}
+:is(.animated .toolLink, .workspaceAnimated .workspaceLink),
+:is(.animated .toolLink, .workspaceAnimated .workspaceLink):hover {
+  background: var(--bg-primary);
+  border-color: color-mix(in srgb, var(--motion-color) calc(var(--motion-active) * 60%), var(--study-line));
+}
+.animated .toolLink,
+.animated .toolLink:hover { border-left-color: var(--tool-color); }
+.animated .toolLink:hover .toolArrow { color: var(--tool-color); }
+:is(.animated .toolLink, .workspaceAnimated .workspaceLink)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+:is(.animated .toolLink, .workspaceAnimated .workspaceLink):focus-visible { --motion-active: 1; }
+@media (hover: hover) and (pointer: fine) {
+  :is(.animated .toolLink, .workspaceAnimated .workspaceLink):hover { --motion-active: 1; }
+}
+.workspaceAnimated .workspaceLink > svg:first-child {
+  color: color-mix(in srgb, var(--accent-primary) calc(var(--motion-active) * 100%), var(--text-primary));
+  transition: color 280ms ease;
+}
+.animated .toolLink::before,
+.workspaceAnimated .workspaceLink::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--motion-color) 13%, transparent), color-mix(in srgb, var(--motion-color) 5%, transparent) 55%, transparent);
+  opacity: var(--motion-active);
+  transform: scaleX(calc(.25 + var(--motion-active) * .75));
+  transform-origin: left center;
+  transition: transform 440ms cubic-bezier(.22, 1, .36, 1), opacity 300ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas *,
+  .canvas *::before,
+  .canvas *::after,
+  .canvas.animated :is(.toolLink, .workspaceLink),
+  .canvas.animated :is(.toolLink, .workspaceLink)::before,
+  .canvas.animated .workspaceLink > svg { transition: none; }
+}
