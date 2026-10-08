@@ -8,6 +8,11 @@ export const controlSizes: Record<ControlSize, { field: string; icon: string; ic
 };
 
 export const controlFocus = "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary/45";
+export const linkColors = {
+  neutral: "text-text-secondary transition-colors hover:text-text-primary",
+  support: "text-support transition-colors hover:text-support-hover focus-visible:text-support-hover"
+} as const;
+export const linkIcon = "size-5 shrink-0";
 export const controlDisabled = "disabled:cursor-not-allowed disabled:opacity-50";
 export const buttonBase = `inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-transparent font-semibold transition-colors ${controlFocus} ${controlDisabled}`;
 export const buttonVariants: Record<ButtonVariant, string> = {

@@ -9,6 +9,8 @@
 @import "../styles/themes/nord.css";
 
 @theme {
+  --color-support: #b9657e;
+  --color-support-hover: color-mix(in srgb, var(--color-support) 65%, var(--text-primary));
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-selected: var(--bg-selected);

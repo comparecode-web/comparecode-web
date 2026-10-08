@@ -4,7 +4,7 @@ CompareCode's own code is licensed under [MIT](LICENSE). Dependencies, fonts, ic
 
 QR Code is a registered trademark of DENSO WAVE INCORPORATED. This notice follows [DENSO WAVE's trademark guidance](https://www.qrcode.com/en/faq.html) for use of the name on a website.
 
-The [license texts and copyright notices](public/licenses/third-party.txt) accompany the web application at `/licenses/third-party.txt`, accessible through **Settings → Open-source licenses**. Keep this file in deployments. Identical license texts are shared between their explicitly listed owners; the original copyright notices are retained.
+The [license texts and copyright notices](public/licenses/third-party.txt) accompany the web application at `/licenses/third-party.txt`, accessible through **Home → Open-source licenses** in the footer. Keep this file in deployments. Identical license texts are shared between their explicitly listed owners; the original copyright notices are retained.
 
 The notices cover application libraries and their transitive dependencies, Next.js bundled notices, Material Design / Font Awesome / Ionicons artwork, the OFL fonts, and KaTeX fonts. DOMPurify is used under its Apache-2.0 option. This does not change CompareCode's MIT license.
 

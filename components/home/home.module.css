@@ -1,7 +1,5 @@
-.scroller { flex: 1; min-width: 0; background: var(--bg-secondary); overflow: auto; }
 .icon { display: block; width: 1.5rem; height: 1.5rem; flex: none; font-size: 1.5rem; }
 .canvas { container-type: inline-size; color: var(--text-primary); font-family: var(--font-geist-sans), sans-serif; }
-.content { max-width: 84rem; margin: 0 auto; padding: 0 3rem; }
 .canvas a:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
 .canvas h1, .canvas h2, .canvas h3, .canvas p { margin: 0; }
 .canvas h1 { font-size: 4rem; letter-spacing: -.055em; font-weight: 550; line-height: 1.125; overflow-wrap: anywhere; }
@@ -38,21 +36,17 @@
 .questionsIntro p { max-width: 21rem; margin-top: 1rem; font-size: .875rem; }
 .questionsIntro a { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.5rem; color: var(--accent-primary); font-size: .8125rem; }
 .questions > div:last-child { align-self: start; }
-.footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.5rem; padding: 1.5rem 0 2rem; border-top: 1px solid var(--border-default); font-size: .75rem; font-weight: 550; }
-.footer > a { display: inline-flex; align-items: center; gap: .75rem; color: var(--text-secondary); }
-.footer > a:hover { color: var(--text-primary); }
+.footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem 1.5rem; padding: 1.5rem 0 2rem; border-top: 1px solid var(--border-default); font-size: .75rem; font-weight: 550; }
+.footer > a { display: inline-flex; align-items: center; gap: calc(var(--spacing) * 1.5); }
+.version { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .compact .toolLink { padding: 1.25rem; }
 .compact .toolDetail { display: none; }
-@container (max-width: 65rem) {
-  .content { padding-inline: 2rem; }
-}
 @container (max-width: 48rem) {
   .canvas h1 { font-size: 3rem; }
   .questions { gap: 2rem; }
 }
 @container (max-width: 36rem) {
   .canvas h1 { font-size: 2.75rem; }
-  .content { padding-inline: 1rem; }
   .eyebrow { font-size: .6875rem; }
   .sectionHeading { padding: 1rem; }
   .sectionHeading > span { display: none; }
@@ -66,7 +60,6 @@
 }
 
 .modern { --study-line: color-mix(in srgb, var(--border-default) 65%, transparent); }
-.modern > .content { max-width: 82rem; }
 .modernWelcome { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem 2rem; padding: 3rem 0 2.5rem; }
 .modernWelcome > div:first-child { min-width: 0; flex: 1; }
 .modernWelcome .eyebrow { margin-bottom: 1rem; }
