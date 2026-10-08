@@ -1,4 +1,5 @@
 import userEvent from "@testing-library/user-event";
+import { StrictMode } from "react";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MainNavHeader } from "@/components/layout/MainNavHeader";
@@ -74,17 +75,75 @@ describe("Workspace navigation", () => {
     expect(within(dialog).getByRole("link", { name: "Support the project" })).toHaveAttribute("href", support.getAttribute("href"));
   });
 
-  it("opens mobile navigation on any route and closes after a destination is selected", async () => {
+  it("keeps mobile navigation open until the destination commits and stays closed on return", async () => {
     navigation.pathname = "/settings";
     const user = userEvent.setup();
-    render(<WorkspaceNavigation />);
+    const { rerender } = render(<WorkspaceNavigation />);
     const trigger = screen.getByRole("button", { name: "Open navigation" });
     await user.click(trigger);
     const dialog = screen.getByRole("dialog", { name: "Navigation" });
     await user.click(within(dialog).getByRole("button", { name: "Image compare" }));
     expect(navigation.replace).toHaveBeenCalledWith("/image");
+    expect(dialog).toHaveAttribute("open");
+
+    navigation.pathname = "/image";
+    rerender(<WorkspaceNavigation />);
     expect(dialog).not.toHaveAttribute("open");
     expect(trigger).toHaveFocus();
+
+    navigation.pathname = "/settings";
+    rerender(<WorkspaceNavigation />);
+    expect(dialog).not.toHaveAttribute("open");
+    await user.click(trigger);
+    expect(dialog).toHaveAttribute("open");
+  });
+
+  it("closes immediately when the current destination is selected", async () => {
+    const user = userEvent.setup();
+    render(<WorkspaceNavigation />);
+    await user.click(screen.getByRole("button", { name: "Open navigation" }));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Text compare" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(navigation.replace).not.toHaveBeenCalled();
+  });
+
+  it.each(["close button", "Escape", "backdrop"])("allows %s dismissal while navigation is outstanding", async (method) => {
+    const user = userEvent.setup();
+    render(<WorkspaceNavigation />);
+    const trigger = screen.getByRole("button", { name: "Open navigation" });
+    await user.click(trigger);
+    const dialog = screen.getByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Settings" }));
+    expect(dialog).toHaveAttribute("open");
+    if (method === "close button") await user.click(within(dialog).getByRole("button", { name: "Close navigation" }));
+    else if (method === "Escape") fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    else fireEvent.click(dialog);
+    expect(dialog).not.toHaveAttribute("open");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("waits for the committed route after browser history navigation", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<WorkspaceNavigation />);
+    await user.click(screen.getByRole("button", { name: "Open navigation" }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.popState(window);
+    expect(dialog).toHaveAttribute("open");
+    navigation.pathname = "/history";
+    rerender(<WorkspaceNavigation />);
+    expect(dialog).not.toHaveAttribute("open");
+  });
+
+  it("ignores a queued native close event after the drawer has reopened", async () => {
+    const user = userEvent.setup();
+    render(<StrictMode><WorkspaceNavigation /></StrictMode>);
+    const trigger = screen.getByRole("button", { name: "Open navigation" });
+    await user.click(trigger);
+    const dialog = screen.getByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Close navigation" }));
+    await user.click(trigger);
+    fireEvent(dialog, new Event("close"));
+    expect(dialog).toHaveAttribute("open");
   });
 
   it("handles native dialog cancellation and restores trigger focus", async () => {
