@@ -94,6 +94,10 @@ To run this project locally, you need Node.js installed on your machine.
    ```
 5. Open `http://localhost:3000` in your browser.
 
+### Deployment versions
+
+Vercel builds automatically embed a UTC timestamp such as `Version 20261008.1510`; restarting an existing build preserves it. Local development and verification builds show `Development`. `vercel.json` selects `npm run build`; enable access to System Environment Variables in Vercel. See [deployment versioning](docs/deployment-versioning.md) for the build contract and setup.
+
 ## 🤝 Contributing
 
 We welcome contributions. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.

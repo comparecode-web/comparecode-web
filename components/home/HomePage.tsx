@@ -1,10 +1,13 @@
 import Link from "next/link";
 import {
   MdArrowOutward, MdArticle, MdCheck, MdCode, MdHistory,
-  MdImage, MdQrCode2, MdSettings,
+  MdImage, MdQrCode2, MdSettings, MdFavorite,
 } from "react-icons/md";
 import { FaGithub } from "react-icons/fa";
 import { FaqAccordion, type FaqItem } from "@/components/seo/FaqAccordion";
+import { PageContent } from "@/components/layout/PageContent";
+import { PROJECT_LINKS } from "@/config/project";
+import { linkColors, linkIcon } from "@/components/ui/controlStyles";
 import styles from "./home.module.css";
 
 const tools = [
@@ -113,7 +116,7 @@ function Questions() {
         <span className={styles.eyebrow}>A little help getting started</span>
         <h2>Glad you’re here.<br />Got a question?</h2>
         <p>Here are a few things you might be wondering. We hope you feel right at home.</p>
-        <a href="https://github.com/comparecode-web/comparecode-web/issues" target="_blank" rel="noreferrer">Have an idea? Let us know <Arrow /></a>
+        <a href={`${PROJECT_LINKS.github}/issues`} target="_blank" rel="noopener noreferrer">Have an idea? Let us know <Arrow /></a>
       </div>
       <FaqAccordion items={faq} />
     </section>
@@ -121,9 +124,14 @@ function Questions() {
 }
 
 function Footer() {
+  const version = process.env.NEXT_PUBLIC_APP_VERSION;
+
   return (
     <footer className={styles.footer}>
-      <a href="https://github.com/comparecode-web/comparecode-web" target="_blank" rel="noreferrer"><FaGithub className={styles.icon} aria-hidden="true" /> Open source on GitHub <Arrow /></a>
+      <a href={PROJECT_LINKS.github} target="_blank" rel="noopener noreferrer" className={linkColors.neutral}><FaGithub className={linkIcon} aria-hidden="true" /> GitHub</a>
+      <a href={PROJECT_LINKS.support} target="_blank" rel="noopener noreferrer" className={linkColors.support}><MdFavorite className={linkIcon} aria-hidden="true" /> Support the project</a>
+      <a href="/licenses/third-party.txt" target="_blank" rel="noopener noreferrer" className={linkColors.neutral}>Open-source licenses</a>
+      <span className={styles.version}>{version ? `Version ${version}` : "Development"}</span>
     </footer>
   );
 }
@@ -155,13 +163,11 @@ function HomeWorkspace() {
 
 export function HomePage() {
   return (
-    <div className={styles.scroller}>
+    <PageContent>
       <div className={`${styles.canvas} ${styles["compact-spectrum"]} ${styles.modern} ${styles.animated} ${styles.workspaceAnimated}`}>
-        <div className={styles.content}>
-          <HomeWorkspace />
-          <Questions /><Footer />
-        </div>
+        <HomeWorkspace />
+        <Questions /><Footer />
       </div>
-    </div>
+    </PageContent>
   );
 }

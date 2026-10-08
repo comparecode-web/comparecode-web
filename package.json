@@ -5,7 +5,7 @@
   "scripts": {
     "predev": "node -e \"const fs=require('fs');\nif(!fs.existsSync('./node_modules')){console.error('ERROR: node_modules directory missing. Run npm install.'); process.exit(1);}\"",
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

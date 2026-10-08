@@ -5,13 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
 import { usePathname, useRouter } from "next/navigation";
-import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome, MdClose, MdChevronLeft, MdChevronRight, MdQrCode2 } from "react-icons/md";
+import { MdArticle, MdCode, MdHistory, MdSettings, MdImage, MdHome, MdClose, MdChevronLeft, MdChevronRight, MdQrCode2, MdFavorite } from "react-icons/md";
 import { IconButton } from "@/components/ui/IconButton";
+import { linkColors, linkIcon } from "@/components/ui/controlStyles";
 import { ThemeSelect } from "@/components/settings/ThemeSelect";
 import { cn } from "@/utils/uiHelpers";
 import { useWorkspaceSidebar } from "./WorkspaceSidebarContext";
 import { WORKSPACE_MEDIA } from "@/config/responsive";
 import { SITE_ICON_PATH } from "@/config/seo";
+import { PROJECT_LINKS } from "@/config/project";
+
+const projectLinkClassName = "flex h-10 items-center overflow-hidden rounded-lg border border-transparent text-left text-sm font-semibold transition-colors hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary";
 
 const navItems = [
   { href: "/", label: "Home", icon: MdHome },
@@ -63,10 +67,16 @@ export function NavigationSidebar() {
   const footer = (mobile: boolean) => (
     <div className="mt-auto shrink-0 space-y-1 border-t border-border-default p-2" data-tool-controls>
       <ThemeSelect sidebar={!mobile} showIcon />
-      <a href="https://github.com/comparecode-web/comparecode-web" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="flex h-10 items-center overflow-hidden rounded-lg border border-transparent text-left text-sm font-semibold text-text-secondary transition-colors hover:bg-hover-overlay hover:text-text-primary focus-visible:outline-2 focus-visible:outline-accent-primary">
-        <span className="flex h-10 w-9 shrink-0 items-center justify-center"><FaGithub className="text-xl" /></span>
-        <span className={mobile ? "" : "hidden @min-[12rem]/navigation:inline"}>GitHub</span>
-      </a>
+      <div className="flex flex-col gap-1">
+        <a href={PROJECT_LINKS.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className={cn(projectLinkClassName, linkColors.neutral)}>
+          <span className="flex h-10 w-9 shrink-0 items-center justify-center"><FaGithub className={linkIcon} aria-hidden="true" /></span>
+          <span className={mobile ? "" : "hidden @min-[12rem]/navigation:inline"}>GitHub</span>
+        </a>
+        <a href={PROJECT_LINKS.support} target="_blank" rel="noopener noreferrer" aria-label="Support the project" className={cn(projectLinkClassName, linkColors.support)}>
+          <span className="flex h-10 w-9 shrink-0 items-center justify-center"><MdFavorite className={linkIcon} aria-hidden="true" /></span>
+          <span className={mobile ? "" : "hidden @min-[12rem]/navigation:inline"}>Support the project</span>
+        </a>
+      </div>
     </div>
   );
 

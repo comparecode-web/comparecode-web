@@ -54,6 +54,26 @@ describe("Workspace navigation", () => {
     expect(navigation.replace).not.toHaveBeenCalled();
   });
 
+  it("offers labelled project links and opens their destinations separately", async () => {
+    const user = userEvent.setup();
+    render(<WorkspaceNavigation />);
+    const github = screen.getByRole("link", { name: "GitHub" });
+    const support = screen.getByRole("link", { name: "Support the project" });
+    expect(support).toHaveAttribute("href", "https://ko-fi.com/gabrieltm");
+    expect(github.parentElement).toBe(support.parentElement);
+    for (const link of [github, support]) {
+      expect(link.textContent).toBe(link.getAttribute("aria-label"));
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+      expect(link).not.toHaveAttribute("title");
+    }
+
+    await user.click(screen.getByRole("button", { name: "Open navigation" }));
+    const dialog = screen.getByRole("dialog", { name: "Navigation" });
+    expect(within(dialog).getByRole("link", { name: "GitHub" })).toHaveTextContent("GitHub");
+    expect(within(dialog).getByRole("link", { name: "Support the project" })).toHaveAttribute("href", support.getAttribute("href"));
+  });
+
   it("opens mobile navigation on any route and closes after a destination is selected", async () => {
     navigation.pathname = "/settings";
     const user = userEvent.setup();
