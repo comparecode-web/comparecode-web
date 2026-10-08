@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import Home, { metadata } from "@/app/(workspace)/page";
 
 function renderHome() {
@@ -9,6 +9,35 @@ function renderHome() {
 }
 
 describe("Home", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("offers labelled project links and licenses in its footer", () => {
+    const footer = renderHome().querySelector("footer");
+    const links = [...footer!.querySelectorAll("a")];
+    expect(links.map((link) => [link.textContent?.trim(), link.getAttribute("href")])).toEqual([
+      ["GitHub", "https://github.com/comparecode-web/comparecode-web"],
+      ["Support the project", "https://ko-fi.com/gabrieltm"],
+      ["Open-source licenses", "/licenses/third-party.txt"]
+    ]);
+    for (const link of links) {
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    }
+  });
+
+  it("shows the embedded version without a timezone or commit suffix", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_VERSION", "20261008.1510");
+    const footer = renderHome().querySelector("footer");
+    expect(footer?.lastElementChild?.textContent).toBe("Version 20261008.1510");
+  });
+
+  it("identifies local builds as Development", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_VERSION", "");
+    const footer = renderHome().querySelector("footer");
+    expect(footer?.lastElementChild?.textContent).toBe("Development");
+    expect(footer).not.toHaveTextContent("Version");
+  });
+
   it("keeps discovery content and all FAQ answers in the initial HTML", () => {
     const container = renderHome();
 

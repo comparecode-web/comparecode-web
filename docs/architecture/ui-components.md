@@ -20,11 +20,15 @@
 | Modal content | `Dialog`, `DialogHeader` | Controlled native modal; focus containment/return, Escape cancellation, scrollable viewport bounds |
 | Tool action row | `WorkspaceToolbar` | Inline surface; `card` for a standalone bordered toolbar |
 | Settings group | `components/settings/OptionsSection.tsx` | Explicit `compact` density; `comfortable` for page sections. Description does not select the density |
-| Page heading and gutters | `components/layout/PageHeader.tsx`, `PageContent.tsx` | Shared QR, History and Settings layout; optional heading actions |
+| Page heading and gutters | `components/layout/PageHeader.tsx`, `PageContent.tsx` | Shared Home, QR, History and Settings page gutters; Home retains its own welcome heading |
 
 `controlStyles.ts` is the canonical owner of the button variants, shared focus/disabled classes and the `sm`/`md`/`lg` control scale. At the usual 16px root, minimum control heights are 32/36/44 CSS pixels. Labelled controls may grow with content; icon buttons have square 2/2.25/2.75rem geometry. Icon slots inherit the corresponding default icon size. These are scalable rem-based sizes, not persisted pixel settings. Follow [UI sizing and units](ui-sizing.md).
 
 ## Composition and overrides
+
+Home, Settings, History and QR use `PageContent` for the same `max-w-7xl` centered container, responsive `p-3 sm:p-5 lg:p-7` gutters, scroll styling and stable scrollbar space. Do not add a parallel page-width or gutter rule in Home CSS. Home's inner container queries control its cards, heading and FAQ using the space remaining inside the shared gutters.
+
+`controlStyles.ts` also owns `linkColors` and `linkIcon` for native links. The `neutral` palette follows theme text colors; `support` uses muted rose with a stronger, theme-aware hover and keyboard-focus color. Apply the palette to the link so its text and SVG icons inherit the same color. Home and sidebar project links share the `linkIcon` 1.25rem size; consumers own their surrounding layout.
 
 Start with the semantic component and its size/variant props. Keep `className` for container layout, responsive visibility and justified exceptions. Repeated height, padding, radius, focus or color overrides should move into the existing owner rather than become a feature-local style recipe. Do not add a variant solely to reproduce one incidental historical difference.
 

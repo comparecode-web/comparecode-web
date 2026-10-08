@@ -201,10 +201,6 @@ export function MainSettingsView() {
             </div>
           </OptionsSection>
         </div>
-      <div className="p-4 text-center text-xs font-medium text-text-secondary shrink-0">
-        Version 1.0.0
-        <a href="/licenses/third-party.txt" target="_blank" rel="noopener noreferrer" className="mx-auto mt-2 block w-fit rounded text-accent-primary hover:underline focus-visible:outline-2 focus-visible:outline-accent-primary">Open-source licenses</a>
-      </div>
       </PageContent>
   );
 }

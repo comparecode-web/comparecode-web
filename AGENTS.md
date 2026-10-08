@@ -5,6 +5,7 @@
 - CompareCode is a free and open-source, local-first browser application for comparing text, code, and images, editing Markdown, and generating QR codes.
 - The stack is Next.js, React, TypeScript, Tailwind CSS, Zustand, Vitest, Testing Library, Dexie, and IndexedDB.
 - `package.json` is the source of truth for available commands and dependency versions.
+- Deployed application versions use UTC in `YYYYMMDD.HHmm` format, displayed as `Version 20261008.1510` without a timezone or commit suffix. Generate them only through the deployment build; never bump them manually or regenerate them on startup. See [deployment versioning](docs/deployment-versioning.md).
 - The root `AGENTS.md` is the only repository-wide agent instruction file. Keep repeatable workflows in `.agents/skills`, detailed architecture in `docs/architecture`, and the only project `README.md` at the repository root.
 
 ## Working Agreements
