@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
@@ -32,29 +32,35 @@ export function NavigationSidebar() {
   const router = useRouter();
   const { desktopExpanded, setDesktopExpanded, mobileOpen, setMobileOpen } = useWorkspaceSidebar();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isPending, startTransition] = useTransition();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog || !mobileOpen) return;
     const trigger = document.activeElement as HTMLElement | null;
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
     const query = window.matchMedia(WORKSPACE_MEDIA.desktopNavigation);
     const closeOnDesktop = () => { if (query.matches) setMobileOpen(false); };
-    const closeOnHistoryNavigation = () => setMobileOpen(false);
     query.addEventListener("change", closeOnDesktop);
-    window.addEventListener("popstate", closeOnHistoryNavigation);
     closeOnDesktop();
     return () => {
       query.removeEventListener("change", closeOnDesktop);
-      window.removeEventListener("popstate", closeOnHistoryNavigation);
-      dialog.close();
+      if (dialog.open) dialog.close();
       if (trigger?.isConnected) trigger.focus();
     };
   }, [mobileOpen, setMobileOpen]);
 
-  const navigate = (href: string) => {
-    setMobileOpen(false);
-    if (pathname !== href) router.replace(href);
+  const navigate = (href: string, replace = true) => {
+    if (pathname === href) {
+      setMobileOpen(false);
+      return;
+    }
+    setPendingHref(href);
+    startTransition(() => {
+      if (replace) router.replace(href);
+      else router.push(href);
+    });
   };
 
   const brand = (mobile: boolean) => (
@@ -83,9 +89,10 @@ export function NavigationSidebar() {
   const navigation = (mobile: boolean) => (
     <nav aria-label={mobile ? "Mobile navigation" : "Main navigation"} className="flex flex-col gap-1 p-2" data-tool-controls>
       {navItems.map(({ href, label, icon: Icon }) => (
-        <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} onClick={() => navigate(href)} className={cn("flex h-10 items-center overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? "border-accent-primary/20 bg-bg-selected text-accent-primary" : "border-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
+        <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} aria-busy={mobile && isPending && pendingHref === href || undefined} onClick={() => navigate(href)} className={cn("flex h-10 items-center overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? "border-accent-primary/20 bg-bg-selected text-accent-primary" : "border-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
           <span className="flex h-10 w-9 shrink-0 items-center justify-center"><Icon className="text-2xl" /></span>
           <span className={cn("whitespace-nowrap", !mobile && "hidden @min-[12rem]/navigation:inline")}>{label}</span>
+          {mobile && isPending && pendingHref === href && <span role="status" className="ml-auto mr-3 flex items-center"><span className="sr-only">Opening {label}</span><span aria-hidden="true" className="size-4 rounded-full border-2 border-current border-r-transparent motion-safe:animate-spin" /></span>}
         </button>
       ))}
     </nav>
@@ -105,9 +112,9 @@ export function NavigationSidebar() {
         <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">{navigation(false)}</div>
         {footer(false)}
       </aside>
-      <dialog ref={dialogRef} aria-label="Navigation" onCancel={() => setMobileOpen(false)} onClose={() => setMobileOpen(false)} onClick={(event) => { if (event.target === event.currentTarget) setMobileOpen(false); }} className="fixed inset-y-0 left-0 m-0 h-dvh max-h-dvh w-[min(88vw,20rem)] max-w-none border-r border-border-default bg-bg-primary p-0 text-text-primary shadow-xl backdrop:bg-black/40">
+      <dialog ref={dialogRef} aria-label="Navigation" onCancel={(event) => { event.preventDefault(); setMobileOpen(false); }} onClose={() => { if (!dialogRef.current?.open) setMobileOpen(false); }} onClick={(event) => { if (event.target === event.currentTarget) setMobileOpen(false); }} className="fixed inset-y-0 left-0 m-0 h-dvh max-h-dvh w-[min(88vw,20rem)] max-w-none border-r border-border-default bg-bg-primary p-0 text-text-primary shadow-xl backdrop:bg-black/40">
         <div className="flex min-h-full flex-col">
-          <div className="flex h-16 shrink-0 items-center justify-between border-b border-border-default px-4"><Link href="/" onClick={() => setMobileOpen(false)}>{brand(true)}</Link><IconButton size="lg" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><MdClose /></IconButton></div>
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-border-default px-4"><Link href="/" onNavigate={(event) => { event.preventDefault(); navigate("/", false); }}>{brand(true)}</Link><IconButton size="lg" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><MdClose /></IconButton></div>
           {mobileOpen && <><div className="flex-1">{navigation(true)}</div>{footer(true)}</>}
         </div>
       </dialog>
