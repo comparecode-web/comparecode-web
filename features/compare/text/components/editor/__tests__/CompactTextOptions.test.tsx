@@ -31,7 +31,7 @@ it("fits complete settings in priority order and preserves values when resizing"
   expect(screen.getByRole("checkbox", { name: "Ignore whitespace" })).toBeInTheDocument();
   expect(screen.queryByRole("radio", { name: "Unified" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /Font family:/ })).not.toBeInTheDocument();
-  expect(container.querySelectorAll("[inert]")).toHaveLength(4);
+  expect(container.querySelectorAll("[inert]")).toHaveLength(5);
 
   act(() => { width = 100; resize(); });
   expect(screen.queryAllByRole("radio")).toHaveLength(0);

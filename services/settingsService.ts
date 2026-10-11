@@ -1,4 +1,4 @@
-import { AppSettings } from "@/types/settings";
+import { AppSettings, TEXT_SYNTAX_LANGUAGES } from "@/types/settings";
 import { defaultSettings } from "@/config/defaults";
 import { STORAGE_KEYS } from "@/config/constants";
 import { StorageFactory } from "./storage/StorageFactory";
@@ -13,6 +13,10 @@ export class SettingsService {
         const parsed = JSON.parse(json) as AppSettings;
         const merged = { ...defaultSettings, ...parsed };
         merged.dateFormat = this.normalizeDateFormat(merged.dateFormat);
+        merged.isSyntaxHighlightingEnabled = typeof merged.isSyntaxHighlightingEnabled === "boolean"
+          ? merged.isSyntaxHighlightingEnabled : defaultSettings.isSyntaxHighlightingEnabled;
+        merged.textSyntaxLanguage = TEXT_SYNTAX_LANGUAGES.includes(merged.textSyntaxLanguage)
+          ? merged.textSyntaxLanguage : defaultSettings.textSyntaxLanguage;
         return merged;
       } catch {
       }

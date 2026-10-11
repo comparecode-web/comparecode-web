@@ -59,4 +59,19 @@ describe("Text options controls", () => {
     await user.click(screen.getByRole("button", { name: "Restore Button visibility defaults" }));
     expect(screen.getByRole("button", { name: "Test text" })).toBeVisible();
   });
+
+  it("enables language selection and resets syntax only with Appearance", async () => {
+    const user = userEvent.setup();
+    render(<OptionsView />);
+    expect(screen.getByRole("button", { name: "Language: JavaScript" })).toBeDisabled();
+    await user.click(screen.getByLabelText("Syntax highlighting"));
+    await user.click(screen.getByRole("button", { name: "Language: JavaScript" }));
+    await user.click(screen.getByRole("option", { name: "Python", exact: true }));
+    expect(useSettingsStore.getState().settings).toMatchObject({ isSyntaxHighlightingEnabled: true, textSyntaxLanguage: "python" });
+    await user.click(screen.getByRole("button", { name: "Restore Comparison defaults" }));
+    expect(useSettingsStore.getState().settings.textSyntaxLanguage).toBe("python");
+    await user.click(screen.getByRole("button", { name: "Restore Appearance defaults" }));
+    expect(useSettingsStore.getState().settings).toMatchObject({ isSyntaxHighlightingEnabled: false, textSyntaxLanguage: "javascript", fontSize: defaultSettings.fontSize });
+    expect(executeCompare).not.toHaveBeenCalled();
+  });
 });

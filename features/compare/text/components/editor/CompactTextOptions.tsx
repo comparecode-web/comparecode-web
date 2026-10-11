@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { TextFontFamilyControl, TextFontSizeControl, TextIgnoreWhitespaceControl, TextLayoutControl, TextPrecisionControl, TextWordWrapControl } from "./OptionsView";
+import { TextFontFamilyControl, TextFontSizeControl, TextIgnoreWhitespaceControl, TextLayoutControl, TextPrecisionControl, TextSyntaxHighlightingControl, TextSyntaxLanguageControl, TextWordWrapControl } from "./OptionsView";
 import { cn } from "@/utils/uiHelpers";
 
 export function CompactTextOptions({ disabled = false }: { disabled?: boolean }) {
@@ -35,7 +35,8 @@ export function CompactTextOptions({ disabled = false }: { disabled?: boolean })
     <TextLayoutControl key="layout" />,
     <TextWordWrapControl key="wrap" />,
     <div key="size" className="w-40"><TextFontSizeControl /></div>,
-    <div key="font" className="w-48"><TextFontFamilyControl /></div>
+    <div key="font" className="w-48"><TextFontFamilyControl /></div>,
+    <div key="syntax" className="flex items-center gap-3"><TextSyntaxHighlightingControl /><div className="w-36"><TextSyntaxLanguageControl /></div></div>
   ];
 
   return <div ref={containerRef} inert={disabled} aria-disabled={disabled} className={cn("relative flex min-w-0 flex-1 items-center gap-3 self-stretch", disabled && "opacity-50")}>

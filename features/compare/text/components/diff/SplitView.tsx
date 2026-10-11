@@ -10,8 +10,9 @@ import { useCalculateSplitRows } from "@/features/compare/text/hooks/useCalculat
 import { UI_CONSTANTS } from "@/config/constants";
 import { ComparisonResult } from "@/features/compare/text/types/diff";
 import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
+import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
 
-export function SplitView() {
+export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; right: SyntaxLine[] | null } }) {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
 
@@ -109,6 +110,8 @@ export function SplitView() {
               <SplitRow
                 key={virtualRow.key}
                 row={row}
+                oldSyntaxLine={syntax.left?.[(row.block.oldLines[row.oldIndex]?.lineNumber ?? 0) - 1]}
+                newSyntaxLine={syntax.right?.[(row.block.newLines[row.newIndex]?.lineNumber ?? 0) - 1]}
                 virtualRow={virtualRow}
                 settings={settings}
                 hoveredBlockId={hoveredBlockId}
