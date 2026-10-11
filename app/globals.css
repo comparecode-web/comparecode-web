@@ -34,6 +34,13 @@
   --color-diff-removed-fg: var(--diff-removed-fg);
   --color-diff-empty-bg: var(--diff-empty-bg);
   --color-hover-overlay: var(--hover-overlay);
+  --color-syntax-comment: var(--syntax-comment);
+  --color-syntax-string: var(--syntax-string);
+  --color-syntax-number: var(--syntax-number);
+  --color-syntax-keyword: var(--syntax-keyword);
+  --color-syntax-type: var(--syntax-type);
+  --color-syntax-punctuation: var(--text-primary);
+  --color-syntax-property: var(--syntax-property);
 
   --color-minimap-bg: var(--minimap-bg);
   --color-minimap-added: var(--minimap-added);

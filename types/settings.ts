@@ -10,6 +10,12 @@ export enum PrecisionLevel {
 
 export type DateFormat = string;
 
+export const TEXT_SYNTAX_LANGUAGES = [
+  "plain", "c", "cpp", "csharp", "clojure", "css", "go", "java", "javascript", "json", "markdown",
+  "objectivec", "php", "python", "htmlxml", "ruby", "rust", "shell", "sql", "swift", "typescript", "yaml"
+] as const;
+export type TextSyntaxLanguage = typeof TEXT_SYNTAX_LANGUAGES[number];
+
 export enum TimeFormat {
   TwentyFourHour = "TwentyFourHour",
   TwelveHour = "TwelveHour"
@@ -27,6 +33,8 @@ export interface AppSettings {
   viewMode: ViewMode;
   fontSize: number;
   fontFamily: string;
+  isSyntaxHighlightingEnabled: boolean;
+  textSyntaxLanguage: TextSyntaxLanguage;
   theme: string;
   useCustomHighlightColors: boolean;
   customDiffAddedBg: string;

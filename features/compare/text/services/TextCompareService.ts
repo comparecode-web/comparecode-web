@@ -4,7 +4,10 @@ import { CompareSettings } from "@/types/settings";
 
 export class TextCompareService {
   public static compare(originalText: string, modifiedText: string, settings: CompareSettings): ComparisonResult {
-    return ComparisonService.compare(originalText, modifiedText, settings);
+    return {
+      ...ComparisonService.compare(originalText, modifiedText, settings),
+      sourceTexts: { original: originalText, modified: modifiedText }
+    };
   }
 }
 

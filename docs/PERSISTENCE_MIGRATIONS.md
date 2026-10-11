@@ -60,6 +60,10 @@ Every persisted reader or migration defines these cases when they apply:
 
 ## Local and Session Storage Changes
 
+Text syntax highlighting adds `isSyntaxHighlightingEnabled` and `textSyntaxLanguage` to the existing settings object under the same key. `services/settingsService.ts` supplies missing fields from `defaultSettings`, validates the toggle as a boolean and the language against `TEXT_SYNTAX_LANGUAGES`, and defaults malformed or unknown values independently without changing unrelated valid preferences. Loading never rewrites stored data. No database version or History format change is required; source snapshots and syntax tokens are transient comparison presentation state.
+
+Expanding the syntax-language inventory preserves the existing `plain`, `javascript`, `typescript`, `json` and `python` IDs and adds distinct IDs to the same canonical list. The compatibility reader accepts all registered values without reinterpreting old selections. Settings tests round-trip every registered language; no new key or schema migration is needed.
+
 - Keep storage keys centralized in their current owner. Do not duplicate string keys in stores or components.
 - Prefer a compatibility reader when a shape can evolve safely under the same durable key.
 - When a durable key must change, read and validate the old value first, write the new value only after successful conversion, and remove the old value only when rollback and released compatibility no longer require it.

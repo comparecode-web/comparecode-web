@@ -8,6 +8,7 @@ import { RowControls } from "./RowControls";
 import { BlockHeaderControls } from "./BlockHeaderControls";
 import { DiffFragmentList } from "./DiffFragmentList";
 import { MoveAnnotation } from "./MoveAnnotation";
+import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
 
 export interface UnifiedLineData {
   line1: number | string | null;
@@ -32,6 +33,7 @@ export interface UnifiedRowData {
 }
 
 interface UnifiedRowProps {
+  syntaxLine?: SyntaxLine;
   row: UnifiedRowData;
   virtualRow: VirtualItem;
   settings: AppSettings;
@@ -45,7 +47,7 @@ interface UnifiedRowProps {
   measureRef: (node: HTMLElement | null) => void;
 }
 
-export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, selectedBlockId, activeMoveId, onActivateMove, setHoveredBlockId, selectBlock, mergeBlock, measureRef }: UnifiedRowProps) => {
+export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, selectedBlockId, activeMoveId, onActivateMove, setHoveredBlockId, selectBlock, mergeBlock, measureRef, syntaxLine }: UnifiedRowProps) => {
   const isLinked = row.block.move?.counterpartBlockId === selectedBlockId;
   const moveFocused = !!row.block.move && row.block.move.id === activeMoveId;
   const isHovered = hoveredBlockId === row.block.id && row.isSelectable && !row.block.isSelected;
@@ -138,7 +140,7 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, sel
                 {l.sign}
               </div>
               <div className={cn("flex-1 px-2 py-0.5 min-h-6", wordWrapClass)}>
-                <DiffFragmentList fragments={l.fragments} lineEndingLabel={l.lineEndingLabel} suppressHighlight={!!row.block.move} />
+                <DiffFragmentList fragments={l.fragments} lineEndingLabel={l.lineEndingLabel} suppressHighlight={!!row.block.move} syntaxLine={syntaxLine} />
               </div>
             </div>
           </div>

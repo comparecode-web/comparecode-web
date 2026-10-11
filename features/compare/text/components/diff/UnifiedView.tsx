@@ -11,8 +11,9 @@ import { useCalculateUnifiedRows } from "@/features/compare/text/hooks/useCalcul
 import { UI_CONSTANTS } from "@/config/constants";
 import { ComparisonResult } from "@/features/compare/text/types/diff";
 import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
+import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
 
-export function UnifiedView() {
+export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; right: SyntaxLine[] | null } }) {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();
   const { settings } = useSettingsStore();
 
@@ -71,6 +72,9 @@ export function UnifiedView() {
             <UnifiedRow
               key={virtualRow.key}
               row={row}
+              syntaxLine={row.block.kind === "Added" || row.unifiedLine?.line1 === ""
+                ? syntax.right?.[Number(row.unifiedLine?.line2 ?? 0) - 1]
+                : syntax.left?.[Number(row.unifiedLine?.line1 ?? 0) - 1]}
               virtualRow={virtualRow}
               settings={settings}
               hoveredBlockId={hoveredBlockId}

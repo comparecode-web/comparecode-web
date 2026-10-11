@@ -16,9 +16,10 @@ import { AVAILABLE_FONTS } from "@/config/fonts";
 import { isSettingsSectionDirty } from "@/utils/settingsReset";
 import { useTextUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { MdTextFields, MdTitle, MdVerticalSplit, MdViewAgenda } from "react-icons/md";
+import { SYNTAX_LANGUAGE_OPTIONS } from "../../services/syntax/languages";
 
 const COMPARISON_SECTION_KEYS: Array<keyof AppSettings> = ["ignoreWhitespace", "precision"];
-const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = ["isWordWrapEnabled", "fontSize", "fontFamily"];
+const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = ["isWordWrapEnabled", "fontSize", "fontFamily", "isSyntaxHighlightingEnabled", "textSyntaxLanguage"];
 const LAYOUT_SECTION_KEYS: Array<keyof AppSettings> = ["viewMode"];
 const MERGE_SECTION_KEYS: Array<keyof AppSettings> = ["isContinuousMergeEnabled"];
 const BUTTON_VISIBILITY_SECTION_KEYS: Array<keyof AppSettings> = ["isJumpButtonsVisible", "isMergeJumpButtonsVisible"];
@@ -88,8 +89,24 @@ function AppearanceSection() {
       <TextWordWrapControl />
       <TextFontSizeControl />
       <div className="flex flex-col gap-1"><span className="text-sm font-medium text-text-primary">Font family</span><TextFontFamilyControl /></div>
+      <TextSyntaxHighlightingControl />
+      <div className="flex flex-col gap-1"><span className="text-sm font-medium text-text-primary">Language</span><TextSyntaxLanguageControl /></div>
     </OptionsSection>
   );
+}
+
+export function TextSyntaxHighlightingControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <Switch checked={settings.isSyntaxHighlightingEnabled}
+    onChange={(event) => updateSettings({ isSyntaxHighlightingEnabled: event.target.checked })} label="Syntax highlighting" />;
+}
+
+export function TextSyntaxLanguageControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <SelectDropdown label="Language" value={settings.textSyntaxLanguage}
+    onChange={(value) => updateSettings({ textSyntaxLanguage: value })}
+    options={SYNTAX_LANGUAGE_OPTIONS} disabled={!settings.isSyntaxHighlightingEnabled}
+    size="sm" triggerClassName="whitespace-nowrap" />;
 }
 
 export function TextWordWrapControl() {

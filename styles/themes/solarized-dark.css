@@ -26,6 +26,12 @@
   --diff-removed-fg: #801d1b;
   --diff-empty-bg: rgba(88, 110, 117, 0.15);
   --hover-overlay: rgba(253, 246, 227, 0.05);
+  --syntax-comment: #c0cccc;
+  --syntax-string: #8cd9ce;
+  --syntax-number: #f2d28b;
+  --syntax-keyword: #ffb3aa;
+  --syntax-type: #c7cbff;
+  --syntax-property: #8bd3ff;
   --minimap-bg: #073642;
   --minimap-added: #859900;
   --minimap-added-selected: #98af00;
