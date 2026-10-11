@@ -20,6 +20,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { useToastStore } from "@/store/useToastStore";
 import type { PushToastParams } from "@/store/useToastStore";
 import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
+import { useSyntaxHighlighting } from "../../hooks/useSyntaxHighlighting";
 
 function isMacPlatform(): boolean {
   if (typeof navigator === "undefined") {
@@ -47,6 +48,7 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
   } = useEditorStore();
   const { isInputExpanded } = useEditorUIStore();
   const { settings } = useSettingsStore();
+  const syntax = useSyntaxHighlighting(comparisonResult, settings);
   const { executeCompare } = useTextCompareActions();
   const pushToast = useToastStore((state): ((toast: PushToastParams) => void) => state.pushToast);
 
@@ -223,6 +225,11 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
           This comparison is large or complex. A simpler line diff is shown for some sections.
         </div>
       )}
+      {!hideBody && hasResult && syntax.limited && (
+        <div role="status" className="border-b border-info-border bg-info-bg px-3 py-2 text-sm text-info">
+          Syntax highlighting is unavailable for a large or complex source. Plain text is shown on that side.
+        </div>
+      )}
       {!hideBody && comparisonResult && !comparisonResult.limited && !areComparedTextsIdentical &&
         leftText !== rightText && comparisonResult.blocks.every((block) => block.kind === "Unchanged") && (
         <div role="status" className="border-b border-info-border bg-info-bg px-3 py-2 text-sm text-info">
@@ -238,9 +245,9 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
               <p className="text-text-secondary">No comparison generated yet.</p>
             </div>
           ) : settings.viewMode === ViewMode.Split ? (
-            <SplitView />
+            <SplitView syntax={syntax} />
           ) : (
-            <UnifiedView />
+            <UnifiedView syntax={syntax} />
           )}
 
           {hasResult && (

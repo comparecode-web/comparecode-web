@@ -9,6 +9,7 @@ import { RowControls } from "./RowControls";
 import { BlockHeaderControls } from "./BlockHeaderControls";
 import { DiffFragmentList } from "./DiffFragmentList";
 import { MoveAnnotation } from "./MoveAnnotation";
+import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
 
 export interface SplitRowData {
   id: string;
@@ -24,6 +25,8 @@ export interface SplitRowData {
 }
 
 interface SplitRowProps {
+  oldSyntaxLine?: SyntaxLine;
+  newSyntaxLine?: SyntaxLine;
   row: SplitRowData;
   virtualRow: VirtualItem;
   settings: AppSettings;
@@ -39,7 +42,7 @@ interface SplitRowProps {
   measureRef: (node: HTMLElement | null) => void;
 }
 
-export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, selectedBlockId, activeMoveId, onActivateMove, setHoveredBlockId, selectBlock, mergeBlock, selectionSide, setSelectionSide, measureRef }: SplitRowProps) => {
+export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, selectedBlockId, activeMoveId, onActivateMove, setHoveredBlockId, selectBlock, mergeBlock, selectionSide, setSelectionSide, measureRef, oldSyntaxLine, newSyntaxLine }: SplitRowProps) => {
   const isLinked = row.block.move?.counterpartBlockId === selectedBlockId;
   const moveSide = row.block.move?.role === "from" ? "left" : row.block.move?.role === "to" ? "right" : null;
   const moveFocused = !!row.block.move && row.block.move.id === activeMoveId;
@@ -147,7 +150,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, selec
               </div>
               <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-(--duration-medium)", oldBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                 <div className={cn("px-2 py-0.5 min-h-6", textContentClass)} style={transformStyle}>
-                  <DiffFragmentList fragments={oldLine.fragments} lineEndingLabel={oldLine.lineEndingLabel} suppressHighlight={!!row.block.move} />
+                  <DiffFragmentList fragments={oldLine.fragments} lineEndingLabel={oldLine.lineEndingLabel} suppressHighlight={!!row.block.move} syntaxLine={oldSyntaxLine} />
                 </div>
               </div>
             </div>
@@ -163,7 +166,7 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, selec
               </div>
               <div className={cn("flex-1 overflow-hidden relative mx-1 transition-colors duration-(--duration-medium)", newBackgroundClass, row.isFirstLine && "rounded-t-md", row.isLastLine && "rounded-b-md")}>
                 <div className={cn("px-2 py-0.5 min-h-6", textContentClass)} style={transformStyle}>
-                  <DiffFragmentList fragments={newLine.fragments} lineEndingLabel={newLine.lineEndingLabel} suppressHighlight={!!row.block.move} />
+                  <DiffFragmentList fragments={newLine.fragments} lineEndingLabel={newLine.lineEndingLabel} suppressHighlight={!!row.block.move} syntaxLine={newSyntaxLine} />
                 </div>
               </div>
             </div>

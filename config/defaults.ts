@@ -7,6 +7,8 @@ export const defaultSettings: AppSettings = {
   viewMode: ViewMode.Split,
   fontSize: 13.0,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  isSyntaxHighlightingEnabled: false,
+  textSyntaxLanguage: "javascript",
   theme: "light",
   useCustomHighlightColors: false,
   customDiffAddedBg: "#e6ffed",

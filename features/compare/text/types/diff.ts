@@ -58,6 +58,7 @@ export interface ChangeBlock {
 export interface ComparisonResult {
   blocks: Array<ChangeBlock>;
   limited: boolean;
+  sourceTexts?: { original: string; modified: string };
 }
 
 export interface MinimapSegment {
