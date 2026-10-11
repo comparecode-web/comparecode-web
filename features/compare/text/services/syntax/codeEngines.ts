@@ -9,7 +9,8 @@ const cppRaw = /(?:u8|u|U|L)?R"([^ ()\\\t\r\n]{0,16})\(/y;
 const cppPrefix = /(?:u8|u|U|L)(?=["'])/y;
 const swiftRaw = /(#+)("""|")/y;
 const csharpPrefix = /(?:\$+@?|@\$?)(?=")/y;
-const heredoc = /<<(-|~)?[ \t]*(?:'([A-Za-z_][\w]*)'|"([A-Za-z_][\w]*)"|\\?([A-Za-z_][\w]*))/y;
+const shellHeredoc = /<<(-)?[ \t]*(?:'([A-Za-z_][\w]*)'|"([A-Za-z_][\w]*)"|\\?([A-Za-z_][\w]*))/y;
+const rubyHeredoc = /<<(-|~)?(?:'([A-Za-z_][\w]*)'|"([A-Za-z_][\w]*)"|([A-Za-z_][\w]*))/y;
 const phpHeredoc = /<<<[ \t]*(?:'([A-Za-z_][\w]*)'|"([A-Za-z_][\w]*)"|([A-Za-z_][\w]*))[ \t]*(?=\r|\n)/y;
 const rubyPercent = /%(?:[qQwWiIxrs])?([^\w\s])/y;
 const clojureSymbol = /[\p{L}_*+!?<>=\/][\p{L}\p{N}_*+!?<>=.\/-]*/uy;
@@ -59,7 +60,7 @@ function readClojureDiscard(source: string, start: number): number {
   return index;
 }
 
-function specialString(source: string, index: number, language: ProfileLanguage): number | undefined {
+function specialString(source: string, index: number, language: ProfileLanguage, allowHeredoc: boolean): number | undefined {
   if (language === "rust") {
     const raw = matchAt(rustRaw, source, index);
     if (raw) return readUntil(source, index + raw[0].length, `"${raw[1]}`);
@@ -105,7 +106,7 @@ function specialString(source: string, index: number, language: ProfileLanguage)
     if (match) return readHeredoc(source, index + match[0].length, match[1] ?? match[2] ?? match[3], "spaces", true);
   }
   if (language === "shell" || language === "ruby") {
-    const match = matchAt(heredoc, source, index);
+    const match = allowHeredoc ? matchAt(language === "ruby" ? rubyHeredoc : shellHeredoc, source, index) : null;
     if (match) return readHeredoc(source, index + match[0].length, match[2] ?? match[3] ?? match[4],
       language === "ruby" && match[1] ? "spaces" : match[1] === "-" ? "tabs" : "none");
     if (language === "ruby") {
@@ -126,11 +127,39 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
   let index = 0;
   let afterDot = false;
   let canStartRegex = true;
+  let shellArithmeticDepth = 0;
+  let rubyCommandPosition = true;
+  let rubyCommandArgument = false;
+  const rubyLocals = new Set<string>();
   while (index < source.length) {
     if (exhausted()) return false;
     const start = index;
     const char = source[index];
-    if (/\s/u.test(char)) { index++; continue; }
+    if (/\s/u.test(char)) {
+      if (language === "ruby" && isNewline(char)) {
+        rubyCommandPosition = true;
+        rubyCommandArgument = false;
+        canStartRegex = true;
+      }
+      index++;
+      continue;
+    }
+
+    if (language === "shell") {
+      if (!shellArithmeticDepth && (source.startsWith("$((", index) || source.startsWith("((", index))) {
+        shellArithmeticDepth = 2;
+        index += char === "$" ? 3 : 2;
+        emit(start, index, "punctuation");
+        continue;
+      }
+      if (char === "(" && shellArithmeticDepth) shellArithmeticDepth++;
+      if (char === ")" && shellArithmeticDepth) shellArithmeticDepth--;
+      if (source.startsWith("<<<", index)) {
+        index += 3;
+        emit(start, index, "punctuation");
+        continue;
+      }
+    }
 
     if (profile.lineComments.some((comment) => source.startsWith(comment, index)) &&
       !(language === "php" && source.startsWith("#[", index)) &&
@@ -169,12 +198,16 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
       }
     }
 
-    const specialEnd = specialString(source, index, language);
+    const allowHeredoc = language === "shell" ? shellArithmeticDepth === 0
+      : canStartRegex || (rubyCommandArgument && /[ \t]/.test(source[index - 1] ?? ""));
+    const specialEnd = specialString(source, index, language, allowHeredoc);
     if (specialEnd !== undefined) {
       index = specialEnd;
       emit(start, index, "string");
       canStartRegex = false;
       afterDot = false;
+      rubyCommandArgument = false;
+      rubyCommandPosition = false;
       continue;
     }
     if (language === "rust" && char === "'") {
@@ -201,6 +234,8 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
       emit(start, index, sql && char !== "'" ? "property" : "string");
       afterDot = false;
       canStartRegex = false;
+      rubyCommandArgument = false;
+      rubyCommandPosition = false;
       continue;
     }
     if (language === "sql" && char === "[") {
@@ -214,7 +249,7 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
       continue;
     }
     const variable = language === "shell" ? matchAt(shellVariable, source, index) : language === "php" ? matchAt(phpVariable, source, index) : language === "ruby" ? matchAt(rubyVariable, source, index) : null;
-    if (variable) { index += variable[0].length; emit(start, index, "property"); canStartRegex = false; continue; }
+    if (variable) { index += variable[0].length; emit(start, index, "property"); canStartRegex = false; rubyCommandArgument = false; continue; }
     if (language === "ruby") {
       const symbol = matchAt(rubySymbol, source, index);
       if (symbol) { index += symbol[0].length; emit(start, index, "property"); continue; }
@@ -238,7 +273,7 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
       }
     }
     const number = matchAt(language === "clojure" ? clojureNumber : numeric, source, index);
-    if (number) { index += number[0].length; emit(start, index, "number"); canStartRegex = false; afterDot = false; continue; }
+    if (number) { index += number[0].length; emit(start, index, "number"); canStartRegex = false; afterDot = false; rubyCommandArgument = false; rubyCommandPosition = false; continue; }
 
     if ((language === "rust" && source.startsWith("r#", index)) || (language === "csharp" && char === "@")) {
       const escaped = matchAt(identifier, source, index + (language === "rust" ? 2 : 1));
@@ -252,6 +287,13 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
       const value = source.slice(language === "objectivec" && char === "@" ? start + 1 : start, index);
       const kind = afterDot ? undefined : profileWordKind(value, profile);
       if (kind) emit(start, index, kind);
+      if (language === "ruby") {
+        let next = index;
+        while (/[ \t]/.test(source[next] ?? "") && next < source.length) next++;
+        if (source[next] === "=" && !/[=>~]/.test(source[next + 1] ?? "")) rubyLocals.add(value);
+        rubyCommandArgument = rubyCommandPosition && !kind && !rubyLocals.has(value);
+        rubyCommandPosition = false;
+      }
       canStartRegex = ["return", "when", "if", "unless"].includes(value);
       afterDot = false;
       continue;
@@ -263,6 +305,8 @@ export function scanCode(source: string, language: ProfileLanguage, emit: EmitTo
     emit(start, index, "punctuation");
     afterDot = char === "." && !range;
     canStartRegex = ![")", "]", "}", "."].includes(char);
+    rubyCommandArgument = false;
+    rubyCommandPosition = char === ";";
   }
   return !exhausted();
 }

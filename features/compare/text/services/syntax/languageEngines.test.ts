@@ -177,6 +177,30 @@ describe("language-specific lexical behavior", () => {
     expect(result.some(({ text, kind }) => text.includes("#bar") && kind === "comment")).toBe(false);
   });
 
+  it.each(["items << value", "items<<value", "items <<value", "items << 'text'"])("keeps Ruby append expressions out of heredoc state: %s", (expression) => {
+    const result = tokens(`items = []\n${expression}\nreturn 42`, "ruby");
+    expect(result).toContainEqual({ text: "return", kind: "keyword" });
+    expect(result).toContainEqual({ text: "42", kind: "number" });
+    expect(result.some(({ text, kind }) => kind === "string" && text.includes("return"))).toBe(false);
+  });
+
+  it.each(["detail = <<TEXT", "detail = <<~'TEXT'", "puts <<TEXT", "puts(<<TEXT)"])("preserves Ruby heredocs in expression and command arguments: %s", (opening) => {
+    expect(tokens(`${opening}\nreturn # literal\nTEXT\nreturn 42`, "ruby")).toEqual(expect.arrayContaining([
+      { text: "return # literal", kind: "string" }, { text: "return", kind: "keyword" }, { text: "42", kind: "number" }
+    ]));
+  });
+
+  it.each([
+    "result=$((count << shift))", "((count << shift))", "result=$(((count + 1) << shift))",
+    "result=$((count << shift << other))", "read -r value <<<word"
+  ])("keeps Shell arithmetic shifts and here strings out of heredoc state: %s", (expression) => {
+    const result = tokens(`${expression}\necho done\ncat <<EOF\nreturn # literal\nEOF\nprintf done`, "shell");
+    expect(result).toEqual(expect.arrayContaining([
+      { text: "echo", kind: "type" }, { text: "return # literal", kind: "string" }, { text: "printf", kind: "type" }
+    ]));
+    expect(result.some(({ text, kind }) => kind === "string" && text.includes("echo"))).toBe(false);
+  });
+
   it("recognizes SQL quoted identifiers, doubled quotes, nested comments and dollar quoting", () => {
     expect(tokens('select [order], "name", `key`, \'it\'\'s\', $tag$return -- string$tag$ /* a /* b */ c */ from users', "sql")).toEqual(expect.arrayContaining([
       { text: "[order]", kind: "property" }, { text: '"name"', kind: "property" }, { text: "`key`", kind: "property" },
@@ -198,6 +222,33 @@ describe("language-specific lexical behavior", () => {
       { text: "true", kind: "keyword" }, { text: "12", kind: "number" }, { text: "https://a.test/#part", kind: "string" },
       { text: "  if # literal", kind: "string" }, { text: "next", kind: "property" }, { text: "&id", kind: "property" }, { text: "# note", kind: "comment" }
     ]));
+  });
+
+  it.each(["\n", "\r\n", "\r"])("classifies whole YAML plain scalars with %j line endings", (ending) => {
+    const source = [
+      "message: hello true 123 null world # note", "punctuation: hello, [true] {123} # note",
+      "multiline: hello", "  true 123 null world", "flow: [hello true 123 null world, true, 123, null]",
+      "boolean: true", "number: 42", "empty: null", "url: https://example.com/#part"
+    ].join(ending);
+    const result = tokens(source, "yaml");
+    expect(result).toEqual(expect.arrayContaining([
+      { text: "hello true 123 null world", kind: "string" }, { text: "hello, [true] {123}", kind: "string" },
+      { text: "  true 123 null world", kind: "string" }, { text: "# note", kind: "comment" },
+      { text: "42", kind: "number" }, { text: "https://example.com/#part", kind: "string" }
+    ]));
+    expect(result.filter(({ text, kind }) => text === "true" && kind === "keyword")).toHaveLength(2);
+    expect(result.filter(({ text, kind }) => text === "123" && kind === "number")).toHaveLength(1);
+    expect(result.filter(({ text, kind }) => text === "null" && kind === "keyword")).toHaveLength(2);
+  });
+
+  it("preserves YAML compact mappings, quoted flow keys and indented scalar continuations", () => {
+    const result = tokens('- message: hello true\n  count: 42\ntext:\n  hello\n  true 123 null\nflow: {"flag":true, "count":123}\nnext: false', "yaml");
+    expect(result).toEqual(expect.arrayContaining([
+      { text: "hello true", kind: "string" }, { text: "count", kind: "property" }, { text: "42", kind: "number" },
+      { text: "  true 123 null", kind: "string" }, { text: '"flag"', kind: "property" }, { text: "true", kind: "keyword" },
+      { text: "123", kind: "number" }, { text: "next", kind: "property" }, { text: "false", kind: "keyword" }
+    ]));
+    expect(result.filter(({ text, kind }) => kind === "keyword" && text === "true")).toHaveLength(1);
   });
 
   it("handles escaped Ruby percent delimiters, quoted CSS URLs and PHP attributes", () => {

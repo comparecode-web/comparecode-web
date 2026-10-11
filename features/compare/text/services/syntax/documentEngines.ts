@@ -7,7 +7,6 @@ const cssNumber = /(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?(?:%|[a-zA-Z]+)?/y;
 const cssHex = /#[\da-fA-F]{3,8}\b/y;
 const entity = /&(?:#[xX][\da-fA-F]+|#\d+|[A-Za-z][\w]*);/y;
 const markupName = /[\p{L}_:][\p{L}\p{N}_.:-]*/uy;
-const yamlWord = /[^\s,\[\]{}]+/y;
 const yamlNumber = /^[+-]?(?:0[xX][\da-fA-F_]+|0[oO][0-7_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?|\.inf|\.nan)$/i;
 
 export function scanCss(source: string, emit: EmitToken, exhausted: () => boolean): boolean {
@@ -154,10 +153,42 @@ function readYamlBlock(source: string, marker: number, indentation: number, expl
   return source.length;
 }
 
+function readYamlPlain(source: string, start: number, lineStart: number, flowDepth: number, indentation: number): { end: number; lineStart: number } {
+  let index = start;
+  let end = start;
+  let endLineStart = lineStart;
+  while (index < source.length) {
+    const char = source[index];
+    if ((flowDepth > 0 && ",[]{}".includes(char)) ||
+      (char === "#" && /\s/.test(source[index - 1] ?? "")) ||
+      (char === ":" && (index + 1 === source.length || /\s/.test(source[index + 1]) || (flowDepth > 0 && ",[]{}".includes(source[index + 1]))))) break;
+    if (isNewline(char)) {
+      let nextStart = nextLine(source, index);
+      let next = nextStart;
+      while (next < source.length) {
+        while (source[next] === " " || source[next] === "\t") next++;
+        if (!isNewline(source[next])) break;
+        nextStart = nextLine(source, next);
+        next = nextStart;
+      }
+      if (next >= source.length || source[next] === "#" || (!flowDepth && next - nextStart <= indentation)) break;
+      lineStart = nextStart;
+      index = next;
+      continue;
+    }
+    index = advanceCodePoint(source, index);
+    if (!/\s/u.test(char)) { end = index; endLineStart = lineStart; }
+  }
+  return { end, lineStart: endLineStart };
+}
+
 export function scanYaml(source: string, emit: EmitToken, exhausted: () => boolean): boolean {
   let index = 0;
   let lineStart = 0;
   let keyCandidate = true;
+  let flowDepth = 0;
+  let afterKey = false;
+  let plainIndentation = 0;
   while (index < source.length) {
     if (exhausted()) return false;
     const start = index;
@@ -174,7 +205,9 @@ export function scanYaml(source: string, emit: EmitToken, exhausted: () => boole
       index = readQuote(source, index, { multiline: true, doubled: char === "'", escapes: char === '"' });
       let next = index;
       while (/[ \t]/.test(source[next] ?? "") && next < source.length) next++;
-      emit(start, index, source[next] === ":" ? "property" : "string");
+      afterKey = source[next] === ":";
+      if (afterKey) plainIndentation = start - lineStart;
+      emit(start, index, afterKey ? "property" : "string");
       keyCandidate = false;
       continue;
     }
@@ -194,7 +227,14 @@ export function scanYaml(source: string, emit: EmitToken, exhausted: () => boole
       const tag = matchAt(/[&*!][^\s,\[\]{}]+/y, source, index);
       if (tag) { index += tag[0].length; emit(start, index, char === "!" ? "type" : "property"); continue; }
     }
-    if ("{}[],:?".includes(char) || (char === "-" && /\s/.test(source[index + 1] ?? ""))) {
+    if ("{}[]".includes(char) || (char === "," && flowDepth > 0) ||
+      (char === ":" && afterKey) ||
+      (":?".includes(char) && (index + 1 === source.length || /\s/.test(source[index + 1]) || (flowDepth > 0 && ",[]{}".includes(source[index + 1])))) ||
+      (char === "-" && /\s/.test(source[index + 1] ?? ""))) {
+      if (char === "{" || char === "[") flowDepth++;
+      if (char === "}" || char === "]") flowDepth = Math.max(0, flowDepth - 1);
+      if (char === "-") plainIndentation = start - lineStart;
+      afterKey = false;
       index++;
       emit(start, index, "punctuation");
       keyCandidate = char !== ":" && char !== "]" && char !== "}";
@@ -202,14 +242,23 @@ export function scanYaml(source: string, emit: EmitToken, exhausted: () => boole
     }
     if (keyCandidate) {
       const key = matchAt(/[^\r\n{}\[\],#]+?(?=:(?:[\s,\]}]|$))/y, source, index);
-      if (key) { index += key[0].trimEnd().length; emit(start, index, "property"); keyCandidate = false; continue; }
+      if (key) {
+        index += key[0].trimEnd().length;
+        emit(start, index, "property");
+        keyCandidate = false;
+        afterKey = true;
+        plainIndentation = start - lineStart;
+        continue;
+      }
     }
-    const word = matchAt(yamlWord, source, index);
-    if (word) {
-      index += word[0].length;
-      const value = word[0];
+    const plain = readYamlPlain(source, index, lineStart, flowDepth, plainIndentation);
+    if (plain.end > index) {
+      index = plain.end;
+      lineStart = plain.lineStart;
+      const value = source.slice(start, index);
       emit(start, index, /^(true|false|null|~)$/i.test(value) ? "keyword" : yamlNumber.test(value) ? "number" : "string");
       keyCandidate = false;
+      afterKey = false;
       continue;
     }
     index = advanceCodePoint(source, index);

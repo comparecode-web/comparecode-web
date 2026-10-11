@@ -7,7 +7,7 @@ import { useTextStore } from "../../../store/useTextStore";
 import { useSyntaxHighlighting } from "../../../hooks/useSyntaxHighlighting";
 import { SplitView } from "../SplitView";
 import { UnifiedView } from "../UnifiedView";
-import { LANGUAGE_SAMPLES } from "../../../services/syntax/__fixtures__/languageSamples";
+import { LANGUAGE_SAMPLES, SYNTAX_REGRESSION_SAMPLES } from "../../../services/syntax/__fixtures__/languageSamples";
 import { TEXT_SYNTAX_LANGUAGES } from "@/types/settings";
 
 vi.mock("@/features/compare/text/hooks/useDiffVirtualizer", () => ({
@@ -64,6 +64,21 @@ describe.each([false, true])("syntax view integration (unified: %s)", (unified) 
   });
 
   describe.each([PrecisionLevel.Word, PrecisionLevel.Character])("language rendering with %s precision", (precision) => {
+    it.each(["ruby", "shell", "yaml"] as const)("renders the %s lexical regressions correctly", (language) => {
+      const { original, modified, expected } = SYNTAX_REGRESSION_SAMPLES[language];
+      const store = useTextStore.getState();
+      store.setLeftText(original);
+      store.setRightText(modified);
+      useSettingsStore.setState({ settings: { ...useSettingsStore.getState().settings, textSyntaxLanguage: language, precision } });
+      store.compare(useSettingsStore.getState().settings);
+      const { container } = render(<Harness unified={unified} />);
+      for (const token of expected) {
+        expect(Array.from(container.querySelectorAll(`[data-syntax-kind="${token.kind}"]`)).map((node) => node.textContent)).toContain(token.text);
+      }
+      expect(container.querySelector(".bg-diff-added-fg")).not.toBeNull();
+      expect(container.querySelector(".bg-diff-removed-fg")).not.toBeNull();
+    });
+
     it.each(TEXT_SYNTAX_LANGUAGES.filter((language) => language !== "plain"))("renders %s sample with diff backgrounds and exact source text", (language) => {
       const { original, modified, expected } = LANGUAGE_SAMPLES[language];
       const store = useTextStore.getState();

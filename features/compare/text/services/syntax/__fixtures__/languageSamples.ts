@@ -10,6 +10,19 @@ const sample = (original: string, change: readonly [string, string], expected: L
   original, modified: original.replace(change[0], change[1]), expected
 });
 
+export const SYNTAX_REGRESSION_SAMPLES: Record<"ruby" | "shell" | "yaml", LanguageSample> = {
+  ruby: sample('items = []\nvalue = 1\nitems << value\nitems<<value\nmessage = <<TEXT\nreturn # literal\nTEXT\nreturn 42', ["42", "43"], [
+    { text: "return", kind: "keyword" }, { text: "return # literal", kind: "string" }, { text: "1", kind: "number" }
+  ]),
+  shell: sample('count=12\nshift=1\nresult=$((count << shift))\n((count << shift))\nread -r value <<<word\necho "$result"\ncat <<EOF\nreturn # literal\nEOF\nprintf "done\\n"', ["12", "24"], [
+    { text: "echo", kind: "type" }, { text: "return # literal", kind: "string" }, { text: "printf", kind: "type" }
+  ]),
+  yaml: sample('message: hello true 123 null world # note\nmultiline: hello\n  true 123 null world\nflow: [hello true 123 null world, true, 123, null]\nnumber: 42', ["42", "43"], [
+    { text: "hello true 123 null world", kind: "string" }, { text: "  true 123 null world", kind: "string" },
+    { text: "true", kind: "keyword" }, { text: "123", kind: "number" }, { text: "# note", kind: "comment" }
+  ])
+};
+
 export const LANGUAGE_SAMPLES: Record<Exclude<TextSyntaxLanguage, "plain">, LanguageSample> = {
   c: sample('#include <stdio.h>\n/* A local C sample */\nint main(void) {\n  const char *name = "CompareCode";\n  int count = 12;\n  printf("%s: %d\\n", name, count);\n  return 0;\n}', ["12", "24"], [
     { text: "#include", kind: "keyword" }, { text: "/* A local C sample */", kind: "comment" },
