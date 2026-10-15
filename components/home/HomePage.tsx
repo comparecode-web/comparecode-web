@@ -142,7 +142,7 @@ function HomeWorkspace() {
       <header className={styles.modernWelcome}>
         <div>
           <span className={styles.eyebrow}>CompareCode / Free and open source</span>
-          <h1>Small tools. Good work.</h1>
+          <h1>Small tools. <span className={styles.highlight}>Good work.</span></h1>
           <p>Compare text, code and images. Write Markdown and create QR codes.</p>
         </div>
       </header>

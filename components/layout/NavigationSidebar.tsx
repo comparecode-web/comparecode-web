@@ -17,6 +17,9 @@ import { PROJECT_LINKS } from "@/config/project";
 
 const projectLinkClassName = "flex h-10 items-center overflow-hidden rounded-lg border border-transparent text-left text-sm font-semibold transition-colors hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-accent-primary";
 
+const activeDestinationClassName = "border-accent-primary/20 bg-bg-selected text-accent-primary supports-[anchor-name:--a]:border-transparent supports-[anchor-name:--a]:bg-transparent";
+const activeIndicatorClassName = "pointer-events-none absolute inset-x-2 top-[anchor(top)] bottom-[anchor(bottom)] -z-10 hidden rounded-lg border border-accent-primary/20 bg-bg-selected transition-[top,bottom] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none supports-[anchor-name:--a]:block";
+
 const navItems = [
   { href: "/", label: "Home", icon: MdHome },
   { href: "/text", label: "Text compare", icon: MdCode },
@@ -87,14 +90,15 @@ export function NavigationSidebar() {
   );
 
   const navigation = (mobile: boolean) => (
-    <nav aria-label={mobile ? "Mobile navigation" : "Main navigation"} className="flex flex-col gap-1 p-2" data-tool-controls>
+    <nav aria-label={mobile ? "Mobile navigation" : "Main navigation"} className="relative isolate flex flex-col gap-1 p-2" data-tool-controls>
       {navItems.map(({ href, label, icon: Icon }) => (
-        <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} aria-busy={mobile && isPending && pendingHref === href || undefined} onClick={() => navigate(href)} className={cn("flex h-10 items-center overflow-hidden rounded-lg border text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? "border-accent-primary/20 bg-bg-selected text-accent-primary" : "border-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
+        <button key={href} type="button" aria-label={label} aria-current={pathname === href ? "page" : undefined} aria-busy={mobile && isPending && pendingHref === href || undefined} onClick={() => navigate(href)} className={cn("flex h-10 items-center overflow-hidden rounded-lg border border-transparent text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary", pathname === href ? cn(activeDestinationClassName, mobile ? "[anchor-name:--nav-active-mobile]" : "[anchor-name:--nav-active-desktop]") : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary")}>
           <span className="flex h-10 w-9 shrink-0 items-center justify-center"><Icon className="text-2xl" /></span>
           <span className={cn("whitespace-nowrap", !mobile && "hidden @min-[12rem]/navigation:inline")}>{label}</span>
           {mobile && isPending && pendingHref === href && <span role="status" className="ml-auto mr-3 flex items-center"><span className="sr-only">Opening {label}</span><span aria-hidden="true" className="size-4 rounded-full border-2 border-current border-r-transparent motion-safe:animate-spin" /></span>}
         </button>
       ))}
+      {navItems.some((item) => item.href === pathname) && <span aria-hidden="true" className={cn(activeIndicatorClassName, mobile ? "[position-anchor:--nav-active-mobile]" : "[position-anchor:--nav-active-desktop]")} />}
     </nav>
   );
 
