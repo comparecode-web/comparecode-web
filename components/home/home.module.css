@@ -96,9 +96,9 @@
 .compact-spectrum .toolLink:hover { background: color-mix(in srgb, var(--tool-color) 4%, var(--bg-primary)); border-color: var(--tool-color); }
 .compact-spectrum .toolArrow { color: var(--tool-color); padding-top: .75rem; }
 .compact-spectrum .toolCopy { padding-top: .25rem; }
-.compact-spectrum .modernAside > .localNote { background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-primary)); border: 1px solid color-mix(in srgb, var(--accent-primary) 15%, var(--bg-primary)); }
+.compact-spectrum .modernAside > .localNote { background: var(--bg-primary); border: 1px solid var(--study-line); }
 .compact-spectrum .localNote h2 { font-size: 1.5rem; }
-.compact-spectrum .localNote li > svg { color: var(--accent-primary); }
+.compact-spectrum .localNote li > svg { color: var(--text-primary); }
 .compact-spectrum .questions { border-top: 0; padding: 2rem; background: var(--bg-primary); border-radius: 1rem; }
 .compact-spectrum .questions > div:last-child { border: 0; border-radius: 0; }
 .compact-spectrum .questions > div:last-child > div { padding-block: .25rem; }
@@ -139,7 +139,8 @@
   --motion-active: 0;
   position: relative;
   isolation: isolate;
-  transition: border-color 280ms ease;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 .75rem 1.5rem -1.25rem color-mix(in srgb, var(--motion-color) calc(var(--motion-active) * 22%), transparent);
+  transition: border-color 280ms ease, box-shadow 320ms ease;
 }
 :is(.animated .toolLink, .workspaceAnimated .workspaceLink),
 :is(.animated .toolLink, .workspaceAnimated .workspaceLink):hover {
@@ -173,6 +174,83 @@
   transform-origin: left center;
   transition: transform 440ms cubic-bezier(.22, 1, .36, 1), opacity 300ms ease;
 }
+.animated .toolLink > .iconTile {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tool-color) calc(var(--motion-active) * 20%), transparent);
+  transition: box-shadow 280ms ease;
+}
+.animated .toolArrow > svg { transition: translate 280ms cubic-bezier(.22, 1, .36, 1); }
+.animated .toolLink:focus-visible .toolArrow > svg { translate: 2px -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .animated .toolLink:hover .toolArrow > svg { translate: 2px -2px; }
+}
+
+.canvas h1, .canvas h2 { text-wrap: balance; }
+.highlight {
+  padding-right: .06em;
+  background: linear-gradient(100deg, var(--accent-primary) 10%, color-mix(in srgb, var(--accent-primary) 45%, var(--markdown-alert-important-fg)) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.modernWelcome { isolation: isolate; }
+.modernWelcome::before,
+.modernWelcome::after {
+  content: "";
+  position: absolute;
+  inset: -1rem 0 -1rem 30%;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000, rgb(0 0 0 / .5) 45%, transparent);
+  mask-image: radial-gradient(closest-side, #000, rgb(0 0 0 / .5) 45%, transparent);
+}
+.modernWelcome::before {
+  background:
+    radial-gradient(60% 70% at 40% 40%, color-mix(in srgb, var(--accent-primary) 14%, transparent), transparent),
+    radial-gradient(50% 60% at 65% 70%, color-mix(in srgb, var(--markdown-alert-important-fg) 9%, transparent), transparent);
+}
+.modernWelcome::after {
+  background-image: radial-gradient(color-mix(in srgb, var(--text-secondary) 26%, transparent) 1px, transparent 1.5px);
+  background-size: 1.25rem 1.25rem;
+}
+.modernWelcome .eyebrow {
+  padding: .25rem .75rem;
+  border: 1px solid var(--study-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+  line-height: 1.25rem;
+  width: fit-content;
+}
+
+.compact-spectrum .modernAside > .localNote { box-shadow: 0 1px 2px rgb(0 0 0 / .04); }
+
+.compact-spectrum .questions {
+  border: 1px solid var(--study-line);
+  background:
+    radial-gradient(32rem 18rem at 0% 0%, color-mix(in srgb, var(--accent-primary) 8%, transparent), transparent 70%),
+    radial-gradient(24rem 16rem at 100% 100%, color-mix(in srgb, var(--markdown-alert-important-fg) 6%, transparent), transparent 70%),
+    var(--bg-primary);
+  box-shadow: 0 1px 2px rgb(0 0 0 / .04);
+}
+.compact-spectrum .questions > div:last-child { background: transparent; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .modernWelcome::before, .modernWelcome::after { animation: home-glow 900ms ease backwards; }
+  :is(.modernWelcome > div > *, .modernTools > .sectionHeading, .directory > .toolLink, .modernAside) {
+    animation: home-rise 560ms cubic-bezier(.2, .8, .2, 1) backwards;
+  }
+  .modernWelcome h1 { animation-delay: 60ms; }
+  .modernWelcome h1 + p { animation-delay: 120ms; }
+  .modernTools > .sectionHeading { animation-delay: 160ms; }
+  .directory > .toolLink:nth-child(1) { animation-delay: 200ms; }
+  .directory > .toolLink:nth-child(2) { animation-delay: 250ms; }
+  .directory > .toolLink:nth-child(3) { animation-delay: 300ms; }
+  .directory > .toolLink:nth-child(4) { animation-delay: 350ms; }
+  .modernAside { animation-delay: 260ms; }
+}
+@keyframes home-rise { from { opacity: 0; translate: 0 1rem; } }
+@keyframes home-glow { from { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   .canvas *,
   .canvas *::before,
