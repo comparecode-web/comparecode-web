@@ -6,6 +6,8 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+## 2026-10-25
+
 ### Added
 
 - **Themes:** Bubblegum, Forest, Sand, and Space themes.
