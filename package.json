@@ -11,6 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "agents:sync": "node scripts/sync-claude-skills.mjs",
+    "changelog:check": "node scripts/changelog.mjs check",
+    "changelog:release": "node scripts/changelog.mjs release",
     "themes:generate": "node scripts/generate-themes.mjs"
   },
   "dependencies": {

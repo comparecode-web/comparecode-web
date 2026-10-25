@@ -38,6 +38,8 @@ git checkout -b fix/issue-description
 
 ### 5. Commit Your Changes
 
+If your change is noticeable to someone using the app, add a line under "Unreleased" in [CHANGELOG.md](CHANGELOG.md) in the same commit, for example `- **Image compare:** Zoom in every comparison mode.` See [the changelog guide](docs/changelog.md) for the categories and areas. `npm run changelog:check` validates it.
+
 Use an English, subject-only [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) message.
 
 Every commit requires a [Developer Certificate of Origin](https://developercertificate.org/) sign-off. Create it with `git commit -s`:
