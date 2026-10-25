@@ -5,7 +5,13 @@ import { MdCloudUpload, MdImage, MdClose } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
 import { IconButton } from "@/components/ui/IconButton";
 import { ImageFileMeta, useImageCompareStore } from "../store/useImageCompareStore";
+import { useToastStore } from "@/store/useToastStore";
 import { readExifData } from "../utils/exifReader";
+import { canAllocateCanvas } from "../utils/canvasBudget";
+
+function reportUploadError(message: string) {
+  useToastStore.getState().pushToast({ message, tone: "error", dedupeKey: `image-upload-error:${message}` });
+}
 
 interface ImageUploadSlotProps {
   label: string;
@@ -21,7 +27,10 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
   const dimensionsClassName = isOriginalSlot ? "text-destructive" : "text-success";
 
   const processFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) return;
+    if (!file.type.startsWith("image/")) {
+      reportUploadError("Choose an image file, such as PNG, JPEG, WebP, or SVG.");
+      return;
+    }
 
     const url = URL.createObjectURL(file);
     const img = new window.Image();
@@ -32,7 +41,25 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
         img.onerror = () => reject(new Error("Failed to decode image"));
         img.src = url;
       });
+    } catch {
+      URL.revokeObjectURL(url);
+      reportUploadError("This image could not be opened. Your browser may not support its format.");
+      return;
+    }
 
+    if (img.naturalWidth <= 0 || img.naturalHeight <= 0) {
+      URL.revokeObjectURL(url);
+      reportUploadError("This image has no size. Add width and height to the SVG and try again.");
+      return;
+    }
+
+    if (!canAllocateCanvas(img.naturalWidth, img.naturalHeight)) {
+      URL.revokeObjectURL(url);
+      reportUploadError(`This image (${img.naturalWidth}x${img.naturalHeight}) is too large for this browser.`);
+      return;
+    }
+
+    try {
       const exif = await readExifData(file);
 
       const meta: ImageFileMeta = {

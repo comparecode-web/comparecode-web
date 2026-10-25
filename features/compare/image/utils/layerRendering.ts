@@ -1,4 +1,4 @@
-import type { ViewTransform } from "./viewport";
+import type { ViewTransform, ViewportSize } from "./viewport";
 
 export type DrawableLayer = CanvasImageSource & { width: number; height: number };
 
@@ -30,10 +30,10 @@ export function getLayerForDeviceScale(layer: DrawableLayer, deviceScale: number
   return level;
 }
 
-export function drawLayer(ctx: CanvasRenderingContext2D, layer: DrawableLayer, transform: ViewTransform): void {
-  const deviceScale = transform.scale * (ctx.getTransform().a || 1);
+export function drawLayer(ctx: CanvasRenderingContext2D, layer: DrawableLayer, transform: ViewTransform, size: ViewportSize = layer): void {
+  const deviceScale = transform.scale * (ctx.getTransform().a || 1) * (size.width / layer.width);
   const source = getLayerForDeviceScale(layer, deviceScale);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(source, transform.offsetX, transform.offsetY, layer.width * transform.scale, layer.height * transform.scale);
+  ctx.drawImage(source, transform.offsetX, transform.offsetY, size.width * transform.scale, size.height * transform.scale);
 }

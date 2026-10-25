@@ -3,11 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ImageCompareCanvas } from "../ImageCompareCanvas";
 import { useImageCompareStore } from "../../store/useImageCompareStore";
+import { createComparisonLayers, renderDiff } from "../../services/ImageDiffService";
 
 vi.mock("../../services/ImageDiffService", () => ({
   createComparisonLayers: vi.fn(async () => ({
     width: 200,
     height: 100,
+    scale: 1,
     original: Object.assign(document.createElement("canvas"), { width: 200, height: 100 }),
     modified: Object.assign(document.createElement("canvas"), { width: 200, height: 100 })
   })),
@@ -91,6 +93,23 @@ describe("ImageCompareCanvas", () => {
     expect(fade.parentElement?.parentElement).toHaveTextContent("OriginalModified50%");
     fireEvent.change(fade, { target: { value: "800" } });
     expect(useImageCompareStore.getState().fadeValue).toBe(800);
+  });
+
+  it("explains when the comparison cannot be drawn", async () => {
+    vi.mocked(createComparisonLayers).mockRejectedValueOnce(new Error("Could not create comparison layer context"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    useImageCompareStore.setState({ compareMode: "fade" });
+    render(<ImageCompareCanvas />);
+    expect(await screen.findByText("These images are too large to display in this browser.")).toBeInTheDocument();
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it("says when large images are shown at reduced resolution", async () => {
+    vi.mocked(renderDiff).mockResolvedValueOnce({ totalPixels: 80_000_000, differentPixels: 400_000, percentDifferent: 0.5, scale: 0.5 });
+    useImageCompareStore.setState({ compareMode: "diff" });
+    render(<ImageCompareCanvas />);
+    expect(await screen.findByText("Large images are shown at reduced resolution.")).toBeInTheDocument();
+    expect(screen.getByText((text) => text.replace(/\D/g, "") === "400000")).toBeInTheDocument();
   });
 
   it("shows diff statistics in the shared control bar", async () => {

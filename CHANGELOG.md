@@ -25,6 +25,8 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ### Fixed
 
+- **Image compare:** Files that are not images, cannot be opened, or are too large for the browser now show a message instead of being ignored.
+- **Image compare:** Very large comparisons are shown at reduced resolution instead of an empty view.
 - **Text compare:** Rapid merges, such as holding an arrow key, are saved to history in order, so undo restores every step.
 - **Text compare:** A merge made right after comparing is saved with that comparison in history.
 - **History:** A change that cannot be saved to history now shows a message, including when browser storage is full.

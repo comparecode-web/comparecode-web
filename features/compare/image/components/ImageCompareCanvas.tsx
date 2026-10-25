@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { cn } from "@/utils/uiHelpers";
 import { ResetButton } from "@/components/ui/ResetButton";
 import { Slider } from "@/components/ui/Slider";
@@ -16,6 +16,8 @@ const DEFAULT_FADE_VALUE = 500;
 const PAN_HINT = "Drag to pan. Scroll or pinch to zoom. Double-click for 100%.";
 const SLIDER_HINT = "Drag to compare. Space + drag to pan. Scroll to zoom.";
 const DIVIDER_HANDLE_RADIUS = 10;
+const RENDER_FAILED_MESSAGE = "These images are too large to display in this browser.";
+const REDUCED_RESOLUTION_NOTICE = "Large images are shown at reduced resolution.";
 const OVERLAY_LABEL = "pointer-events-none absolute top-2 rounded-md bg-black/60 px-2 py-0.5 text-xs font-semibold text-white";
 
 function snapToDevicePixel(ctx: CanvasRenderingContext2D, value: number): number {
@@ -52,29 +54,41 @@ function drawDivider(ctx: CanvasRenderingContext2D, x: number, top: number, bott
   }
 }
 
-function useAsyncResource<T>(key: string | null, load: () => Promise<T>): T | null {
-  const [state, setState] = useState<{ key: string; value: T } | null>(null);
+interface AsyncResource<T> {
+  value: T | null;
+  failed: boolean;
+}
+
+function useAsyncResource<T>(key: string | null, load: () => Promise<T>): AsyncResource<T> {
+  const [state, setState] = useState<{ key: string; value: T | null; failed: boolean } | null>(null);
   useEffect(() => {
     if (!key) return;
     let cancelled = false;
     load().then((value) => {
-      if (!cancelled) setState({ key, value });
-    }).catch(console.error);
+      if (!cancelled) setState({ key, value, failed: false });
+    }).catch((error: unknown) => {
+      console.error(error);
+      if (!cancelled) setState({ key, value: null, failed: true });
+    });
     return () => {
       cancelled = true;
     };
     // The key identifies every input of the load function.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  return key && state?.key === key ? state.value : null;
+  return key && state?.key === key ? { value: state.value, failed: state.failed } : { value: null, failed: false };
 }
 
-function useComparisonLayers(): ComparisonLayers | null {
+function useComparisonLayers(): AsyncResource<ComparisonLayers> {
   const originalImage = useImageCompareStore((s) => s.originalImage);
   const modifiedImage = useImageCompareStore((s) => s.modifiedImage);
   const alignmentTransform = useImageCompareStore((s) => s.alignment.appliedTransform);
   const key = originalImage && modifiedImage ? JSON.stringify([originalImage.url, modifiedImage.url, alignmentTransform]) : null;
   return useAsyncResource(key, () => createComparisonLayers(originalImage!.url, modifiedImage!.url, alignmentTransform));
+}
+
+function getReducedResolutionNotice(scale: number | undefined): string | undefined {
+  return scale !== undefined && scale < 1 ? REDUCED_RESOLUTION_NOTICE : undefined;
 }
 
 function EmptyViewportMessage({ children }: { children: ReactNode }) {
@@ -86,7 +100,7 @@ function EmptyViewportMessage({ children }: { children: ReactNode }) {
 }
 
 function SideBySidePane({ image, title, dimensionClassName, onFitScaleChange }: { image: ImageFileMeta | null; title: string; dimensionClassName: string; onFitScaleChange?: (fitScale: number) => void }) {
-  const canvas = useAsyncResource(image?.url ?? null, () => loadComparisonImage(image!.url));
+  const { value: canvas, failed } = useAsyncResource(image?.url ?? null, () => loadComparisonImage(image!.url));
   const draw = useCallback((ctx: CanvasRenderingContext2D, transform: ViewTransform) => {
     if (canvas) drawLayer(ctx, canvas, transform);
   }, [canvas]);
@@ -101,7 +115,9 @@ function SideBySidePane({ image, title, dimensionClassName, onFitScaleChange }: 
         </div>
         {image && <span className="truncate text-xs text-text-secondary">{image.name}</span>}
       </div>
-      <ImageViewportCanvas content={content} draw={draw} label={`${title} image`} onFitScaleChange={onFitScaleChange} className="flex-1" />
+      <ImageViewportCanvas content={content} draw={draw} label={`${title} image`} onFitScaleChange={onFitScaleChange} className="flex-1">
+        {failed && <EmptyViewportMessage>{RENDER_FAILED_MESSAGE}</EmptyViewportMessage>}
+      </ImageViewportCanvas>
     </div>
   );
 }
@@ -126,19 +142,19 @@ function FadeView() {
   const fadeValue = useImageCompareStore((s) => s.fadeValue);
   const setFadeValue = useImageCompareStore((s) => s.setFadeValue);
   const ready = useImageCompareStore((s) => Boolean(s.originalImage && s.modifiedImage));
-  const layers = useComparisonLayers();
+  const { value: layers, failed } = useComparisonLayers();
   const [fitScale, setFitScale] = useState(1);
   const draw = useCallback((ctx: CanvasRenderingContext2D, transform: ViewTransform) => {
     if (!layers) return;
-    drawLayer(ctx, layers.original, transform);
+    drawLayer(ctx, layers.original, transform, layers);
     ctx.globalAlpha = fadeValue / 1000;
-    drawLayer(ctx, layers.modified, transform);
+    drawLayer(ctx, layers.modified, transform, layers);
     ctx.globalAlpha = 1;
   }, [fadeValue, layers]);
 
   return (
     <>
-      <ImageViewportControls fitScale={fitScale} hint={PAN_HINT}>
+      <ImageViewportControls fitScale={fitScale} hint={PAN_HINT} notice={getReducedResolutionNotice(layers?.scale)}>
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-md">
           <span className="text-xs font-semibold text-text-secondary">Original</span>
           <Slider
@@ -156,6 +172,7 @@ function FadeView() {
       </ImageViewportControls>
       <ImageViewportCanvas content={layers} draw={draw} label="Fade comparison" onFitScaleChange={setFitScale} className="flex-1">
         {!ready && <EmptyViewportMessage>Load both images to use Fade mode</EmptyViewportMessage>}
+        {failed && <EmptyViewportMessage>{RENDER_FAILED_MESSAGE}</EmptyViewportMessage>}
       </ImageViewportCanvas>
     </>
   );
@@ -165,24 +182,24 @@ function SliderView() {
   const sliderPosition = useImageCompareStore((s) => s.sliderPosition);
   const setSliderPosition = useImageCompareStore((s) => s.setSliderPosition);
   const ready = useImageCompareStore((s) => Boolean(s.originalImage && s.modifiedImage));
-  const layers = useComparisonLayers();
+  const { value: layers, failed } = useComparisonLayers();
   const [fitScale, setFitScale] = useState(1);
   const draw = useCallback((ctx: CanvasRenderingContext2D, transform: ViewTransform, view: ViewportSize) => {
     if (!layers) return;
-    drawLayer(ctx, layers.modified, transform);
+    drawLayer(ctx, layers.modified, transform, layers);
     const dividerX = snapToDevicePixel(ctx, transform.offsetX + sliderPosition * layers.width * transform.scale);
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, dividerX, view.height);
     ctx.clip();
-    drawLayer(ctx, layers.original, transform);
+    drawLayer(ctx, layers.original, transform, layers);
     ctx.restore();
     drawDivider(ctx, dividerX, Math.max(0, transform.offsetY), Math.min(view.height, transform.offsetY + layers.height * transform.scale));
   }, [layers, sliderPosition]);
 
   return (
     <>
-      <ImageViewportControls fitScale={fitScale} hint={SLIDER_HINT} />
+      <ImageViewportControls fitScale={fitScale} hint={SLIDER_HINT} notice={getReducedResolutionNotice(layers?.scale)} />
       <ImageViewportCanvas
         content={layers}
         draw={draw}
@@ -192,13 +209,14 @@ function SliderView() {
         onFitScaleChange={setFitScale}
         className="flex-1"
       >
-        {ready && (
+        {ready && !failed && (
           <>
             <span className={cn(OVERLAY_LABEL, "left-2")}>Original</span>
             <span className={cn(OVERLAY_LABEL, "right-2")}>Modified</span>
           </>
         )}
         {!ready && <EmptyViewportMessage>Load both images to use Slider mode</EmptyViewportMessage>}
+        {failed && <EmptyViewportMessage>{RENDER_FAILED_MESSAGE}</EmptyViewportMessage>}
       </ImageViewportCanvas>
     </>
   );
@@ -211,20 +229,24 @@ function DiffView() {
   const alignmentTransform = useImageCompareStore((s) => s.alignment.appliedTransform);
   const [fitScale, setFitScale] = useState(1);
   const key = originalImage && modifiedImage ? JSON.stringify([originalImage.url, modifiedImage.url, diffAlgorithm, alignmentTransform]) : null;
-  const result = useAsyncResource(key, async () => {
+  const { value: result, failed } = useAsyncResource(key, async () => {
     const canvas = document.createElement("canvas");
     const stats: DiffStats = await renderDiff(originalImage!.url, modifiedImage!.url, canvas, diffAlgorithm, alignmentTransform);
     return { canvas, stats };
   });
-  const draw = useCallback((ctx: CanvasRenderingContext2D, transform: ViewTransform) => {
-    if (result) drawLayer(ctx, result.canvas, transform);
+  const content = useMemo<ViewportSize | null>(() => {
+    if (!result) return null;
+    const scale = result.stats.scale ?? 1;
+    return { width: result.canvas.width / scale, height: result.canvas.height / scale };
   }, [result]);
-  const content: ViewportSize | null = result ? { width: result.canvas.width, height: result.canvas.height } : null;
+  const draw = useCallback((ctx: CanvasRenderingContext2D, transform: ViewTransform) => {
+    if (result && content) drawLayer(ctx, result.canvas, transform, content);
+  }, [content, result]);
   const stats = result?.stats;
 
   return (
     <>
-      <ImageViewportControls fitScale={fitScale} hint={PAN_HINT}>
+      <ImageViewportControls fitScale={fitScale} hint={PAN_HINT} notice={getReducedResolutionNotice(stats?.scale)}>
         {stats && (
           <div className="flex items-center gap-4">
             <span className="text-xs text-text-secondary">
@@ -240,6 +262,7 @@ function DiffView() {
       </ImageViewportControls>
       <ImageViewportCanvas content={content} draw={draw} label="Difference image" onFitScaleChange={setFitScale} className="flex-1">
         {!key && <EmptyViewportMessage>Load both images to compute diff</EmptyViewportMessage>}
+        {failed && <EmptyViewportMessage>{RENDER_FAILED_MESSAGE}</EmptyViewportMessage>}
       </ImageViewportCanvas>
       <DiffLegend diffAlgorithm={diffAlgorithm} />
     </>

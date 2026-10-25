@@ -13,6 +13,7 @@ import { DEFAULT_VIEWPORT, MIN_FIT_ZOOM, ZOOM_STEP, getMaxZoom, zoomForPixelScal
 interface ImageViewportControlsProps {
   fitScale: number;
   hint: string;
+  notice?: string;
   children?: ReactNode;
 }
 
@@ -20,7 +21,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-export function ImageViewportControls({ fitScale, hint, children }: ImageViewportControlsProps) {
+export function ImageViewportControls({ fitScale, hint, notice, children }: ImageViewportControlsProps) {
   const viewport = useImageCompareStore((state) => state.viewport);
   const setViewport = useImageCompareStore((state) => state.setViewport);
   const maxZoom = getMaxZoom(fitScale);
@@ -35,6 +36,7 @@ export function ImageViewportControls({ fitScale, hint, children }: ImageViewpor
     <WorkspaceToolbar variant="card" className="justify-between gap-x-4 gap-y-2">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
         {children}
+        {notice && <span className="text-xs font-semibold text-warning" role="status">{notice}</span>}
         <span className="hidden text-xs text-text-secondary lg:inline">{hint}</span>
       </div>
       <div className="flex min-w-0 items-center gap-1.5" role="group" aria-label="Zoom">

@@ -164,4 +164,34 @@ describe("ImageDiffService createAlignedPair", () => {
     const bottomMarginIdx = (425 * 800 + 200) * 4;
     expect(result.modifiedData[bottomMarginIdx + 3]).toBe(0);
   });
+
+  it("works at a reduced resolution when the combined image is larger than the browser can draw", () => {
+    const createdContexts: Array<{ drawImage: ReturnType<typeof vi.fn>; setTransform: ReturnType<typeof vi.fn> }> = [];
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockImplementation(function (this: HTMLCanvasElement) {
+      if (this.width * this.height > 16_777_216) return null;
+      const ctx = {
+        drawImage: vi.fn(),
+        setTransform: vi.fn(),
+        getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
+        imageSmoothingEnabled: false,
+        imageSmoothingQuality: "low"
+      };
+      createdContexts.push(ctx);
+      return ctx as unknown as CanvasRenderingContext2D;
+    });
+
+    const orig = createMockCanvas(20_000, 10_000);
+    const mod = createMockCanvas(20_000, 10_000);
+    const result = createAlignedPair(orig, mod, null);
+
+    expect(result.scale).toBeLessThan(1);
+    expect(result.width * result.height).toBeLessThanOrEqual(16_777_216);
+    expect(result.width / result.height).toBeCloseTo(2, 2);
+    expect(orig.getImageDataMock).not.toHaveBeenCalled();
+    expect(createdContexts).toHaveLength(2);
+    for (const ctx of createdContexts) {
+      expect(ctx.setTransform).toHaveBeenCalledWith(result.scale, 0, 0, result.scale, 0, 0);
+    }
+    expect(createdContexts[0].drawImage).toHaveBeenCalledWith(orig.canvas, 0, 0, 20_000, 10_000);
+  });
 });
