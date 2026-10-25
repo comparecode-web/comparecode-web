@@ -48,17 +48,18 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
   const renderChart = useCallback(async () => {
     setIsRendering(true);
     setError("");
+    const id = `comparecode-mermaid-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}-${themeVersion}`;
 
     try {
       const mermaid = (await import("mermaid/dist/mermaid.esm.min.mjs")).default;
       mermaid.initialize({
         startOnLoad: false,
         securityLevel: "strict",
+        suppressErrorRendering: true,
         theme: "base",
         themeVariables: getMermaidThemeVariables()
       });
 
-      const id = `comparecode-mermaid-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}-${themeVersion}`;
       const result = await mermaid.render(id, chart);
 
       setSvg(result.svg);
@@ -66,6 +67,7 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
       setSvg("");
       setError(err instanceof Error ? err.message : "Unable to render Mermaid diagram.");
     } finally {
+      document.getElementById(`d${id}`)?.remove();
       setIsRendering(false);
     }
   }, [chart, reactId, themeVersion]);
@@ -93,7 +95,7 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
 
   useEffect(() => {
     const element = containerRef.current;
-    if (!element || svg || isRendering) {
+    if (!element || svg || error || isRendering) {
       return;
     }
 
@@ -137,7 +139,7 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
       observer.disconnect();
       cancelScheduledRender?.();
     };
-  }, [isRendering, renderChart, svg]);
+  }, [error, isRendering, renderChart, svg]);
 
   if (error) {
     return (
