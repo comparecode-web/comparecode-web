@@ -25,6 +25,7 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ### Fixed
 
+- **Text compare:** Highlighted rows no longer show thin lines between them when the browser is zoomed.
 - **Image compare:** Slider labels and divider arrows now appear for aligned images too.
 - **Image compare:** Moving the Fade slider no longer reloads the images.
 

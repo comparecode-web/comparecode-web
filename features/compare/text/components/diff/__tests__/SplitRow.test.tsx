@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { VirtualItem } from "@tanstack/react-virtual";
 import { defaultSettings } from "@/config/defaults";
 import { BlockType, ChangeBlock, DiffChangeType } from "@/features/compare/text/types/diff";
-import { SplitRow, SplitRowData } from "../SplitRow";
+import { getHoveredBlockSurface } from "@/features/compare/text/utils/diffSurfaces";
+import { SplitRow, SplitRowData, getSplitCellBackground } from "../SplitRow";
 
 const virtualRow = { index: 0, start: 0 } as VirtualItem;
 
@@ -15,13 +16,16 @@ function block(id: string, kind: BlockType): ChangeBlock {
   };
 }
 
-function renderLine(change: ChangeBlock, hoveredBlockId: string | null = null) {
-  const row: SplitRowData = {
+function lineRow(change: ChangeBlock): SplitRowData {
+  return {
     id: `${change.id}-line`, type: "line", block: change, oldIndex: 0, newIndex: 0,
     isFirst: true, isLast: true, isSelectable: true, isFirstLine: true, isLastLine: true
   };
-  return render(<SplitRow row={row} virtualRow={virtualRow} settings={defaultSettings}
-    hoveredBlockId={hoveredBlockId} selectedBlockId={null} activeMoveId={null}
+}
+
+function renderLine(change: ChangeBlock) {
+  return render(<SplitRow row={lineRow(change)} virtualRow={virtualRow} settings={defaultSettings}
+    selectedBlockId={null} activeMoveId={null}
     onActivateMove={vi.fn()} setHoveredBlockId={vi.fn()} selectBlock={vi.fn()}
     mergeBlock={vi.fn()} selectionSide={null} setSelectionSide={vi.fn()} measureRef={vi.fn()} />);
 }
@@ -31,8 +35,8 @@ describe("split diff row", () => {
     const change = block("added", BlockType.Added);
     change.newLines = [{ lineNumber: 1, kind: DiffChangeType.Unchanged,
       fragments: [{ kind: DiffChangeType.Unchanged, text: "" }] }];
-    const { container } = renderLine(change);
-    expect(container.querySelector(".bg-diff-added-bg")).toBeInTheDocument();
+    expect(getSplitCellBackground(lineRow(change), "new")).toBe("bg-diff-added-bg");
+    expect(getSplitCellBackground(lineRow(change), "old")).toBe("bg-diff-empty-bg");
   });
 
   it("hovers only the active moved block across both panes", () => {
@@ -47,10 +51,8 @@ describe("split diff row", () => {
     target.move = { id: "move", role: "to", counterpartStartLine: 1,
       counterpartEndLine: 1, counterpartBlockId: "source", modified: false };
 
-    const sourceView = renderLine(source, source.id);
-    const targetView = renderLine(target, source.id);
-    expect(sourceView.container.querySelector(".bg-hover-overlay")).toHaveClass("inset-0");
-    expect(targetView.container.querySelector(".bg-hover-overlay")).toBeNull();
+    expect(getHoveredBlockSurface(lineRow(source), source.id)).toMatchObject({ className: "bg-hover-overlay", roundedTop: true, roundedBottom: true });
+    expect(getHoveredBlockSurface(lineRow(target), source.id)).toBeNull();
   });
 
   it("does not hover a selected moved block or thicken its outline", () => {
@@ -60,8 +62,8 @@ describe("split diff row", () => {
       fragments: [{ kind: DiffChangeType.Unchanged, text: "Moved text" }] }];
     source.move = { id: "move", role: "from", counterpartStartLine: 3,
       counterpartEndLine: 3, counterpartBlockId: "target", modified: false };
-    const sourceView = renderLine(source, source.id);
-    expect(sourceView.container.querySelector(".bg-hover-overlay")).toBeNull();
+    expect(getHoveredBlockSurface(lineRow(source), source.id)).toBeNull();
+    const sourceView = renderLine(source);
     const selectedRow = sourceView.container.querySelector(".border-border-default");
     expect(selectedRow).toHaveClass("border-l", "border-r");
     expect(selectedRow).not.toHaveClass("border-t", "border-b");
