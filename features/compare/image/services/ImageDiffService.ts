@@ -8,7 +8,90 @@ export interface DiffStats {
   percentDifferent: number;
 }
 
-function loadImageToCanvas(url: string): Promise<{ canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D }> {
+interface LoadedImageCanvas {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+}
+
+export interface ComparisonLayers {
+  width: number;
+  height: number;
+  original: HTMLCanvasElement;
+  modified: HTMLCanvasElement;
+}
+
+const IMAGE_CACHE_LIMIT = 6;
+const imageCache = new Map<string, Promise<LoadedImageCanvas>>();
+
+function loadImageToCanvas(url: string): Promise<LoadedImageCanvas> {
+  const cached = imageCache.get(url);
+  if (cached) {
+    imageCache.delete(url);
+    imageCache.set(url, cached);
+    return cached;
+  }
+  const request = decodeImageToCanvas(url);
+  imageCache.set(url, request);
+  request.catch(() => {
+    if (imageCache.get(url) === request) imageCache.delete(url);
+  });
+  while (imageCache.size > IMAGE_CACHE_LIMIT) {
+    imageCache.delete(imageCache.keys().next().value!);
+  }
+  return request;
+}
+
+export function loadComparisonImage(url: string): Promise<HTMLCanvasElement> {
+  return loadImageToCanvas(url).then(({ canvas }) => canvas);
+}
+
+function createLayerCanvas(width: number, height: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not create comparison layer context");
+  }
+  return { canvas, ctx };
+}
+
+export async function createComparisonLayers(
+  originalUrl: string,
+  modifiedUrl: string,
+  alignmentTransform?: ImageAffineTransform | null
+): Promise<ComparisonLayers> {
+  const [original, modified] = await Promise.all([loadImageToCanvas(originalUrl), loadImageToCanvas(modifiedUrl)]);
+
+  if (alignmentTransform) {
+    const bounds = getTransformedBounds(alignmentTransform, modified.canvas.width, modified.canvas.height);
+    const minX = Math.min(0, bounds.x);
+    const minY = Math.min(0, bounds.y);
+    const width = Math.max(1, Math.ceil(Math.max(original.canvas.width, bounds.x + bounds.width) - minX));
+    const height = Math.max(1, Math.ceil(Math.max(original.canvas.height, bounds.y + bounds.height) - minY));
+    const originalLayer = createLayerCanvas(width, height);
+    const modifiedLayer = createLayerCanvas(width, height);
+    originalLayer.ctx.drawImage(original.canvas, -minX, -minY);
+    const matrix = buildAffineMatrix(alignmentTransform, modified.canvas.width, modified.canvas.height);
+    modifiedLayer.ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e - minX, matrix.f - minY);
+    modifiedLayer.ctx.drawImage(modified.canvas, 0, 0);
+    modifiedLayer.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    return { width, height, original: originalLayer.canvas, modified: modifiedLayer.canvas };
+  }
+
+  const width = Math.max(original.canvas.width, modified.canvas.width);
+  const height = Math.max(original.canvas.height, modified.canvas.height);
+  const originalLayer = createLayerCanvas(width, height);
+  const modifiedLayer = createLayerCanvas(width, height);
+  for (const [layer, source] of [[originalLayer, original], [modifiedLayer, modified]] as const) {
+    layer.ctx.imageSmoothingEnabled = true;
+    layer.ctx.imageSmoothingQuality = "high";
+    layer.ctx.drawImage(source.canvas, 0, 0, width, height);
+  }
+  return { width, height, original: originalLayer.canvas, modified: modifiedLayer.canvas };
+}
+
+function decodeImageToCanvas(url: string): Promise<LoadedImageCanvas> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";

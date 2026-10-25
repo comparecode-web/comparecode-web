@@ -9,6 +9,7 @@ import {
 } from "../services/alignment/types";
 import { createDefaultAlignmentTransform, normalizeTransform } from "../services/alignment/transformUtils";
 import { estimateAutoAlignment } from "../services/alignment/autoAlignService";
+import { DEFAULT_VIEWPORT, type ImageViewportState } from "../utils/viewport";
 
 export type ImageCompareMode = "side-by-side" | "fade" | "slider" | "diff";
 export type DiffAlgorithm =
@@ -33,6 +34,7 @@ interface ImageCompareState {
   diffAlgorithm: DiffAlgorithm;
   fadeValue: number;
   sliderPosition: number;
+  viewport: ImageViewportState;
   isMetadataPanelOpen: boolean;
   alignment: ImageAlignmentState;
 
@@ -42,6 +44,8 @@ interface ImageCompareState {
   setDiffAlgorithm: (algo: DiffAlgorithm) => void;
   setFadeValue: (value: number) => void;
   setSliderPosition: (pos: number) => void;
+  setViewport: (viewport: ImageViewportState) => void;
+  resetViewport: () => void;
   setIsMetadataPanelOpen: (open: boolean) => void;
   toggleMetadataPanel: () => void;
   openAlignmentPrompt: (pairKey: string) => void;
@@ -110,6 +114,7 @@ export const useImageCompareStore = create<ImageCompareState>((set, get) => ({
   diffAlgorithm: "highlight",
   fadeValue: 500,
   sliderPosition: 0.5,
+  viewport: { ...DEFAULT_VIEWPORT },
   isMetadataPanelOpen: false,
   alignment: cloneDefaultAlignmentState(),
 
@@ -126,6 +131,7 @@ export const useImageCompareStore = create<ImageCompareState>((set, get) => ({
       || state.originalImage?.name !== img?.name;
     return {
       originalImage: img,
+      ...(previousUrl !== nextUrl ? { viewport: { ...DEFAULT_VIEWPORT } } : {}),
       ...(shouldResetAlignment ? resetAlignmentForImages(state) : {})
     };
   }),
@@ -142,6 +148,7 @@ export const useImageCompareStore = create<ImageCompareState>((set, get) => ({
       || state.modifiedImage?.name !== img?.name;
     return {
       modifiedImage: img,
+      ...(previousUrl !== nextUrl ? { viewport: { ...DEFAULT_VIEWPORT } } : {}),
       ...(shouldResetAlignment ? resetAlignmentForImages(state) : {})
     };
   }),
@@ -149,6 +156,8 @@ export const useImageCompareStore = create<ImageCompareState>((set, get) => ({
   setDiffAlgorithm: (algo) => set({ diffAlgorithm: algo }),
   setFadeValue: (value) => set({ fadeValue: clamp(value, 0, 1000) }),
   setSliderPosition: (pos) => set({ sliderPosition: clamp(pos, 0, 1) }),
+  setViewport: (viewport) => set({ viewport }),
+  resetViewport: () => set({ viewport: { ...DEFAULT_VIEWPORT } }),
   setIsMetadataPanelOpen: (open) => set({ isMetadataPanelOpen: open }),
   toggleMetadataPanel: () => set((state) => ({ isMetadataPanelOpen: !state.isMetadataPanelOpen })),
   openAlignmentPrompt: (pairKey) => set((state) => ({
@@ -345,6 +354,7 @@ export const useImageCompareStore = create<ImageCompareState>((set, get) => ({
       diffAlgorithm: "highlight",
       fadeValue: 500,
       sliderPosition: 0.5,
+      viewport: { ...DEFAULT_VIEWPORT },
       isMetadataPanelOpen: false,
       alignment: cloneDefaultAlignmentState()
     };
