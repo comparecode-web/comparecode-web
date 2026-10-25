@@ -89,11 +89,11 @@ const toolbarGroups: Array<Array<{ action: MarkdownFormatAction; title: string; 
 ];
 
 const alertOptions: Array<{ action: MarkdownFormatAction; label: string; icon: ReactNode; className: string }> = [
-  { action: "alertNote", label: "Note", icon: <MdInfo />, className: "text-blue-700 hover:bg-blue-100" },
-  { action: "alertTip", label: "Tip", icon: <MdLightbulb />, className: "text-green-700 hover:bg-green-100" },
-  { action: "alertImportant", label: "Important", icon: <MdError />, className: "text-violet-700 hover:bg-purple-100" },
-  { action: "alertWarning", label: "Warning", icon: <MdWarning />, className: "text-yellow-800 hover:bg-yellow-100" },
-  { action: "alertCaution", label: "Caution", icon: <MdCancel />, className: "text-red-700 hover:bg-red-100" }
+  { action: "alertNote", label: "Note", icon: <MdInfo />, className: "text-[var(--markdown-alert-note-fg)] hover:bg-[var(--markdown-alert-note-bg)]" },
+  { action: "alertTip", label: "Tip", icon: <MdLightbulb />, className: "text-[var(--markdown-alert-tip-fg)] hover:bg-[var(--markdown-alert-tip-bg)]" },
+  { action: "alertImportant", label: "Important", icon: <MdError />, className: "text-[var(--markdown-alert-important-fg)] hover:bg-[var(--markdown-alert-important-bg)]" },
+  { action: "alertWarning", label: "Warning", icon: <MdWarning />, className: "text-[var(--markdown-alert-warning-fg)] hover:bg-[var(--markdown-alert-warning-bg)]" },
+  { action: "alertCaution", label: "Caution", icon: <MdCancel />, className: "text-[var(--markdown-alert-caution-fg)] hover:bg-[var(--markdown-alert-caution-bg)]" }
 ];
 
 function CaseTransformIcon({ letter, direction }: { letter: "A" | "a"; direction: "up" | "down" }) {

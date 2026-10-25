@@ -153,7 +153,7 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
     return (
       <div ref={containerRef} className="flex flex-col gap-3 rounded-md border border-[var(--markdown-mermaid-border)] bg-[var(--markdown-mermaid-bg)] p-4 text-sm text-text-secondary shadow-sm">
         <div className="flex items-center gap-2 font-semibold text-text-primary">
-          <MdAccountTree className="text-lg text-accent-primary" />
+          <MdAccountTree className="text-lg text-accent" />
           <span>Mermaid diagram</span>
         </div>
         <pre className="max-h-56 overflow-auto rounded border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)] p-3 font-mono text-xs leading-5 text-text-secondary custom-scrollbar">

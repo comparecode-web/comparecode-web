@@ -46,7 +46,7 @@ function palette(): Palette {
     addedFragment: color("--diff-added-fg", "#acf2bd"),
     removedFragment: color("--diff-removed-fg", "#fdb8c0"),
     empty: color("--diff-empty-bg", "#f0f0f0"),
-    accent: color("--accent-primary", "#2563eb")
+    accent: color("--accent", "#2563eb")
   };
 }
 

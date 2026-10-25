@@ -6,31 +6,10 @@ import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { GlobalTooltip } from "@/components/layout/GlobalTooltip";
 import { ToastViewport } from "@/components/layout/ToastViewport";
+import { buildThemeInitScript } from "@/config/themes";
 import { defaultDescription, SITE_ICON_PATH, SITE_LOGO_PATH, SITE_NAME, SITE_URL } from "@/config/seo";
 
-const THEME_INIT_SCRIPT = `
-  (function () {
-    try {
-      var raw = localStorage.getItem("comparecode_settings");
-      if (!raw) {
-        return;
-      }
-
-      var parsed = JSON.parse(raw);
-      var theme = parsed && parsed.theme;
-
-      if (!theme) {
-        return;
-      }
-
-      var darkThemes = ["dark", "dracula", "monokai", "solarized-dark", "nord"];
-      document.documentElement.setAttribute("data-theme", theme);
-      document.documentElement.style.colorScheme = darkThemes.indexOf(theme) >= 0 ? "dark" : "light";
-    } catch (_) {
-      // no-op
-    }
-  })();
-`;
+const THEME_INIT_SCRIPT = buildThemeInitScript();
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

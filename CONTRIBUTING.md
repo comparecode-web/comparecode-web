@@ -66,6 +66,7 @@ Then go to the original CompareCode repository on GitHub, open a pull request to
 
 - **Components:** Use functional React components with hooks.
 - **Styling:** Use Tailwind CSS and the existing theme tokens and shared UI primitives.
+- **Themes:** Add or change themes as palettes in `config/themes`, then run `npm run themes:generate`. The palette contrast tests must pass. See [the theming contract](docs/architecture/theming.md).
 - **State Management:** Extend the canonical Zustand store for the affected feature or application-wide concern. Do not create a parallel source of truth.
 
 ## Found a Bug?

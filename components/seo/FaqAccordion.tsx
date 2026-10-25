@@ -40,7 +40,7 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
               aria-controls={panelId}
               className={cn(
                 "flex min-h-14 w-full items-center justify-between gap-4 px-4 py-3 text-left text-sm font-semibold text-text-primary transition-colors hover:bg-hover-overlay",
-                isOpen && "bg-linear-to-r from-accent-primary/12 via-accent-primary/5 to-transparent"
+                isOpen && "bg-linear-to-r from-accent/12 via-accent/5 to-transparent"
               )}
             >
               <span className="flex min-h-8 items-center">{item.question}</span>
@@ -69,7 +69,7 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-md border border-border-default bg-bg-secondary px-2.5 py-1.5 text-xs font-semibold text-accent-primary transition-colors hover:bg-hover-overlay hover:text-accent-hover"
+                          className="inline-flex items-center gap-1 rounded-md border border-border-default bg-bg-secondary px-2.5 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-hover-overlay hover:text-accent-hover"
                         >
                           <SiGithub className="text-base" />
                           <span>{link.label}</span>

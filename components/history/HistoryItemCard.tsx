@@ -67,17 +67,17 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
     <div
       onClick={() => onRestore(item)}
       className={cn(
-        "group relative flex cursor-pointer flex-col gap-3 overflow-hidden rounded-xl border bg-bg-primary p-4 shadow-sm transition-colors hover:border-accent-primary",
+        "group relative flex cursor-pointer flex-col gap-3 overflow-hidden rounded-xl border bg-bg-primary p-4 shadow-sm transition-colors hover:border-accent",
         isTransitioning ? "z-50" : item.isBookmarked ? "z-20" : "z-0",
-        item.isBookmarked ? "border-accent-primary" : "border-border-default"
+        item.isBookmarked ? "border-accent" : "border-border-default"
       )}
     >
       {item.isBookmarked && (
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-accent-primary" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-accent" />
       )}
       <span className={cn(
         "absolute right-4 top-4 rounded-md px-2 py-0.5 text-xs font-semibold",
-        isImageSnapshot ? "bg-success/10 text-success" : "bg-bg-selected text-accent-primary"
+        isImageSnapshot ? "bg-success/10 text-success" : "bg-bg-selected text-accent"
       )}>{isImageSnapshot ? "Image" : "Text"}</span>
 
       <div className="relative z-10 grid min-w-0 items-center gap-4 @5xl/history:grid-cols-[10rem_minmax(0,1fr)_auto]">
@@ -86,7 +86,7 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
             <span className="truncate text-[0.625rem] font-semibold text-text-secondary">
               Last activity
             </span>
-            <span className="truncate text-xs font-bold text-accent-primary">
+            <span className="truncate text-xs font-bold text-accent">
               {getRelativeTime(actionAt, tickerNowMs)}
             </span>
             <span className="truncate text-[0.6875rem] text-text-secondary">
@@ -102,9 +102,9 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
               aria-pressed={item.isBookmarked}
             >
               {item.isBookmarked ? (
-                <MdBookmark className="text-xl text-accent-primary sm:text-2xl" />
+                <MdBookmark className="text-xl text-accent sm:text-2xl" />
               ) : (
-                <MdBookmarkBorder className="text-xl text-accent-primary sm:text-2xl" />
+                <MdBookmarkBorder className="text-xl text-accent sm:text-2xl" />
               )}
             </IconButton>
             <IconButton size="lg" title="Export this comparison" disabled={isExporting} onClick={event => { event.stopPropagation(); onExport(item.id); }}><MdDownload className="text-xl sm:text-2xl" /></IconButton>
@@ -113,7 +113,7 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
               onClick={(e) => onDelete(e, item.id)}
               title="Delete this item"
             >
-              <MdDelete className="text-xl text-danger sm:text-2xl" />
+              <MdDelete className="text-xl text-destructive sm:text-2xl" />
             </IconButton>
           </div>
           <div className="pointer-events-none text-xs text-text-secondary">
@@ -123,7 +123,7 @@ export const HistoryItemCard = memo(({ item, isTransitioning, fontFamily, dateFo
 
         <div className="flex min-w-0 flex-col items-stretch gap-3 @2xl/history:flex-row @2xl/history:items-center">
           <div className="relative flex min-w-0 flex-1 flex-col">
-            <span className="mb-1 text-[0.6875rem] font-semibold text-danger @5xl/history:absolute @5xl/history:bottom-full">
+            <span className="mb-1 text-[0.6875rem] font-semibold text-destructive @5xl/history:absolute @5xl/history:bottom-full">
               {isImageSnapshot ? "Original image" : `${getLineCount(item.originalText)} lines`}
             </span>
             {isImageSnapshot ? (

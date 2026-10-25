@@ -65,7 +65,7 @@ describe("split diff row", () => {
     const selectedRow = sourceView.container.querySelector(".border-border-default");
     expect(selectedRow).toHaveClass("border-l", "border-r");
     expect(selectedRow).not.toHaveClass("border-t", "border-b");
-    const moveOutline = sourceView.container.querySelector(".border-accent-primary");
+    const moveOutline = sourceView.container.querySelector(".border-accent");
     expect(moveOutline).toHaveClass("border-x", "border-t", "border-b");
     expect(moveOutline).not.toHaveClass("border-x-2", "border-t-2", "border-b-2");
   });

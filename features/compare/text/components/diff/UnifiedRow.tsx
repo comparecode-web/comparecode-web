@@ -54,10 +54,10 @@ export const UnifiedRow = memo(({ row, virtualRow, settings, hoveredBlockId, sel
   const wordWrapClass = getWordWrapClass(settings.isWordWrapEnabled);
   const containerClass = cn(
     getRowContainerClass(row.isSelectable, row.block.isSelected || false),
-    row.block.move && "border-l-accent-primary",
-    (row.block.isSelected || isLinked || moveFocused) && "border-r-accent-primary",
-    (row.block.move || row.block.isSelected) && row.isFirstLine && "rounded-t-md border-t border-t-accent-primary",
-    (row.block.move || row.block.isSelected) && row.isLastLine && "rounded-b-md border-b border-b-accent-primary"
+    row.block.move && "border-l-accent",
+    (row.block.isSelected || isLinked || moveFocused) && "border-r-accent",
+    (row.block.move || row.block.isSelected) && row.isFirstLine && "rounded-t-md border-t border-t-accent",
+    (row.block.move || row.block.isSelected) && row.isLastLine && "rounded-b-md border-b border-b-accent"
   );
 
   if (row.type === "header-controls") {

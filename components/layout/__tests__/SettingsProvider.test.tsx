@@ -2,7 +2,9 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsProvider } from "@/components/layout/SettingsProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { STORAGE_KEYS } from "@/config/constants";
 import { defaultSettings } from "@/config/defaults";
+import { buildThemeInitScript } from "@/config/themes";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
 const originalSettingsState = useSettingsStore.getState();
@@ -97,5 +99,24 @@ describe("ThemeProvider", () => {
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute("data-theme", "light");
     });
+  });
+
+  it("keeps a stored retired Monokai theme on Dark after real settings load", async () => {
+    window.localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...defaultSettings, theme: "monokai" }));
+    useSettingsStore.setState({ loadSettings: originalSettingsState.loadSettings });
+    new Function(buildThemeInitScript())();
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+
+    render(
+      <SettingsProvider>
+        <ThemeProvider>
+          <div>Theme content</div>
+        </ThemeProvider>
+      </SettingsProvider>
+    );
+
+    await waitFor(() => expect(useSettingsStore.getState().settings.theme).toBe("dark"));
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEYS.SETTINGS)!).theme).toBe("monokai");
   });
 });

@@ -24,7 +24,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
           buttonVariants[variant],
           controlSizes[size].icon,
           shape === "circle" && "rounded-full",
-          isActive && "border-border-default bg-hover-overlay text-accent-primary",
+          isActive && "border-border-default bg-hover-overlay text-accent",
           className
         )}
         {...props}

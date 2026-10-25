@@ -22,7 +22,7 @@ export function MarkdownFrontmatterTable({ fields }: MarkdownFrontmatterTablePro
                 {Array.isArray(field.value) ? (
                   <div className="flex flex-wrap gap-1.5">
                     {field.value.map((tag) => (
-                      <span key={tag} className="rounded-full border border-border-default bg-bg-secondary px-2.5 py-0.5 text-xs font-semibold text-accent-primary">
+                      <span key={tag} className="rounded-full border border-border-default bg-bg-secondary px-2.5 py-0.5 text-xs font-semibold text-accent">
                         {tag}
                       </span>
                     ))}

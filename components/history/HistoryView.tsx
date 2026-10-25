@@ -110,7 +110,7 @@ export function HistoryView() {
           <div className="flex flex-wrap gap-3 rounded-xl border border-border-default bg-bg-primary px-4 py-3 text-sm font-semibold">
             <span className="text-text-secondary">Text: {textHistoryCount}</span>
             <span className="text-text-secondary">Image: {imageHistoryCount}</span>
-            <span className="text-accent-primary" title="Bookmarked items in the current filter">Bookmarked: {bookmarkedCount}</span>
+            <span className="text-accent" title="Bookmarked items in the current filter">Bookmarked: {bookmarkedCount}</span>
           </div>
         )} />
         <HistoryTransfer onImported={loadHistory} />

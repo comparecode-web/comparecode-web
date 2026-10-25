@@ -125,11 +125,11 @@ export const SplitRow = memo(({ row, virtualRow, settings, hoveredBlockId, selec
       } : undefined}
     >
       {moveSide && <div className={cn(
-        "pointer-events-none absolute inset-y-0 z-20 border-x border-accent-primary/70",
+        "pointer-events-none absolute inset-y-0 z-20 border-x border-accent/70",
         moveSide === "left" ? "left-1 right-1/2" : "left-1/2 right-1",
         row.isFirstLine && "rounded-t-md border-t",
         row.isLastLine && "rounded-b-md border-b",
-        (moveFocused || row.block.isSelected || isLinked) && "border-accent-primary"
+        (moveFocused || row.block.isSelected || isLinked) && "border-accent"
       )} />}
       <div className={containerClass}>
         {isHovered && (

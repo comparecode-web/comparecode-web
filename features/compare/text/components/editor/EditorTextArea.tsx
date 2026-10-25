@@ -46,7 +46,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-0 min-w-0 flex-1 resize-none rounded-xl border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent-primary focus:ring-1 focus:ring-accent-primary outline-none custom-scrollbar"
+        className="min-h-0 min-w-0 flex-1 resize-none rounded-xl border border-border-default bg-bg-primary text-text-primary p-2 sm:p-3 shadow-sm focus:border-accent focus:ring-1 focus:ring-accent outline-none custom-scrollbar"
         style={{
           fontSize: `${fontSize}px`,
           fontFamily: fontFamily,

@@ -122,7 +122,7 @@ export function ToolWorkspaceShell<T extends string>({
                 disabled={action.isDisabled}
                 onClick={action.onClick}
                 leftIcon={<Icon className="text-lg" />}
-                className={cn("px-2", action.isActive && "border-accent-primary/40 text-accent-primary")}
+                className={cn("px-2", action.isActive && "border-accent/40 text-accent")}
               >
                 <span className="hidden @lg/workspace:inline">{action.label ?? action.title}</span>
               </Button>

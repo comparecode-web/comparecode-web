@@ -1,6 +1,6 @@
 .icon { display: block; width: 1.5rem; height: 1.5rem; flex: none; font-size: 1.5rem; }
 .canvas { container-type: inline-size; color: var(--text-primary); font-family: var(--font-geist-sans), sans-serif; }
-.canvas a:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.canvas a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .canvas h1, .canvas h2, .canvas h3, .canvas p { margin: 0; }
 .canvas h1 { font-size: 4rem; letter-spacing: -.055em; font-weight: 550; line-height: 1.125; overflow-wrap: anywhere; }
 .canvas h2 { font-size: 1.875rem; letter-spacing: -.04em; line-height: 1.2; font-weight: 550; overflow-wrap: anywhere; }
@@ -14,19 +14,19 @@
 .toolLink { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem; border-bottom: 1px solid var(--border-default); background: var(--bg-primary); transition: background-color .15s; }
 .toolLink:last-child { border-bottom: 0; }
 .toolLink:hover { background: var(--bg-selected); }
-.toolLink:hover .iconTile { border-color: var(--accent-primary); color: var(--accent-primary); }
+.toolLink:hover .iconTile { border-color: var(--accent); color: var(--accent); }
 .toolCopy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .toolCopy h3 { font-size: 1.125rem; font-weight: 600; letter-spacing: -.025em; line-height: 1.5rem; }
 .toolCopy p { margin-top: .5rem; font-size: .8125rem; }
 .toolDetail { display: block; margin-top: .75rem; font-size: .75rem; color: var(--text-secondary); line-height: 1.5; }
 .toolArrow { display: block; flex: none; padding-top: .5rem; color: var(--text-secondary); }
-.toolLink:hover .toolArrow { color: var(--accent-primary); }
+.toolLink:hover .toolArrow { color: var(--accent); }
 .localNote > p { margin-top: 1rem; font-size: .8125rem; }
 .localNote ul { display: grid; gap: .5rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
 .localNote li { display: flex; align-items: flex-start; gap: .5rem; color: var(--text-secondary); font-size: .75rem; line-height: 1.5rem; }
 .workspaceLinks { display: grid; gap: .75rem; }
 .workspaceLinks > a { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem; border: 1px solid var(--border-default); border-radius: .5rem; background: var(--bg-primary); transition: border-color .15s, background-color .15s; }
-.workspaceLinks > a:hover { background: var(--bg-selected); border-color: var(--accent-primary); }
+.workspaceLinks > a:hover { background: var(--bg-selected); border-color: var(--accent); }
 .workspaceLinks > a > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .workspaceLinks strong { display: block; font-size: .875rem; font-weight: 600; line-height: 1.5rem; }
 .workspaceLinks small { display: block; color: var(--text-secondary); font-size: .75rem; line-height: 1.5; margin-top: .25rem; }
@@ -34,7 +34,7 @@
 .questions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 3rem; padding: 4rem 0; }
 .questionsIntro > .eyebrow { margin-bottom: 1rem; }
 .questionsIntro p { max-width: 21rem; margin-top: 1rem; font-size: .875rem; }
-.questionsIntro a { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.5rem; color: var(--accent-primary); font-size: .8125rem; }
+.questionsIntro a { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.5rem; color: var(--accent); font-size: .8125rem; }
 .questions > div:last-child { align-self: start; }
 .footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem 1.5rem; padding: 1.5rem 0 2rem; border-top: 1px solid var(--border-default); font-size: .75rem; font-weight: 550; }
 .footer > a { display: inline-flex; align-items: center; gap: calc(var(--spacing) * 1.5); }
@@ -88,7 +88,7 @@
 .compact-spectrum .modernWelcome { padding-bottom: 2rem; }
 .compact-spectrum .modernLayout { grid-template-columns: minmax(0, 1fr) 17rem; }
 .compact-spectrum .directory { display: grid; gap: .75rem; }
-.compact-spectrum .toolLink { --tool-color: var(--accent-primary); gap: 1.25rem; border: 1px solid var(--study-line); border-left: 3px solid var(--tool-color); border-radius: .75rem; padding: 1.25rem 1.5rem; background: var(--bg-primary); }
+.compact-spectrum .toolLink { --tool-color: var(--accent); gap: 1.25rem; border: 1px solid var(--study-line); border-left: 3px solid var(--tool-color); border-radius: .75rem; padding: 1.25rem 1.5rem; background: var(--bg-primary); }
 .compact-spectrum .toolLink:nth-child(2) { --tool-color: var(--markdown-alert-tip-fg); }
 .compact-spectrum .toolLink:nth-child(3) { --tool-color: var(--markdown-alert-important-fg); }
 .compact-spectrum .toolLink:nth-child(4) { --tool-color: var(--markdown-alert-warning-fg); }
@@ -134,7 +134,7 @@
 
 
 .animated .toolLink { --motion-color: var(--tool-color); }
-.workspaceAnimated .workspaceLink { --motion-color: var(--accent-primary); }
+.workspaceAnimated .workspaceLink { --motion-color: var(--accent); }
 :is(.animated .toolLink, .workspaceAnimated .workspaceLink) {
   --motion-active: 0;
   position: relative;
@@ -163,7 +163,7 @@
   :is(.animated .toolLink, .workspaceAnimated .workspaceLink):hover { --motion-active: 1; }
 }
 .workspaceAnimated .workspaceLink > svg:first-child {
-  color: color-mix(in srgb, var(--accent-primary) calc(var(--motion-active) * 100%), var(--text-primary));
+  color: color-mix(in srgb, var(--accent) calc(var(--motion-active) * 100%), var(--text-primary));
   transition: color 280ms ease;
 }
 .animated .toolLink::before,
@@ -187,7 +187,7 @@
 .canvas h1, .canvas h2 { text-wrap: balance; }
 .highlight {
   padding-right: .06em;
-  background: linear-gradient(100deg, var(--accent-primary) 10%, color-mix(in srgb, var(--accent-primary) 45%, var(--markdown-alert-important-fg)) 90%);
+  background: linear-gradient(100deg, var(--accent) 10%, color-mix(in srgb, var(--accent) 45%, var(--markdown-alert-important-fg)) 90%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -206,7 +206,7 @@
 }
 .modernWelcome::before {
   background:
-    radial-gradient(60% 70% at 40% 40%, color-mix(in srgb, var(--accent-primary) 14%, transparent), transparent),
+    radial-gradient(60% 70% at 40% 40%, color-mix(in srgb, var(--accent) 14%, transparent), transparent),
     radial-gradient(50% 60% at 65% 70%, color-mix(in srgb, var(--markdown-alert-important-fg) 9%, transparent), transparent);
 }
 .modernWelcome::after {
@@ -227,7 +227,7 @@
 .compact-spectrum .questions {
   border: 1px solid var(--study-line);
   background:
-    radial-gradient(32rem 18rem at 0% 0%, color-mix(in srgb, var(--accent-primary) 8%, transparent), transparent 70%),
+    radial-gradient(32rem 18rem at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%),
     radial-gradient(24rem 16rem at 100% 100%, color-mix(in srgb, var(--markdown-alert-important-fg) 6%, transparent), transparent 70%),
     var(--bg-primary);
   box-shadow: 0 1px 2px rgb(0 0 0 / .04);

@@ -275,7 +275,7 @@ function SideBySideView() {
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs font-semibold text-text-secondary">Original</span>
               {originalImage && (
-                <span className="text-xs font-bold text-danger shrink-0">{`${originalImage.width}x${originalImage.height}`}</span>
+                <span className="text-xs font-bold text-destructive shrink-0">{`${originalImage.width}x${originalImage.height}`}</span>
               )}
             </div>
             {originalImage && (
@@ -665,7 +665,7 @@ function DiffView() {
             <span className="font-semibold text-text-primary">{stats.differentPixels.toLocaleString()}</span> different pixels
           </span>
           <span className="text-xs text-text-secondary">
-            <span className={cn("font-semibold", stats.percentDifferent > 10 ? "text-danger" : stats.percentDifferent > 1 ? "text-yellow-500" : "text-success")}>
+            <span className={cn("font-semibold", stats.percentDifferent > 10 ? "text-destructive" : stats.percentDifferent > 1 ? "text-warning" : "text-success")}>
               {stats.percentDifferent.toFixed(2)}%
             </span> changed
           </span>

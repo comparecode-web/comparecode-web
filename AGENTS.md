@@ -44,7 +44,7 @@
   - Markdown editor, preview, formatting, import, paste, and history behavior belong under `features/markdown`.
   - QR payloads, rendering, export, and the generator UI belong under `features/qr`.
   - Application-wide primitives, stores, services, hooks, utilities, configuration, and types belong in their established root-level owners only when they are genuinely cross-feature.
-- Treat `docs/architecture/text-compare.md`, `docs/architecture/image-compare.md`, `docs/architecture/markdown.md`, and `docs/architecture/qr-code.md` as the detailed feature contracts. Update the relevant document when ownership, data flow, invariants, or required validation changes.
+- Treat `docs/architecture/text-compare.md`, `docs/architecture/image-compare.md`, `docs/architecture/markdown.md`, `docs/architecture/qr-code.md`, and `docs/architecture/theming.md` as the detailed feature contracts. Update the relevant document when ownership, data flow, invariants, or required validation changes.
 - Do not make Text depend on Image internals, Image depend on Text internals, or unrelated features depend on Markdown internals.
 - Extend the existing canonical owner instead of duplicating business rules, defaults, persistence keys, mappings, UI policy, or state across components, stores, and services.
 - Reuse existing UI primitives and semantic components before introducing a new component or one-off variant. A new parallel implementation requires a concrete unmet requirement.

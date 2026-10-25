@@ -24,6 +24,6 @@ describe("IconButton", () => {
       </IconButton>
     );
 
-    expect(screen.getByRole("button", { name: "Options" })).toHaveClass("text-accent-primary");
+    expect(screen.getByRole("button", { name: "Options" })).toHaveClass("text-accent");
   });
 });

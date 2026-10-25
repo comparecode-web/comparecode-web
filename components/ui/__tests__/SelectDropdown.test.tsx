@@ -89,6 +89,31 @@ describe("SelectDropdown", () => {
     expect(screen.getByRole("button", { name: "Three" })).toHaveFocus();
   });
 
+  it("renders labelled option groups without changing keyboard navigation", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const groupedOptions = [
+      { value: "light", label: "Light", group: "Light themes" },
+      { value: "sand", label: "Sand", group: "Light themes" },
+      { value: "dark", label: "Dark", group: "Dark themes" }
+    ];
+    render(<SelectDropdown label="Theme" value="sand" options={groupedOptions} onChange={onChange} />);
+
+    const trigger = screen.getByRole("button", { name: "Theme: Sand" });
+    await user.click(trigger);
+
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+    expect(screen.getByRole("group", { name: "Light themes" })).not.toHaveClass("border-t");
+    expect(screen.getByRole("group", { name: "Dark themes" })).toHaveClass("border-t", "border-border-default");
+    expect(screen.getByRole("group", { name: "Light themes" })).toContainElement(screen.getByRole("option", { name: "Sand" }));
+    expect(screen.getByRole("group", { name: "Dark themes" })).toContainElement(screen.getByRole("option", { name: "Dark" }));
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Light", "Sand", "Dark"]);
+
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{Enter}");
+    expect(onChange).toHaveBeenCalledWith("dark");
+  });
+
   it("escapes a clipping ancestor and consumes Escape before the enclosing panel", async () => {
     const user = userEvent.setup();
     const onParentKeyDown = vi.fn();

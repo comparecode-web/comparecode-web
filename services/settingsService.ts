@@ -1,6 +1,7 @@
 import { AppSettings, TEXT_SYNTAX_LANGUAGES } from "@/types/settings";
 import { defaultSettings } from "@/config/defaults";
 import { STORAGE_KEYS } from "@/config/constants";
+import { normalizeThemeId } from "@/config/themes";
 import { StorageFactory } from "./storage/StorageFactory";
 
 export class SettingsService {
@@ -12,6 +13,7 @@ export class SettingsService {
       try {
         const parsed = JSON.parse(json) as AppSettings;
         const merged = { ...defaultSettings, ...parsed };
+        merged.theme = normalizeThemeId(merged.theme);
         merged.dateFormat = this.normalizeDateFormat(merged.dateFormat);
         merged.isSyntaxHighlightingEnabled = typeof merged.isSyntaxHighlightingEnabled === "boolean"
           ? merged.isSyntaxHighlightingEnabled : defaultSettings.isSyntaxHighlightingEnabled;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent } from "react";
+import { Fragment, useId, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent } from "react";
 import { MdExpandMore } from "react-icons/md";
 import { Popover } from "@/components/ui/Popover";
 import { cn } from "@/utils/uiHelpers";
@@ -9,6 +9,7 @@ import { controlSizes, fieldBase, type ControlSize } from "./controlStyles";
 export interface SelectDropdownOption<T extends string = string> {
   value: T;
   label: string;
+  group?: string;
 }
 
 interface SelectDropdownProps<T extends string> extends Pick<ButtonHTMLAttributes<HTMLButtonElement>, "id" | "aria-describedby" | "aria-invalid"> {
@@ -53,6 +54,19 @@ export function SelectDropdown<T extends string>({
   }, [options, value]);
 
   const safeActiveIndex = options[activeIndex] ? activeIndex : selectedIndex;
+
+  const sections = useMemo(() => {
+    const result: Array<{ group?: string; items: Array<{ option: SelectDropdownOption<T>; index: number }> }> = [];
+    options.forEach((option, index) => {
+      const current = result[result.length - 1];
+      if (current && current.group === option.group) {
+        current.items.push({ option, index });
+      } else {
+        result.push({ group: option.group, items: [{ option, index }] });
+      }
+    });
+    return result;
+  }, [options]);
 
   const openDropdown = () => {
     setActiveIndex(selectedIndex);
@@ -136,6 +150,30 @@ export function SelectDropdown<T extends string>({
     }
   };
 
+  const renderOption = ({ option, index }: { option: SelectDropdownOption<T>; index: number }) => {
+    const isSelected = option.value === value;
+    const isActive = index === safeActiveIndex;
+
+    return (
+      <button
+        key={option.value}
+        type="button"
+        role="option"
+        aria-selected={isSelected}
+        onMouseEnter={() => setActiveIndex(index)}
+        onClick={() => commitSelection(option.value)}
+        className={cn(
+          "w-full px-3 py-2 text-left text-sm transition-colors focus:outline-none",
+          isSelected || isActive
+            ? "bg-hover-overlay text-text-primary"
+            : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
+        )}
+      >
+        {option.label}
+      </button>
+    );
+  };
+
   return (
     <div className={cn("relative w-full", className)}>
       <button
@@ -175,29 +213,18 @@ export function SelectDropdown<T extends string>({
         onKeyDown={handleListboxKeyDown}
         className={cn("w-full overflow-y-auto bg-bg-secondary py-1 custom-scrollbar", menuClassName)}
       >
-          {options.map((option, index) => {
-            const isSelected = option.value === value;
-            const isActive = index === safeActiveIndex;
-
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => commitSelection(option.value)}
-                className={cn(
-                  "w-full px-3 py-2 text-left text-sm transition-colors focus:outline-none",
-                  isSelected || isActive
-                    ? "bg-hover-overlay text-text-primary"
-                    : "text-text-secondary hover:bg-hover-overlay hover:text-text-primary"
-                )}
-              >
-                {option.label}
-              </button>
-            );
-          })}
+        {sections.map((section, sectionIndex) => {
+          if (section.group === undefined) {
+            return <Fragment key={`options-${sectionIndex}`}>{section.items.map(renderOption)}</Fragment>;
+          }
+          const groupLabelId = `${listboxId}-group-${sectionIndex}`;
+          return (
+            <div key={groupLabelId} role="group" aria-labelledby={groupLabelId} className={cn(sectionIndex > 0 && "mt-1 border-t border-border-default pt-1")}>
+              <div id={groupLabelId} role="presentation" className="px-3 pb-1 pt-1.5 text-xs font-semibold text-text-secondary">{section.group}</div>
+              {section.items.map(renderOption)}
+            </div>
+          );
+        })}
       </Popover>
     </div>
   );

@@ -18,7 +18,7 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isOriginalSlot = label === "Original";
-  const dimensionsClassName = isOriginalSlot ? "text-danger" : "text-success";
+  const dimensionsClassName = isOriginalSlot ? "text-destructive" : "text-success";
 
   const processFile = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) return;
@@ -131,10 +131,10 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
         onPaste={handlePaste}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          "flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-3 transition-colors focus-visible:outline-2 focus-visible:outline-accent-primary @2xl/image:gap-4 @2xl/image:p-4",
+          "flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-3 transition-colors focus-visible:outline-2 focus-visible:outline-accent @2xl/image:gap-4 @2xl/image:p-4",
           isDragging
-            ? "border-accent-primary bg-accent-primary/10"
-            : "border-border-default bg-bg-secondary hover:border-accent-primary hover:bg-hover-overlay"
+            ? "border-accent bg-accent/10"
+            : "border-border-default bg-bg-secondary hover:border-accent hover:bg-hover-overlay"
         )}
       >
         <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-hover-overlay @2xl/image:size-12">

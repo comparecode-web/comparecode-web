@@ -19,14 +19,14 @@ export function MoveAnnotation({ block, split = false, onActivate }: {
       <div className={split ? `flex w-1/2 items-center ${move.role === "to" ? "ml-auto justify-start" : "justify-end"}` : "flex items-center"}>
       <button
         type="button"
-        className="flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded px-1 text-xs font-semibold text-text-primary hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-primary"
+        className="flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded px-1 text-xs font-semibold text-text-primary hover:bg-hover-overlay focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         title="Jump to the other end of this moved section"
         onClick={(event) => {
           event.stopPropagation();
           onActivate(block);
         }}
       >
-        <span className="flex h-5 shrink-0 items-center rounded-sm bg-accent-primary px-1.5 text-white">#{move.number}</span>
+        <span className="flex h-5 shrink-0 items-center rounded-sm bg-accent px-1.5 text-accent-content">#{move.number}</span>
         <span className="min-w-0 truncate">{label} lines {move.counterpartStartLine}–{move.counterpartEndLine}{move.modified ? " · edited" : ""}</span>
         {pointsDown ? <MdArrowDownward aria-hidden="true" /> : <MdArrowUpward aria-hidden="true" />}
       </button>

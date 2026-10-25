@@ -130,7 +130,7 @@ export function MergeHistoryView() {
       return (
         <span className="text-xs font-semibold text-text-primary">
           <span className="mr-1">Swap</span>
-          <span className="text-danger">({snapshot.originalLinesAffected})</span>
+          <span className="text-destructive">({snapshot.originalLinesAffected})</span>
           <span className="mx-0.5" />
           <span className="text-success">({snapshot.modifiedLinesAffected})</span>
         </span>
@@ -140,7 +140,7 @@ export function MergeHistoryView() {
     return (
       <span className="text-xs font-semibold text-text-primary">
         <span className="mr-1">Merge</span>
-        <span className="text-danger">({snapshot.originalLinesAffected})</span>
+        <span className="text-destructive">({snapshot.originalLinesAffected})</span>
         <span className="mx-0.5" />
         <span className="text-success">({snapshot.modifiedLinesAffected})</span>
       </span>
@@ -169,7 +169,7 @@ export function MergeHistoryView() {
             className={cn(
               "w-full rounded-md border px-2.5 py-2 text-left transition-all duration-(--duration-short) hover:brightness-95",
               getToneClass(snapshot.tone),
-              isActive && "ring-1 ring-accent-primary"
+              isActive && "ring-1 ring-accent"
             )}
             title="Restore this snapshot"
           >
