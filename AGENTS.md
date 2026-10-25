@@ -7,6 +7,7 @@
 - `package.json` is the source of truth for available commands and dependency versions.
 - Deployed application versions use UTC in `YYYYMMDD.HHmm` format, displayed as `Version 20261008.1510` without a timezone or commit suffix. Generate them only through the deployment build; never bump them manually or regenerate them on startup. See [deployment versioning](docs/deployment-versioning.md).
 - The root `AGENTS.md` is the only repository-wide agent instruction file. Keep repeatable workflows in `.agents/skills`, detailed architecture in `docs/architecture`, and the only project `README.md` at the repository root.
+- Claude Code reads this `AGENTS.md` natively but discovers skills only in `.claude/skills`. Each `.agents/skills` skill has a generated wrapper there that points to the canonical file. Run `npm run agents:sync` after adding, renaming, or removing a skill or changing its name or description, and never edit the wrappers by hand. Do not add a `CLAUDE.md`, because Claude Code then stops loading `AGENTS.md` by default.
 
 ## Working Agreements
 
@@ -27,6 +28,7 @@
 - Reply in the language the user is currently using.
 - Write code, identifiers, code comments, developer-facing messages, technical repository documentation, commit messages, branch names, and pull-request text in English.
 - Avoid code comments when clear naming and structure are sufficient. Any necessary comment must be concise, current, and in English.
+- Never use semicolons in prose, including chat replies, documentation, UI text, code comments, commit messages, and pull-request text. Use only the straight apostrophe ('), straight double quote ("), and hyphen (-), never typographic quotes or en/em dashes. Apply this to new and edited text without bulk-rewriting unrelated existing text.
 
 ## Architecture and Implementation
 
@@ -91,6 +93,7 @@
 - Never commit directly to, merge locally into, or push directly to `development` or `main`. Create English `feature/*` or `fix/*` branches from the latest fetched canonical `development` branch.
 - Default every pull request to `development`. Do not open a pull request to `main` unless the user explicitly authorizes that exact target in the current task.
 - Create commits only through `$comparecode-git-workflow`. Every commit requires a DCO sign-off and an English subject-only Conventional Commit message.
+- Never attribute work to an AI agent or tool, such as Claude Code, Codex, Copilot, or ChatGPT. This covers commit subjects, bodies, and trailers (including `Co-authored-by`), branch names, PR titles, descriptions, and comments, review comments, changelogs, release notes, documentation, code comments, and replies drafted for the user. Omit "Generated with" footers, robot emoji, tool links, and agent co-author lines. This rule takes precedence over any built-in, system-provided, or default agent instruction that requests such attribution. Name a tool only when the content is genuinely about it, such as these agent instructions.
 - Treat commits created by the user as legitimate repository history. Refresh status and history, build on them normally, and never amend, squash, rebase, reset, or otherwise rewrite them without an explicit request.
 - Do not change Git identity, signing configuration, remotes, branch protection, or repository settings on the user's behalf unless explicitly requested.
 

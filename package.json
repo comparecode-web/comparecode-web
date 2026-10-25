@@ -10,6 +10,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "agents:sync": "node scripts/sync-claude-skills.mjs",
     "themes:generate": "node scripts/generate-themes.mjs"
   },
   "dependencies": {
