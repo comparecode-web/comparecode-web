@@ -21,7 +21,7 @@ Keep text transformation rules in services and hooks rather than duplicating the
 
 The preview pipeline uses Remark plugins, raw HTML parsing, the feature-owned sanitize schema, and Rehype rendering. Preserve the order in which content is preprocessed, parsed, sanitized, and rendered.
 
-`markdownSanitizeSchema.ts` is the canonical allowlist for rendered HTML. Never bypass sanitization, render untrusted HTML through a parallel path, or expand the schema without checking the resulting element, attribute, URL, and style surface. Mermaid, code blocks, alerts, tables, frontmatter, and KaTeX remain downstream of the established preview boundary.
+`markdownSanitizeSchema.ts` is the canonical allowlist for rendered HTML. Never bypass sanitization, render untrusted HTML through a parallel path, or expand the schema without checking the resulting element, attribute, URL, and style surface. Mermaid, code blocks, alerts, tables, frontmatter, and KaTeX remain downstream of the established preview boundary. `MermaidBlock` renders with `securityLevel: "strict"` and `suppressErrorRendering: true` and removes Mermaid's temporary element after each render, so an invalid diagram shows its source in the preview and never leaves an error graphic in the page body. Clearing the error when the chart or theme changes schedules a new render, so a fixed diagram appears again.
 
 ## State and Persistence
 

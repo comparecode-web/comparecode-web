@@ -141,7 +141,7 @@ export function ImageMetadataPanel({ originalImage, modifiedImage }: ImageMetada
             image={originalImage}
             title="Original"
             sizeDifferenceBytes={sizeDifferenceBytes}
-            sizeDifferenceClassName={sizeDifferenceBytes !== undefined ? "text-danger" : undefined}
+            sizeDifferenceClassName={sizeDifferenceBytes !== undefined ? "text-destructive" : undefined}
           />
         )}
         {modifiedImage && (

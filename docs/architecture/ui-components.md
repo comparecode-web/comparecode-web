@@ -12,7 +12,7 @@
 | Text, URL, password, number input | `Input` | `md`; native input props, ref, shared field appearance |
 | Multiline form input | `Textarea` | `md`, five rows, vertically resizable; native textarea props |
 | Field label and message | `FormField` | Label plus optional description/error; render function supplies control ID and message association |
-| Collapsed choice | `SelectDropdown` | `md`; typed string values, disabled state, shared popover positioning |
+| Collapsed choice | `SelectDropdown` | `md`; typed string values, disabled state, shared popover positioning, optional labelled option groups |
 | Visible choices | `SelectionBar` | `sm`, inline, single selection; multiple selection and stacked content when needed |
 | Boolean, range, color | `Checkbox`, `Switch`, `Slider`, `ColorInput` | Preserve their native interaction and feature-owned values; `ColorInput` composes `Input` and `FormField` |
 | Anchored arbitrary content | `Popover` | Portal positioning, outside-click dismissal, Escape, inert-trigger handling; no menu role by default |
@@ -24,11 +24,15 @@
 
 `controlStyles.ts` is the canonical owner of the button variants, shared focus/disabled classes and the `sm`/`md`/`lg` control scale. At the usual 16px root, minimum control heights are 32/36/44 CSS pixels. Labelled controls may grow with content; icon buttons have square 2/2.25/2.75rem geometry. Icon slots inherit the corresponding default icon size. These are scalable rem-based sizes, not persisted pixel settings. Follow [UI sizing and units](ui-sizing.md).
 
+Solid fills use the theme content tokens from the [theming contract](theming.md): `primary` uses `bg-accent text-accent-content`, `danger` uses `bg-destructive text-destructive-content`, and `success` uses `bg-success text-success-content`. The `danger` and `dangerGhost` variant names stay as the component API, while their colors come from the `destructive` tokens. Never place `text-white` or another fixed color on a theme fill. Text fields, the select trigger, the switch track and the checkbox use `border-strong`, while panel dividers keep `border-default`.
+
+`SelectDropdown` options may carry a `group` label. Consecutive options with the same label render inside a labelled `role="group"`. Every group after the first is separated by a divider line. Group labels are not selectable and keyboard navigation still moves through the flat option list.
+
 ## Composition and overrides
 
 Home, Settings, History and QR use `PageContent` for the same `max-w-7xl` centered container, responsive `p-3 sm:p-5 lg:p-7` gutters, scroll styling and stable scrollbar space. Do not add a parallel page-width or gutter rule in Home CSS. Home's inner container queries control its cards, heading and FAQ using the space remaining inside the shared gutters.
 
-`controlStyles.ts` also owns `linkColors` and `linkIcon` for native links. The `neutral` palette follows theme text colors; `support` uses muted rose with a stronger, theme-aware hover and keyboard-focus color. Apply the palette to the link so its text and SVG icons inherit the same color. Home and sidebar project links share the `linkIcon` 1.25rem size; consumers own their surrounding layout.
+`controlStyles.ts` also owns `linkColors` and `linkIcon` for native links. The `neutral` palette follows theme text colors; `support` uses the theme `support-heart` color with its `support-heart-hover` state for hover and keyboard focus. Apply the palette to the link so its text and SVG icons inherit the same color. Home and sidebar project links share the `linkIcon` 1.25rem size; consumers own their surrounding layout.
 
 Start with the semantic component and its size/variant props. Keep `className` for container layout, responsive visibility and justified exceptions. Repeated height, padding, radius, focus or color overrides should move into the existing owner rather than become a feature-local style recipe. Do not add a variant solely to reproduce one incidental historical difference.
 

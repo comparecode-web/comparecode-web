@@ -1,12 +1,12 @@
 "use client";
 
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
-import { AVAILABLE_THEMES } from "@/config/themes";
+import { THEME_GROUPS } from "@/config/themes";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { MdPalette } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
 
-const themeOptions = AVAILABLE_THEMES.map((theme) => ({ value: theme.id, label: theme.name }));
+const themeOptions = THEME_GROUPS.flatMap((group) => group.themes.map((theme) => ({ value: theme.id, label: theme.name, group: group.label })));
 
 export function ThemeSelect({ className, sidebar = false, showIcon = sidebar }: { className?: string; sidebar?: boolean; showIcon?: boolean }) {
   const theme = useSettingsStore((state) => state.settings.theme);

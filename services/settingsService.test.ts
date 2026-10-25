@@ -37,6 +37,24 @@ describe("syntax settings compatibility", () => {
     expect(JSON.parse(setItem.mock.calls[0][1])).toEqual(loaded);
   });
 
+  it("maps the retired Monokai theme to Dark without writing or touching custom colors", () => {
+    const stored = { theme: "monokai", fontSize: 18, useCustomHighlightColors: true, customDiffAddedBg: "#112233", customDiffRemovedFg: "rgba(1, 2, 3, 0.5)" };
+    getItem.mockReturnValue(JSON.stringify(stored));
+    expect(SettingsService.loadSettings()).toMatchObject({ ...stored, theme: "dark" });
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it.each([["unknown-theme"], [""], [42], [null], [{}]])("falls back to the default theme for %j while preserving other settings", (theme) => {
+    getItem.mockReturnValue(JSON.stringify({ theme, fontSize: 18 }));
+    expect(SettingsService.loadSettings()).toMatchObject({ theme: defaultSettings.theme, fontSize: 18 });
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it.each(["light", "solarized-light", "sand", "bubblegum", "dark", "dracula", "nord", "solarized-dark", "space", "forest"])("keeps the current %s theme", (theme) => {
+    getItem.mockReturnValue(JSON.stringify({ theme }));
+    expect(SettingsService.loadSettings().theme).toBe(theme);
+  });
+
   it.each([null, "{broken"])("keeps fresh or unreadable settings safe: %s", (json) => {
     getItem.mockReturnValue(json);
     expect(SettingsService.loadSettings()).toEqual(defaultSettings);

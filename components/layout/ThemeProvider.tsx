@@ -21,10 +21,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const darkThemes = new Set(["dark", "dracula", "monokai", "solarized-dark", "nord"]);
     const themeHighlightDefaults = getThemeHighlightDefaults(theme);
     document.documentElement.setAttribute("data-theme", theme);
-    document.documentElement.style.colorScheme = darkThemes.has(theme) ? "dark" : "light";
 
     if (useCustomHighlightColors) {
       const resolvedCustomColors = resolveCustomHighlightColors(

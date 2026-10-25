@@ -206,7 +206,7 @@ workspace: Local browser draft
     expect(screen.getByText("highlighted text").tagName).toBe("MARK");
     expect(screen.getByText("underlines").tagName).toBe("U");
     expect(screen.getByText("underlines")).toHaveClass("underline");
-    expect(screen.getByText("underlines")).not.toHaveClass("decoration-accent-primary");
+    expect(screen.getByText("underlines")).not.toHaveClass("decoration-accent");
     expect(screen.getByText("Ctrl").tagName).toBe("KBD");
   });
 

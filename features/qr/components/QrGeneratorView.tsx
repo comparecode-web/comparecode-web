@@ -124,7 +124,7 @@ export function QrGeneratorView() {
                 <ColorInput label="Background color" value={colors.light} pickerFallback="#ffffff" onChange={(light) => { setColors((current) => ({ ...current, light })); setExportMessage(null); }} />
               </div>
               <div className="mt-4"><SelectDropdown label="PNG size" value={String(pngTargetSize)} onChange={(value) => { setPngTargetSize(Number(value)); setExportMessage(null); }} options={pngSizes.map((size) => ({ value: String(size), label: `${size} px` }))} /></div>
-              {colorError && <p role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger">{colorError}</p>}
+              {colorError && <p role="alert" className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{colorError}</p>}
             </OptionsSection>
 
             <QrShapeOptions value={style} codeColor={colors.dark} onChange={value => { setStyle(value); setExportMessage(null); }} />
@@ -148,7 +148,7 @@ export function QrGeneratorView() {
               )}
             </div>
 
-            {activeError && hasInput(content) && !colorError && <p role="alert" className="mt-3 text-sm text-danger">{activeError}</p>}
+            {activeError && hasInput(content) && !colorError && <p role="alert" className="mt-3 text-sm text-destructive">{activeError}</p>}
             <dl className="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-border-default bg-border-default text-sm sm:grid-cols-2">
               <div className="min-w-0 bg-bg-secondary p-3">
                 <dt className="text-xs text-text-secondary">PNG output</dt>

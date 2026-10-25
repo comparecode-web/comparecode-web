@@ -165,3 +165,37 @@ describe("useImageCompareStore alignment", () => {
     expect(getPairKey(originalImage, { ...modifiedImage, url: "blob:new-same-metadata" })).not.toBe(pairKey);
   });
 });
+
+describe("useImageCompareStore viewport", () => {
+  beforeEach(() => {
+    useImageCompareStore.getState().clearAll();
+    useImageCompareStore.setState({ originalImage, modifiedImage });
+  });
+
+  afterEach(() => useImageCompareStore.getState().clearAll());
+
+  it("keeps the shared viewport across comparison modes", () => {
+    const viewport = { zoom: 3, centerX: 0.2, centerY: 0.7 };
+    useImageCompareStore.getState().setViewport(viewport);
+    useImageCompareStore.getState().setCompareMode("diff");
+    useImageCompareStore.getState().setCompareMode("slider");
+    expect(useImageCompareStore.getState().viewport).toEqual(viewport);
+  });
+
+  it("resets the viewport for a new image but not for a metadata-only update", () => {
+    useImageCompareStore.getState().setViewport({ zoom: 3, centerX: 0.2, centerY: 0.7 });
+    useImageCompareStore.getState().setModifiedImage({ ...modifiedImage, exif: { Make: "Camera" } });
+    expect(useImageCompareStore.getState().viewport.zoom).toBe(3);
+    useImageCompareStore.getState().setModifiedImage({ ...modifiedImage, url: "blob:replacement" });
+    expect(useImageCompareStore.getState().viewport).toEqual({ zoom: 1, centerX: 0.5, centerY: 0.5 });
+  });
+
+  it("restores the default viewport on reset and clear", () => {
+    useImageCompareStore.getState().setViewport({ zoom: 2, centerX: 0.4, centerY: 0.4 });
+    useImageCompareStore.getState().resetViewport();
+    expect(useImageCompareStore.getState().viewport).toEqual({ zoom: 1, centerX: 0.5, centerY: 0.5 });
+    useImageCompareStore.getState().setViewport({ zoom: 2, centerX: 0.4, centerY: 0.4 });
+    useImageCompareStore.getState().clearAll();
+    expect(useImageCompareStore.getState().viewport).toEqual({ zoom: 1, centerX: 0.5, centerY: 0.5 });
+  });
+});

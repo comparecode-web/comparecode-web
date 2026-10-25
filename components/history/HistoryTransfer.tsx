@@ -44,6 +44,6 @@ export function HistoryTransfer({ onImported }: { onImported: () => Promise<void
     </div>}
     {busy && <p role="status" className="text-sm text-text-secondary">Processing history…</p>}
     {message && <p role="status" className="text-sm text-text-secondary">{message}</p>}
-    {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+    {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
   </section>;
 }

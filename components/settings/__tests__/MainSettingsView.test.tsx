@@ -19,7 +19,7 @@ describe("Settings presentation", () => {
     vi.spyOn(HistoryService, "addSnapshotAsync").mockResolvedValue("unused");
   });
 
-  it("shares all seven themes between the header control and Settings without resetting other settings", async () => {
+  it("shares all registered themes between the header control and Settings without resetting other settings", async () => {
     const user = userEvent.setup();
     useSettingsStore.setState({ settings: { ...defaultSettings, fontSize: 20 } });
     render(<><ThemeSelect /><MainSettingsView /></>);

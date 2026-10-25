@@ -5,6 +5,8 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { UnifiedRow } from "./UnifiedRow";
+import { DiffSurfaceLayer } from "./DiffSurfaceLayer";
+import { buildDiffSurfaces, getHoveredBlockSurface, getLineSurface, getSelectedBlockSurface } from "@/features/compare/text/utils/diffSurfaces";
 import { useDiffVirtualizer } from "@/features/compare/text/hooks/useDiffVirtualizer";
 import { cn } from "@/utils/uiHelpers";
 import { useCalculateUnifiedRows } from "@/features/compare/text/hooks/useCalculateUnifiedRows";
@@ -62,11 +64,17 @@ export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; r
 
   const lineNumChars = Math.max(UI_CONSTANTS.LINE_NUM_MIN_CHARS, Math.max(leftText?.split(/\r\n|\r|\n/).length || 0, rightText?.split(/\r\n|\r|\n/).length || 0).toString().length);
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
+  const virtualItems = unifiedVirtualizer.getVirtualItems();
 
   return (
     <div id="diff-scroll-area" className="flex-1 min-h-0 overflow-auto custom-scrollbar pb-2" ref={unifiedScrollRef} style={customStyles}>
       <div className={cn("relative pr-0 sm:pr-6", containerWidthClass)} style={{ height: `${unifiedVirtualizer.getTotalSize()}px`, ...minWidthStyle }}>
-        {unifiedVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
+        <DiffSurfaceLayer target="row" surfaces={buildDiffSurfaces(virtualItems, (index) => getSelectedBlockSurface(rows[index], true))} />
+        <DiffSurfaceLayer target="unified-line" surfaces={buildDiffSurfaces(virtualItems, (index) => {
+          const row = rows[index];
+          return row?.unifiedLine ? getLineSurface(row, row.unifiedLine.sign, row.unifiedLine.bgClass) : null;
+        })} />
+        {virtualItems.map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
           return (
             <UnifiedRow
@@ -77,7 +85,6 @@ export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; r
                 : syntax.left?.[Number(row.unifiedLine?.line1 ?? 0) - 1]}
               virtualRow={virtualRow}
               settings={settings}
-              hoveredBlockId={hoveredBlockId}
               selectedBlockId={selectedBlockId}
               activeMoveId={activeMoveId}
               onActivateMove={activateMove}
@@ -88,6 +95,7 @@ export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; r
             />
           );
         })}
+        <DiffSurfaceLayer target="row" className="z-10" surfaces={buildDiffSurfaces(virtualItems, (index) => getHoveredBlockSurface(rows[index], hoveredBlockId))} />
       </div>
     </div>
   );

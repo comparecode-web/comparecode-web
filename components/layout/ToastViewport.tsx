@@ -13,7 +13,7 @@ function getToneClasses(tone: ToastItem["tone"]): string {
   }
 
   if (tone === "error") {
-    return "border-danger/40 bg-danger-bg text-text-primary";
+    return "border-destructive/40 bg-destructive-surface text-text-primary";
   }
 
   if (tone === "warning") {
@@ -45,7 +45,7 @@ function getIconClasses(tone: ToastItem["tone"]): string {
   }
 
   if (tone === "error") {
-    return "text-danger";
+    return "text-destructive";
   }
 
   if (tone === "warning") {

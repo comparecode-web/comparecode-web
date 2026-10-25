@@ -604,7 +604,7 @@ export function ImageAlignmentPanel() {
         />
         <div
           ref={overlayRef}
-          className="pointer-events-none absolute border border-accent-primary shadow-[0_0_0_1px_rgba(255,255,255,0.55)]"
+          className="pointer-events-none absolute border border-accent shadow-[0_0_0_1px_rgba(255,255,255,0.55)]"
           style={{ ...transformStyle, opacity: 1 }}
         >
           {[
@@ -616,7 +616,7 @@ export function ImageAlignmentPanel() {
             <button
               key={handle.className}
               type="button"
-              className={cn("pointer-events-auto absolute h-3 w-3 border border-accent-primary bg-bg-primary shadow-sm", handle.className)}
+              className={cn("pointer-events-auto absolute h-3 w-3 border border-accent bg-bg-primary shadow-sm", handle.className)}
               style={{ transform: `${handle.transform} scale(${handleScaleX}, ${handleScaleY})` }}
               onPointerDown={handleResizePointerDown}
               onPointerMove={handlePointerMove}
@@ -626,7 +626,7 @@ export function ImageAlignmentPanel() {
           ))}
           <button
             type="button"
-            className="pointer-events-auto absolute left-1/2 top-0 flex h-7 w-7 cursor-grab items-center justify-center rounded-full text-accent-primary hover:bg-hover-overlay active:cursor-grabbing"
+            className="pointer-events-auto absolute left-1/2 top-0 flex h-7 w-7 cursor-grab items-center justify-center rounded-full text-accent hover:bg-hover-overlay active:cursor-grabbing"
             style={{
               top: `${rotateHandleOffset}px`,
               transform: `translateX(-50%) scale(${handleScaleX}, ${handleScaleY})`
@@ -641,13 +641,13 @@ export function ImageAlignmentPanel() {
         </div>
         {alignment.snappingEnabled && (
           <>
-            <span className="pointer-events-none absolute top-0 bottom-0 w-px bg-accent-primary/30" style={{ left: stageSize.width / 2 }} />
-            <span className="pointer-events-none absolute left-0 right-0 h-px bg-accent-primary/30" style={{ top: stageSize.height / 2 }} />
+            <span className="pointer-events-none absolute top-0 bottom-0 w-px bg-accent/30" style={{ left: stageSize.width / 2 }} />
+            <span className="pointer-events-none absolute left-0 right-0 h-px bg-accent/30" style={{ top: stageSize.height / 2 }} />
             {activeGuides.map((guide, index) => (
               <span
                 key={`${guide.axis}-${guide.position}-${index}`}
                 className={cn(
-                  "pointer-events-none absolute bg-accent-primary shadow-[0_0_0_1px_rgba(255,255,255,0.75),0_0_10px_rgba(59,130,246,0.45)]",
+                  "pointer-events-none absolute bg-accent shadow-[0_0_0_1px_rgba(255,255,255,0.75),0_0_10px_rgba(59,130,246,0.45)]",
                   guide.axis === "x" ? "top-0 bottom-0 w-0.5" : "left-0 right-0 h-0.5"
                 )}
                 style={guide.axis === "x" ? { left: guide.position * stageSize.scale } : { top: guide.position * stageSize.scale }}
@@ -664,7 +664,7 @@ export function ImageAlignmentPanel() {
       <div className="flex h-full min-h-0 flex-col">
         <DialogHeader title="Adjust alignment" titleId="alignment-panel-title" closeLabel="Close alignment panel" onClose={closeAlignmentPanel} className="shrink-0 py-3" />
         {alignment.error && (
-          <div ref={errorRef} role="alert" className="shrink-0 border-b border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger">
+          <div ref={errorRef} role="alert" className="shrink-0 border-b border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {alignment.error.message}
           </div>
         )}

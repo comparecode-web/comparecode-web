@@ -93,9 +93,9 @@ export const SelectionBar = <T extends string>({
             className={cn(
               "relative flex min-w-max flex-1 items-center justify-center border-r border-border-default transition-colors outline-none last:border-r-0",
               controlSizes[size].field,
-              "focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-accent-primary/45",
+              "focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-accent/45",
               selected
-                ? "bg-bg-selected text-accent-primary font-semibold"
+                ? "bg-bg-selected text-accent font-semibold"
                 : "bg-transparent text-text-secondary hover:bg-hover-overlay hover:text-text-primary",
               optionDisabled && "cursor-not-allowed opacity-50",
               buttonClassName

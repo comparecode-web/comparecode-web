@@ -60,6 +60,8 @@ Every persisted reader or migration defines these cases when they apply:
 
 ## Local and Session Storage Changes
 
+The `theme` setting is normalized at the settings boundary by `normalizeThemeId` from `config/themes`. Registered IDs are kept. The retired `monokai` ID maps to `dark` through `LEGACY_THEME_ALIASES`, and the pre-hydration theme script applies the same alias so the first paint matches. Missing, malformed and unknown values use the default theme in memory without rewriting storage. The stored value changes only on the next user settings save. Custom diff colors are never rewritten. No key, schema or database change is required. See the [theming contract](architecture/theming.md).
+
 Text syntax highlighting adds `isSyntaxHighlightingEnabled` and `textSyntaxLanguage` to the existing settings object under the same key. `services/settingsService.ts` supplies missing fields from `defaultSettings`, validates the toggle as a boolean and the language against `TEXT_SYNTAX_LANGUAGES`, and defaults malformed or unknown values independently without changing unrelated valid preferences. Loading never rewrites stored data. No database version or History format change is required; source snapshots and syntax tokens are transient comparison presentation state.
 
 Expanding the syntax-language inventory preserves the existing `plain`, `javascript`, `typescript`, `json` and `python` IDs and adds distinct IDs to the same canonical list. The compatibility reader accepts all registered values without reinterpreting old selections. Settings tests round-trip every registered language; no new key or schema migration is needed.

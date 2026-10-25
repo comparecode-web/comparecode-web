@@ -9,10 +9,10 @@ External modules must use the public entry point at `features/compare/image/inde
 ## Main Flow
 
 1. `ImageView` switches between image upload and the active comparison workspace.
-2. `ImageUploadPanel` creates `ImageFileMeta` records for the original and modified inputs, including object URLs, dimensions, and EXIF metadata.
+2. `ImageUploadPanel` creates `ImageFileMeta` records for the original and modified inputs, including object URLs, dimensions, and EXIF metadata. A file that is not an image, cannot be decoded, has no intrinsic size, or is larger than this browser can draw on a canvas is rejected with an error toast instead of being ignored.
 3. `useImageCompareStore` owns the selected images, comparison mode, diff algorithm, controls, metadata panel, and alignment state.
 4. `ImageCompareToolbar` changes comparison and diff modes.
-5. `ImageCompareCanvas` renders side-by-side, fade, slider, and diff presentations.
+5. `ImageCompareCanvas` renders side-by-side, fade, slider, and diff presentations through the shared `ImageViewportCanvas` and `ImageViewportControls`.
 6. `ImageDiffService` produces visual diff output and statistics on canvas data.
 7. `ImageSnapshotService` renders full-resolution comparison snapshots across fade, slider, diff, and side-by-side modes and manages lossless PNG export.
 
@@ -66,6 +66,18 @@ Changes to saved image snapshots, metadata compatibility, IndexedDB records, or 
 The comparison toolbar composes the shared `WorkspaceToolbar` card variant, choices and button family. Zoom/fade controls reuse `Slider` and `ResetButton`. Alignment prompt/panel modals use the shared native `Dialog`; number fields compose `Input` and `FormField` while preserving feature-owned parsing and draft values. Escape cancels a number draft before modal cancellation, and arrow keys in editable fields do not move the image. Canvas manipulation handles remain Image-owned. See [Shared UI components](ui-components.md).
 
 Reuse primitives from `components/ui` and keep Image-only controls inside the feature. Changes to shared controls, responsive behavior, or theme tokens must also use `$comparecode-ui-components`.
+
+### Comparison viewport
+
+Every comparison mode uses the same zoomable viewport and control bar. `utils/viewport.ts` owns the math. `useImageCompareStore.viewport` stores the zoom relative to the fitted size and the view center as a fraction of the content, so switching modes or resizing keeps the inspected region. It is in-memory only, resets when an image URL changes or the workspace is cleared, and is never saved to history.
+
+- Zoom ranges from half of the fitted size to 1600% of the source pixels. The wheel and pinch zoom around the pointer. Double-click toggles between fit and 100%. The keyboard supports `+`, `-`, and `0`. Fit and 100% are text buttons in the control bar, and the zoom slider uses a logarithmic scale.
+- Rendering is scaled by `devicePixelRatio`. `utils/layerRendering.ts` owns draw quality: downscaled views use a cached half-size pyramid with high-quality smoothing so large images do not alias. Images are always drawn with high-quality smoothing at every zoom level and are never pixelated or sharpened.
+- Dragging pans in Side by side, Fade, and Advanced. In Slider, dragging moves the divider and Space + drag pans. Arrow keys pan, or move the divider in Slider (Shift for larger steps, Home and End for the edges).
+- The Slider viewport is a keyboard-operable `role="slider"`. Its divider is a 2px line with thin dark edges instead of a blurred shadow, and its handle has a 10px radius. Original and Modified labels are HTML overlays in the viewport corners.
+- Fade and Slider draw from `createComparisonLayers`, which builds the original and modified layers once per image pair and applied transform. The fade value only changes the drawing alpha. `ImageDiffService` caches the six most recent decoded images by URL.
+- `utils/canvasBudget.ts` owns canvas size limits. Comparison layers and the aligned pair used by Advanced mode and snapshot export render at full resolution up to 32 megapixels and 16384 pixels per side. Larger combined sizes, for example from a large alignment offset or scale, render at a reduced working resolution, and anything above 16.7 megapixels is first probed so browsers with smaller limits, such as iOS Safari, fall back to a size they support. Layers keep their logical size, so zoom, panning, and the Slider position stay consistent across modes. The control bar then says "Large images are shown at reduced resolution.", and Advanced statistics are scaled back to full-resolution pixel counts. When drawing still fails, the viewport shows a message instead of an empty canvas.
+- The diff legend lives in `DiffLegend`. Snapshot export still uses the full-resolution render functions and is independent of the interactive viewport.
 
 Image comparison is canvas- and browser-dependent. Treat pointer gestures, zoom, pan, slider boundaries, image load failures, clipboard input, object URLs, and differing dimensions as material behavior.
 
