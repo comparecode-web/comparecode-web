@@ -25,6 +25,9 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ### Fixed
 
+- **Text compare:** Rapid merges, such as holding an arrow key, are saved to history in order, so undo restores every step.
+- **Text compare:** A merge made right after comparing is saved with that comparison in history.
+- **History:** A change that cannot be saved to history now shows a message, including when browser storage is full.
 - **Text compare:** Highlighted rows no longer show thin lines between them when the browser is zoomed.
 - **Image compare:** Slider labels and divider arrows now appear for aligned images too.
 - **Image compare:** Moving the Fade slider no longer reloads the images.

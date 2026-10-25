@@ -14,6 +14,7 @@ import { createImageDataUrl, createImageThumbnailDataUrl } from "../utils/thumbn
 import { AlignmentPrompt } from "./alignment/AlignmentPrompt";
 import { ImageAlignmentPanel } from "./alignment/ImageAlignmentPanel";
 import { getPairKey, imagesNeedAlignmentPrompt } from "../services/alignment/transformUtils";
+import { reportHistoryWriteError } from "@/store/reportHistoryWriteError";
 
 export function ImageView() {
   const originalImage = useImageCompareStore((s) => s.originalImage);
@@ -110,7 +111,7 @@ export function ImageView() {
       });
     };
 
-    void saveSnapshot().catch(console.error);
+    void saveSnapshot().catch(reportHistoryWriteError);
 
     return () => {
       isActive = false;

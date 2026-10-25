@@ -80,8 +80,8 @@ Per-source limits are 500,000 UTF-16 code units, 20,000 lines, 20,000 code units
 ## Merge and History
 
 - `services/mergeService.ts` applies block-level left-to-right or right-to-left merges by copying original source slices into target UTF-16 offsets. This preserves CRLF, lone CR, LF, and terminal newline state.
-- `useTextStore` coordinates merge, undo, redo, navigation, and session state.
-- `services/historyService.ts` is the application-level persistence boundary for comparison sessions and merge steps.
+- `useTextStore` coordinates merge, undo, redo, navigation, and session state. History writes from merge, swap, undo, and redo run one at a time through `queueHistoryWrite`, so rapid merges, such as a held arrow key, keep their order and undo waits for pending merges. `trackHistorySession` registers the session saved by a comparison, so a merge made before that save finishes joins the comparison's session. A failed write is reported with an error toast through `store/reportHistoryWriteError.ts`, which also explains a full browser storage quota.
+- `services/historyService.ts` is the application-level persistence boundary for comparison sessions and merge steps. Appending, undoing, and redoing a step read and update the session cursor inside one IndexedDB transaction, so step sequence numbers stay unique even when writes overlap.
 - `api/useTextHistoryRestore.ts` converts a history item back into current Text Compare state.
 
 Changes to saved snapshots, IndexedDB records, history keys, or compatibility behavior must also use `$comparecode-data-migration` and follow `docs/PERSISTENCE_MIGRATIONS.md`.

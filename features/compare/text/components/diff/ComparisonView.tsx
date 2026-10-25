@@ -5,6 +5,7 @@ import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 import { useEffect, useRef } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp, MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
+import { reportHistoryWriteError } from "@/store/reportHistoryWriteError";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
@@ -142,6 +143,8 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
               icon: shouldUndo ? "undo" : "redo",
               dedupeKey: shouldUndo ? "nothing-to-undo" : "nothing-to-redo"
             });
+          } catch (error) {
+            reportHistoryWriteError(error);
           } finally {
             historyShortcutInFlight.current = false;
           }
