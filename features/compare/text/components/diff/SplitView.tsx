@@ -5,7 +5,9 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useDiffVirtualizer } from "@/features/compare/text/hooks/useDiffVirtualizer";
-import { SplitRow } from "./SplitRow";
+import { SplitRow, getSplitCellBackground } from "./SplitRow";
+import { DiffSurfaceLayer } from "./DiffSurfaceLayer";
+import { buildDiffSurfaces, getHoveredBlockSurface, getLineSurface, getSelectedBlockSurface } from "@/features/compare/text/utils/diffSurfaces";
 import { useCalculateSplitRows } from "@/features/compare/text/hooks/useCalculateSplitRows";
 import { UI_CONSTANTS } from "@/config/constants";
 import { ComparisonResult } from "@/features/compare/text/types/diff";
@@ -79,6 +81,11 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
   );
 
   const customStyles = { '--line-num-width': `${lineNumChars}ch` } as React.CSSProperties;
+  const virtualItems = virtualizer.getVirtualItems();
+  const lineSurfaces = (side: "old" | "new") => buildDiffSurfaces(virtualItems, (index) => {
+    const row = rows[index];
+    return row?.type === "line" ? getLineSurface(row, side, getSplitCellBackground(row, side)) : null;
+  });
 
   const handleScrollX = (e: React.UIEvent<HTMLDivElement>) => {
     if (scrollRef.current) {
@@ -104,7 +111,10 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
           className="relative w-full"
           style={{ height: `${virtualizer.getTotalSize()}px` }}
         >
-          {virtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
+          <DiffSurfaceLayer target="row" surfaces={buildDiffSurfaces(virtualItems, (index) => getSelectedBlockSurface(rows[index], false))} />
+          <DiffSurfaceLayer target="split-old" surfaces={lineSurfaces("old")} />
+          <DiffSurfaceLayer target="split-new" surfaces={lineSurfaces("new")} />
+          {virtualItems.map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
             return (
               <SplitRow
@@ -114,7 +124,6 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
                 newSyntaxLine={syntax.right?.[(row.block.newLines[row.newIndex]?.lineNumber ?? 0) - 1]}
                 virtualRow={virtualRow}
                 settings={settings}
-                hoveredBlockId={hoveredBlockId}
                 selectedBlockId={selectedBlockId}
                 activeMoveId={activeMoveId}
                 onActivateMove={activateMove}
@@ -127,6 +136,7 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
               />
             );
           })}
+          <DiffSurfaceLayer target="row" className="z-10" surfaces={buildDiffSurfaces(virtualItems, (index) => getHoveredBlockSurface(rows[index], hoveredBlockId))} />
         </div>
       </div>
 

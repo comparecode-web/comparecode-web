@@ -280,7 +280,7 @@ function extractMarkerFrontmatter(markdownBeforeMarker: string): MarkerFrontmatt
 const markdownComponents: Components = {
   a({ children, href }) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-accent-primary underline underline-offset-2 hover:text-accent-hover">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2 hover:text-accent-hover">
         {children}
       </a>
     );
@@ -306,7 +306,7 @@ const markdownComponents: Components = {
   },
   summary({ children }) {
     return (
-      <summary className="cursor-pointer font-semibold text-text-primary outline-none marker:text-text-secondary hover:text-accent-hover focus-visible:text-accent-primary">
+      <summary className="cursor-pointer font-semibold text-text-primary outline-none marker:text-text-secondary hover:text-accent-hover focus-visible:text-accent">
         {children}
       </summary>
     );
@@ -371,10 +371,10 @@ const markdownComponents: Components = {
   },
   input({ type, checked, disabled, ...props }) {
     if (type === "checkbox") {
-      return <input {...props} type="checkbox" checked={Boolean(checked)} disabled={disabled} readOnly className="mr-2 align-middle accent-accent-primary" />;
+      return <input {...props} type="checkbox" checked={Boolean(checked)} disabled={disabled} readOnly className="mr-2 align-middle accent-accent" />;
     }
 
-    return <input {...props} type={type} disabled={disabled} className="mr-2 align-middle accent-accent-primary" />;
+    return <input {...props} type={type} disabled={disabled} className="mr-2 align-middle accent-accent" />;
   }
 };
 

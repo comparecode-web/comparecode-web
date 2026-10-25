@@ -12,7 +12,7 @@ import { TEXT_SYNTAX_LANGUAGES } from "@/types/settings";
 
 vi.mock("@/features/compare/text/hooks/useDiffVirtualizer", () => ({
   useDiffVirtualizer: (count: number) => ({
-    getVirtualItems: () => Array.from({ length: count }, (_, index) => ({ index, key: index, start: index * 24 })),
+    getVirtualItems: () => Array.from({ length: count }, (_, index) => ({ index, key: index, start: index * 24, end: (index + 1) * 24 })),
     getTotalSize: () => count * 24,
     measureElement: () => {}
   })

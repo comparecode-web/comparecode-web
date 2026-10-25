@@ -229,15 +229,6 @@ export class HistoryService {
     afterSnapshot: CompareHistorySnapshot,
     stepMeta: HistoryStepMeta = {}
   ): Promise<void> {
-    const session = await db.history.get(sessionId);
-    if (!session) {
-      return;
-    }
-
-    const now = new Date().toISOString();
-    const currentStepCount = session.stepCount ?? 0;
-    const currentCursor = session.stepCursor ?? currentStepCount;
-
     const beforeTextPair = this.toLegacyTextPair(beforeSnapshot);
     const afterTextPair = this.toLegacyTextPair(afterSnapshot);
 
@@ -247,6 +238,15 @@ export class HistoryService {
       ?? (beforeSnapshot.mode === "text" ? this.getLineCount(beforeSnapshot.modifiedText) : 0);
 
     await db.transaction("rw", db.history, db.historySteps, async () => {
+      const session = await db.history.get(sessionId);
+      if (!session) {
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const currentStepCount = session.stepCount ?? 0;
+      const currentCursor = session.stepCursor ?? currentStepCount;
+
       if (currentCursor < currentStepCount) {
         await db.historySteps
           .where("sessionId")
@@ -343,6 +343,10 @@ export class HistoryService {
   }
 
   public static async undoStepAsync(sessionId: string): Promise<HistorySnapshotState | null> {
+    return db.transaction("rw", db.history, db.historySteps, () => this.undoStepInTransaction(sessionId));
+  }
+
+  private static async undoStepInTransaction(sessionId: string): Promise<HistorySnapshotState | null> {
     const session = await db.history.get(sessionId);
     if (!session) {
       return null;
@@ -388,6 +392,10 @@ export class HistoryService {
   }
 
   public static async redoStepAsync(sessionId: string): Promise<HistorySnapshotState | null> {
+    return db.transaction("rw", db.history, db.historySteps, () => this.redoStepInTransaction(sessionId));
+  }
+
+  private static async redoStepInTransaction(sessionId: string): Promise<HistorySnapshotState | null> {
     const session = await db.history.get(sessionId);
     if (!session) {
       return null;

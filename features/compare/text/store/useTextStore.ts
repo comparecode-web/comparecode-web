@@ -5,6 +5,7 @@ import { MergeDirection } from "@/types/ui";
 import { TextCompareService } from "@/features/compare/text/services/TextCompareService";
 import { MergeService } from "@/features/compare/text/services/mergeService";
 import { HistoryService } from "@/services/historyService";
+import { reportHistoryWriteError } from "@/store/reportHistoryWriteError";
 import { HistoryActionDirection } from "@/types/history";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { scrollToBlockInDOM, scrollToTopInDOM, scrollToBottomInDOM } from "@/features/compare/text/utils/scrollHelpers";
@@ -19,6 +20,8 @@ interface EditorState {
   totalSelectableBlocks: number;
   currentBlockIndex: number;
   setHistorySessionId: (sessionId: string | null) => void;
+  trackHistorySession: (sessionPromise: Promise<string>) => Promise<string>;
+  queueHistoryWrite: <T>(task: () => Promise<T>) => Promise<T>;
   bumpHistoryRefreshKey: () => void;
   setLeftText: (text: string) => void;
   setRightText: (text: string) => void;
@@ -42,6 +45,13 @@ export const useEditorStore = create<EditorState>((set, get) => {
   let pendingHistorySessionPromise: Promise<string> | null = null;
   let pendingHistorySessionVersion = 0;
   let comparedInputs: { left: string; right: string } | null = null;
+  let historyQueue: Promise<unknown> = Promise.resolve();
+
+  const queueHistoryWrite = <T,>(task: () => Promise<T>): Promise<T> => {
+    const run = historyQueue.then(task);
+    historyQueue = run.catch(() => undefined);
+    return run;
+  };
 
   const invalidatePendingHistorySession = () => {
     pendingHistorySessionVersion += 1;
@@ -94,6 +104,26 @@ export const useEditorStore = create<EditorState>((set, get) => {
     invalidatePendingHistorySession();
     set({ historySessionId: sessionId });
   },
+  trackHistorySession: (sessionPromise: Promise<string>) => {
+    invalidatePendingHistorySession();
+    set({ historySessionId: null });
+    const requestVersion = pendingHistorySessionVersion;
+    const trackedPromise = sessionPromise
+      .then((sessionId) => {
+        if (requestVersion === pendingHistorySessionVersion) {
+          set({ historySessionId: sessionId });
+        }
+        return sessionId;
+      })
+      .finally(() => {
+        if (pendingHistorySessionPromise === trackedPromise) {
+          pendingHistorySessionPromise = null;
+        }
+      });
+    pendingHistorySessionPromise = trackedPromise;
+    return trackedPromise;
+  },
+  queueHistoryWrite,
   bumpHistoryRefreshKey: () => set((state) => ({ historyRefreshKey: state.historyRefreshKey + 1 })),
 
   setLeftText: (text: string) => set({ leftText: text, areComparedTextsIdentical: false }),
@@ -215,7 +245,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       get().bumpHistoryRefreshKey();
     };
 
-    void persistMergeStep();
+    void queueHistoryWrite(persistMergeStep).catch(reportHistoryWriteError);
 
     get().compare(settings);
 
@@ -239,7 +269,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
   },
 
-  undoMergeStep: async (settings: CompareSettings) => {
+  undoMergeStep: (settings: CompareSettings) => queueHistoryWrite(async () => {
     let { historySessionId } = get();
     if (!historySessionId && pendingHistorySessionPromise) {
       historySessionId = await pendingHistorySessionPromise;
@@ -259,9 +289,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
     get().selectBlock(null);
     get().bumpHistoryRefreshKey();
     return "applied";
-  },
+  }),
 
-  redoMergeStep: async (settings: CompareSettings) => {
+  redoMergeStep: (settings: CompareSettings) => queueHistoryWrite(async () => {
     let { historySessionId } = get();
     if (!historySessionId && pendingHistorySessionPromise) {
       historySessionId = await pendingHistorySessionPromise;
@@ -281,7 +311,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     get().selectBlock(null);
     get().bumpHistoryRefreshKey();
     return "applied";
-  },
+  }),
 
   loadFromHistory: (left: string, right: string, settings: CompareSettings, sessionId: string | null = null) => {
     invalidatePendingHistorySession();

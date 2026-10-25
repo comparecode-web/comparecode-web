@@ -31,8 +31,8 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             className={cn("peer sr-only", className)}
             {...props}
           />
-          <span className="absolute inset-0 rounded-full border border-border-default bg-bg-secondary transition-colors peer-checked:border-accent-primary peer-checked:bg-accent-primary/20 peer-focus-visible:ring-2 peer-focus-visible:ring-accent-primary/45" />
-          <span className={cn("absolute left-0.5 top-1/2 -translate-y-1/2 rounded-full bg-text-secondary transition-all peer-checked:bg-accent-primary", sizes[size].thumb)} />
+          <span className="absolute inset-0 rounded-full border border-border-strong bg-bg-secondary transition-colors peer-checked:border-accent peer-checked:bg-accent/20 peer-focus-visible:ring-2 peer-focus-visible:ring-accent/45" />
+          <span className={cn("absolute left-0.5 top-1/2 -translate-y-1/2 rounded-full bg-text-secondary transition-all peer-checked:bg-accent", sizes[size].thumb)} />
         </span>
         {label && <span className={cn("font-medium text-text-primary", sizes[size].label)}>{label}</span>}
       </label>

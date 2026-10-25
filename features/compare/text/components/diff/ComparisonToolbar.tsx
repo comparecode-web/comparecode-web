@@ -33,13 +33,13 @@ export function ComparisonToolbar({ onImport }: { onImport: (side: "left" | "rig
 
   return <WorkspaceToolbar className="flex-wrap gap-y-0.5 @xl/workspace:flex-nowrap @lg/workspace:px-2">
     <div className="flex min-w-0 flex-1 items-center justify-between gap-0.5">
-      <span className="shrink-0 text-xs font-bold text-danger @lg/workspace:text-sm"><span className="@3xl/workspace:hidden">-{stats.removals}</span><span className="hidden @3xl/workspace:inline">{stats.removals} removals</span></span>
+      <span className="shrink-0 text-xs font-bold text-destructive @lg/workspace:text-sm"><span className="@3xl/workspace:hidden">-{stats.removals}</span><span className="hidden @3xl/workspace:inline">{stats.removals} removals</span></span>
       <div className="flex shrink-0 items-center gap-0.5">
         <CopyButton side="left" disabled={!leftText || copiedSide === "left"} copied={copiedSide === "left"} onClick={() => void copy("left")} />
         <IconButton size="sm" aria-label="Import original text file" title="Import" onClick={() => onImport("left")}><MdFileOpen /></IconButton>
       </div>
     </div>
-    <IconButton size="sm" className="text-accent-primary" aria-label="Swap sides" title="Swap sides" disabled={!leftText && !rightText} onClick={() => executeSwap(settings)}><MdSwapHoriz /></IconButton>
+    <IconButton size="sm" className="text-accent" aria-label="Swap sides" title="Swap sides" disabled={!leftText && !rightText} onClick={() => executeSwap(settings)}><MdSwapHoriz /></IconButton>
     <div className="flex min-w-0 flex-1 items-center justify-between gap-0.5">
       <span className="shrink-0 text-xs font-bold text-success @lg/workspace:text-sm"><span className="@3xl/workspace:hidden">+{stats.additions}</span><span className="hidden @3xl/workspace:inline">{stats.additions} additions</span></span>
       <div className="flex shrink-0 items-center gap-0.5">
@@ -55,7 +55,7 @@ export function ComparisonToolbar({ onImport }: { onImport: (side: "left" | "rig
 }
 
 function CopyButton({ side, disabled, copied, onClick }: { side: "left" | "right"; disabled: boolean; copied: boolean; onClick: () => void }) {
-  return <Button size="sm" variant="ghost" className="px-1.5 text-accent-primary hover:text-accent-primary" aria-label={`Copy ${side === "left" ? "original" : "modified"} text`} disabled={disabled} onClick={onClick} leftIcon={copied ? <MdCheck className="text-lg" /> : <MdContentCopy className="text-lg" />}>
+  return <Button size="sm" variant="ghost" className="px-1.5 text-accent hover:text-accent" aria-label={`Copy ${side === "left" ? "original" : "modified"} text`} disabled={disabled} onClick={onClick} leftIcon={copied ? <MdCheck className="text-lg" /> : <MdContentCopy className="text-lg" />}>
     {copied ? "Copied" : "Copy"}
   </Button>;
 }

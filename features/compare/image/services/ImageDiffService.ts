@@ -1,14 +1,110 @@
 import { DiffAlgorithm } from "../store/useImageCompareStore";
 import { ImageAffineTransform } from "./alignment/types";
 import { buildAffineMatrix, getTransformedBounds, hasSameAspectRatio } from "./alignment/transformUtils";
+import { getWorkingScale, scaleSize } from "../utils/canvasBudget";
 
 export interface DiffStats {
   totalPixels: number;
   differentPixels: number;
   percentDifferent: number;
+  scale?: number;
 }
 
-function loadImageToCanvas(url: string): Promise<{ canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D }> {
+interface LoadedImageCanvas {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+}
+
+export interface ComparisonLayers {
+  width: number;
+  height: number;
+  scale: number;
+  original: HTMLCanvasElement;
+  modified: HTMLCanvasElement;
+}
+
+const IMAGE_CACHE_LIMIT = 6;
+const imageCache = new Map<string, Promise<LoadedImageCanvas>>();
+
+function loadImageToCanvas(url: string): Promise<LoadedImageCanvas> {
+  const cached = imageCache.get(url);
+  if (cached) {
+    imageCache.delete(url);
+    imageCache.set(url, cached);
+    return cached;
+  }
+  const request = decodeImageToCanvas(url);
+  imageCache.set(url, request);
+  request.catch(() => {
+    if (imageCache.get(url) === request) imageCache.delete(url);
+  });
+  while (imageCache.size > IMAGE_CACHE_LIMIT) {
+    imageCache.delete(imageCache.keys().next().value!);
+  }
+  return request;
+}
+
+export function loadComparisonImage(url: string): Promise<HTMLCanvasElement> {
+  return loadImageToCanvas(url).then(({ canvas }) => canvas);
+}
+
+function createLayerCanvas(width: number, height: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not create comparison layer context");
+  }
+  return { canvas, ctx };
+}
+
+export async function createComparisonLayers(
+  originalUrl: string,
+  modifiedUrl: string,
+  alignmentTransform?: ImageAffineTransform | null
+): Promise<ComparisonLayers> {
+  const [original, modified] = await Promise.all([loadImageToCanvas(originalUrl), loadImageToCanvas(modifiedUrl)]);
+
+  if (alignmentTransform) {
+    const bounds = getTransformedBounds(alignmentTransform, modified.canvas.width, modified.canvas.height);
+    const minX = Math.min(0, bounds.x);
+    const minY = Math.min(0, bounds.y);
+    const width = Math.max(1, Math.ceil(Math.max(original.canvas.width, bounds.x + bounds.width) - minX));
+    const height = Math.max(1, Math.ceil(Math.max(original.canvas.height, bounds.y + bounds.height) - minY));
+    const scale = getWorkingScale(width, height);
+    const size = scaleSize(width, height, scale);
+    const originalLayer = createLayerCanvas(size.width, size.height);
+    const modifiedLayer = createLayerCanvas(size.width, size.height);
+    for (const layer of [originalLayer, modifiedLayer]) {
+      layer.ctx.imageSmoothingEnabled = true;
+      layer.ctx.imageSmoothingQuality = "high";
+    }
+    originalLayer.ctx.setTransform(scale, 0, 0, scale, -minX * scale, -minY * scale);
+    originalLayer.ctx.drawImage(original.canvas, 0, 0);
+    originalLayer.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const matrix = buildAffineMatrix(alignmentTransform, modified.canvas.width, modified.canvas.height);
+    modifiedLayer.ctx.setTransform(matrix.a * scale, matrix.b * scale, matrix.c * scale, matrix.d * scale, (matrix.e - minX) * scale, (matrix.f - minY) * scale);
+    modifiedLayer.ctx.drawImage(modified.canvas, 0, 0);
+    modifiedLayer.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    return { width, height, scale, original: originalLayer.canvas, modified: modifiedLayer.canvas };
+  }
+
+  const width = Math.max(original.canvas.width, modified.canvas.width);
+  const height = Math.max(original.canvas.height, modified.canvas.height);
+  const scale = getWorkingScale(width, height);
+  const size = scaleSize(width, height, scale);
+  const originalLayer = createLayerCanvas(size.width, size.height);
+  const modifiedLayer = createLayerCanvas(size.width, size.height);
+  for (const [layer, source] of [[originalLayer, original], [modifiedLayer, modified]] as const) {
+    layer.ctx.imageSmoothingEnabled = true;
+    layer.ctx.imageSmoothingQuality = "high";
+    layer.ctx.drawImage(source.canvas, 0, 0, size.width, size.height);
+  }
+  return { width, height, scale, original: originalLayer.canvas, modified: modifiedLayer.canvas };
+}
+
+function decodeImageToCanvas(url: string): Promise<LoadedImageCanvas> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -101,14 +197,18 @@ export function createAlignedPair(
 ): {
   width: number;
   height: number;
+  scale: number;
   originalData: Uint8ClampedArray;
   modifiedData: Uint8ClampedArray;
 } {
   if (!transform) {
-    const width = Math.max(original.canvas.width, modified.canvas.width);
-    const height = Math.max(original.canvas.height, modified.canvas.height);
+    const fullWidth = Math.max(original.canvas.width, modified.canvas.width);
+    const fullHeight = Math.max(original.canvas.height, modified.canvas.height);
+    const scale = getWorkingScale(fullWidth, fullHeight);
+    const { width, height } = scaleSize(fullWidth, fullHeight, scale);
 
     if (
+      scale === 1 &&
       original.canvas.width === width &&
       original.canvas.height === height &&
       modified.canvas.width === width &&
@@ -117,6 +217,7 @@ export function createAlignedPair(
       return {
         width,
         height,
+        scale,
         originalData: original.ctx.getImageData(0, 0, width, height).data,
         modifiedData: modified.ctx.getImageData(0, 0, width, height).data
       };
@@ -135,14 +236,22 @@ export function createAlignedPair(
       throw new Error("Could not create aligned canvas context");
     }
 
+    if (scale < 1) {
+      for (const ctx of [originalCtx, modifiedCtx]) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      }
+    }
+
     if (hasSameAspectRatio(original.canvas.width, original.canvas.height, modified.canvas.width, modified.canvas.height)) {
       originalCtx.imageSmoothingEnabled = true;
       originalCtx.imageSmoothingQuality = "high";
-      originalCtx.drawImage(original.canvas, 0, 0, width, height);
+      originalCtx.drawImage(original.canvas, 0, 0, fullWidth, fullHeight);
 
       modifiedCtx.imageSmoothingEnabled = true;
       modifiedCtx.imageSmoothingQuality = "high";
-      modifiedCtx.drawImage(modified.canvas, 0, 0, width, height);
+      modifiedCtx.drawImage(modified.canvas, 0, 0, fullWidth, fullHeight);
     } else {
       originalCtx.drawImage(original.canvas, 0, 0);
       modifiedCtx.drawImage(modified.canvas, 0, 0);
@@ -151,6 +260,7 @@ export function createAlignedPair(
     return {
       width,
       height,
+      scale,
       originalData: originalCtx.getImageData(0, 0, width, height).data,
       modifiedData: modifiedCtx.getImageData(0, 0, width, height).data
     };
@@ -161,8 +271,10 @@ export function createAlignedPair(
   const minY = Math.min(0, modifiedBounds.y);
   const maxX = Math.max(original.canvas.width, modifiedBounds.x + modifiedBounds.width);
   const maxY = Math.max(original.canvas.height, modifiedBounds.y + modifiedBounds.height);
-  const width = Math.max(1, Math.ceil(maxX - minX));
-  const height = Math.max(1, Math.ceil(maxY - minY));
+  const fullWidth = Math.max(1, Math.ceil(maxX - minX));
+  const fullHeight = Math.max(1, Math.ceil(maxY - minY));
+  const scale = getWorkingScale(fullWidth, fullHeight);
+  const { width, height } = scaleSize(fullWidth, fullHeight, scale);
   const offsetX = -minX;
   const offsetY = -minY;
   const originalCanvas = document.createElement("canvas");
@@ -177,15 +289,24 @@ export function createAlignedPair(
     throw new Error("Could not create aligned canvas context");
   }
 
+  if (scale < 1) {
+    for (const ctx of [originalCtx, modifiedCtx]) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+    }
+    originalCtx.setTransform(scale, 0, 0, scale, 0, 0);
+  }
   originalCtx.drawImage(original.canvas, offsetX, offsetY);
+  if (scale < 1) originalCtx.setTransform(1, 0, 0, 1, 0, 0);
   const matrix = buildAffineMatrix(transform, modified.canvas.width, modified.canvas.height);
-  modifiedCtx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e + offsetX, matrix.f + offsetY);
+  modifiedCtx.setTransform(matrix.a * scale, matrix.b * scale, matrix.c * scale, matrix.d * scale, (matrix.e + offsetX) * scale, (matrix.f + offsetY) * scale);
   modifiedCtx.drawImage(modified.canvas, 0, 0);
   modifiedCtx.setTransform(1, 0, 0, 1, 0, 0);
 
   return {
     width,
     height,
+    scale,
     originalData: originalCtx.getImageData(0, 0, width, height).data,
     modifiedData: modifiedCtx.getImageData(0, 0, width, height).data
   };
@@ -245,6 +366,12 @@ export async function renderDiff(
   const width = pair.width;
   const height = pair.height;
   const totalPixels = width * height;
+  const toStats = (differentPixels: number): DiffStats => ({
+    totalPixels: Math.round(totalPixels / (pair.scale * pair.scale)),
+    differentPixels: Math.round(differentPixels / (pair.scale * pair.scale)),
+    percentDifferent: totalPixels > 0 ? (differentPixels / totalPixels) * 100 : 0,
+    scale: pair.scale
+  });
   let differentPixels = 0;
   const DIFF_THRESHOLD = 30;
   const o = pair.originalData;
@@ -289,7 +416,7 @@ export async function renderDiff(
     ctx.shadowBlur = 0;
     ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 1;
     [width, width * 2].forEach((x) => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); });
-    return { totalPixels, differentPixels, percentDifferent: (differentPixels / totalPixels) * 100 };
+    return toStats(differentPixels);
   }
 
   if (algorithm === "ssim") {
@@ -340,7 +467,7 @@ export async function renderDiff(
       }
     }
     ctx.putImageData(out, 0, 0);
-    return { totalPixels, differentPixels, percentDifferent: (differentPixels / totalPixels) * 100 };
+    return toStats(differentPixels);
   }
 
   if (algorithm === "edge") {
@@ -370,7 +497,7 @@ export async function renderDiff(
       }
     }
     ctx.putImageData(out, 0, 0);
-    return { totalPixels, differentPixels, percentDifferent: (differentPixels / totalPixels) * 100 };
+    return toStats(differentPixels);
   }
 
   targetCanvas.width = width; targetCanvas.height = height;
@@ -477,11 +604,7 @@ export async function renderDiff(
   }
 
   ctx.putImageData(outputData, 0, 0);
-  return {
-    totalPixels,
-    differentPixels,
-    percentDifferent: totalPixels > 0 ? (differentPixels / totalPixels) * 100 : 0
-  };
+  return toStats(differentPixels);
 }
 
 export async function renderFade(

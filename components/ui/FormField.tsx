@@ -23,6 +23,6 @@ export function FormField({ label, description, error, className, children }: Fo
   return <div className={cn("flex min-w-0 flex-col gap-1", className)}>
     <label htmlFor={id} className="text-xs font-semibold text-text-secondary">{label}</label>
     {children({ id, "aria-describedby": error || description ? messageId : undefined, "aria-invalid": error ? true : undefined })}
-    {(error || description) && <p id={messageId} role={error ? "alert" : undefined} className={cn("text-xs", error ? "text-danger" : "text-text-secondary")}>{error || description}</p>}
+    {(error || description) && <p id={messageId} role={error ? "alert" : undefined} className={cn("text-xs", error ? "text-destructive" : "text-text-secondary")}>{error || description}</p>}
   </div>;
 }

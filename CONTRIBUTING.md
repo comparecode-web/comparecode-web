@@ -38,6 +38,8 @@ git checkout -b fix/issue-description
 
 ### 5. Commit Your Changes
 
+If your change is noticeable to someone using the app, add a line under "Unreleased" in [CHANGELOG.md](CHANGELOG.md) in the same commit, for example `- **Image compare:** Zoom in every comparison mode.` See [the changelog guide](docs/changelog.md) for the categories and areas. `npm run changelog:check` validates it.
+
 Use an English, subject-only [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) message.
 
 Every commit requires a [Developer Certificate of Origin](https://developercertificate.org/) sign-off. Create it with `git commit -s`:
@@ -66,6 +68,7 @@ Then go to the original CompareCode repository on GitHub, open a pull request to
 
 - **Components:** Use functional React components with hooks.
 - **Styling:** Use Tailwind CSS and the existing theme tokens and shared UI primitives.
+- **Themes:** Add or change themes as palettes in `config/themes`, then run `npm run themes:generate`. The palette contrast tests must pass. See [the theming contract](docs/architecture/theming.md).
 - **State Management:** Extend the canonical Zustand store for the affected feature or application-wide concern. Do not create a parallel source of truth.
 
 ## Found a Bug?

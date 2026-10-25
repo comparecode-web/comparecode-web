@@ -1,4 +1,5 @@
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
+import { reportHistoryWriteError } from "@/store/reportHistoryWriteError";
 import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { HistoryService } from "@/services/historyService";
 import { CompareSettings } from "@/types/settings";
@@ -6,7 +7,7 @@ import { BlockType } from "@/features/compare/text/types/diff";
 
 export function useTextCompareActions() {
   const executeCompare = async (settings: CompareSettings, saveToHistory: boolean, preserveInputState: boolean = false) => {
-    const { leftText, rightText, compare, setHistorySessionId, bumpHistoryRefreshKey } = useEditorStore.getState();
+    const { leftText, rightText, compare, trackHistorySession, bumpHistoryRefreshKey } = useEditorStore.getState();
     const { setIsInputExpanded, setIsComparing, isInputExpanded } = useEditorUIStore.getState();
 
     setIsComparing(true);
@@ -15,9 +16,12 @@ export function useTextCompareActions() {
     setIsComparing(false);
 
     if (saveToHistory && (leftText || rightText)) {
-      const sessionId = await HistoryService.addAsync(leftText, rightText);
-      setHistorySessionId(sessionId);
-      bumpHistoryRefreshKey();
+      try {
+        await trackHistorySession(HistoryService.addAsync(leftText, rightText));
+        bumpHistoryRefreshKey();
+      } catch (error) {
+        reportHistoryWriteError(error);
+      }
     }
   };
 
@@ -30,7 +34,7 @@ export function useTextCompareActions() {
   };
 
   const executeSwap = async (settings: CompareSettings) => {
-    const { swapTexts, currentBlockIndex, selectBlock, leftText, rightText, historySessionId, setHistorySessionId, bumpHistoryRefreshKey } = useEditorStore.getState();
+    const { swapTexts, currentBlockIndex, selectBlock, leftText, rightText, queueHistoryWrite, bumpHistoryRefreshKey } = useEditorStore.getState();
     const prevIndex = currentBlockIndex;
     const beforeLeft = leftText;
     const beforeRight = rightText;
@@ -38,14 +42,17 @@ export function useTextCompareActions() {
     swapTexts();
     const { leftText: afterLeft, rightText: afterRight } = useEditorStore.getState();
 
-    let sessionId = historySessionId;
-    if (!sessionId) {
-      sessionId = await HistoryService.createMergeSessionAsync(beforeLeft, beforeRight);
-      setHistorySessionId(sessionId);
-    }
+    await queueHistoryWrite(async () => {
+      const { historySessionId, setHistorySessionId } = useEditorStore.getState();
+      let sessionId = historySessionId;
+      if (!sessionId) {
+        sessionId = await HistoryService.createMergeSessionAsync(beforeLeft, beforeRight);
+        setHistorySessionId(sessionId);
+      }
 
-    await HistoryService.appendSwapStepAsync(sessionId, beforeLeft, beforeRight, afterLeft, afterRight);
-    bumpHistoryRefreshKey();
+      await HistoryService.appendSwapStepAsync(sessionId, beforeLeft, beforeRight, afterLeft, afterRight);
+      bumpHistoryRefreshKey();
+    }).catch(reportHistoryWriteError);
 
     await executeCompare(settings, false, true);
 

@@ -62,7 +62,7 @@ export function ColorInput({
           type="color"
           value={pickerValue}
           onChange={(e) => onChange(e.target.value)}
-          className="size-9 shrink-0 cursor-pointer rounded-md border border-border-default bg-bg-secondary p-1 hover:border-accent-primary focus-visible:outline-2 focus-visible:outline-accent-primary [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-0 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-0"
+          className="size-9 shrink-0 cursor-pointer rounded-md border border-border-default bg-bg-secondary p-1 hover:border-accent focus-visible:outline-2 focus-visible:outline-accent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-0 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-0"
           title={`Pick ${label.toLowerCase()} color`}
           aria-label={`${label} color picker`}
         />
@@ -71,7 +71,7 @@ export function ColorInput({
           <Button
             variant="outline"
             onClick={onRestoreDefault}
-            className={cn("px-2 text-xs", isDifferentFromDefault && "border-accent-primary/60 bg-accent-primary/10 text-accent-primary hover:border-accent-primary")}
+            className={cn("px-2 text-xs", isDifferentFromDefault && "border-accent/60 bg-accent/10 text-accent hover:border-accent")}
             title={`Restore ${label.toLowerCase()} to theme default`}
             aria-label={`Restore ${label.toLowerCase()} to theme default`}
           >

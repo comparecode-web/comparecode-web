@@ -102,6 +102,8 @@ Vercel builds automatically embed a UTC timestamp such as `Version 20261008.1510
 
 We welcome contributions. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
 
+User-visible changes are listed in [CHANGELOG.md](CHANGELOG.md).
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE). See the LICENSE file for details.

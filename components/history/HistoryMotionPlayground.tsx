@@ -50,7 +50,7 @@ export function HistoryMotionPlayground() {
       empty={<p className="text-sm text-text-secondary">No cards in this view. Add a card or reset the samples.</p>}
     >
       {item => <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border-default bg-bg-primary px-3 py-2 shadow-sm">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-bg-selected text-accent-primary"><MdAnimation /></span>
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-bg-selected text-accent"><MdAnimation /></span>
         <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-text-primary">{item.originalText.split("\n")[0]}</p><p className="text-xs text-text-secondary">Sample comparison</p></div>
         <IconButton size="sm" title="Bookmark sample" aria-pressed={item.isBookmarked} isActive={item.isBookmarked} onClick={() => setItems(current => current.map(row => row.id === item.id ? { ...row, isBookmarked: !row.isBookmarked } : row))}>{item.isBookmarked ? <MdBookmark /> : <MdBookmarkBorder />}</IconButton>
         <IconButton size="sm" variant="dangerGhost" title="Delete sample" onClick={() => setItems(current => current.filter(row => row.id !== item.id))}><MdDelete /></IconButton>

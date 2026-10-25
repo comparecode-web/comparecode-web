@@ -68,7 +68,7 @@ export function FileDropZone({ children, onFilesDrop, label, className, overlayC
     }}
   >
     {children}
-    {isDraggingFile && <div className={cn("pointer-events-none absolute inset-2 z-40 flex items-center justify-center rounded-md border-2 border-dashed border-accent-primary bg-bg-primary/90 text-sm font-bold text-accent-primary backdrop-blur-[1px]", overlayClassName)}>
+    {isDraggingFile && <div className={cn("pointer-events-none absolute inset-2 z-40 flex items-center justify-center rounded-md border-2 border-dashed border-accent bg-bg-primary/90 text-sm font-bold text-accent backdrop-blur-[1px]", overlayClassName)}>
       {label}
     </div>}
   </div>;

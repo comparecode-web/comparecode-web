@@ -132,7 +132,7 @@ export function EditorView() {
       >
         <FileDropZone
           className="flex min-h-0 flex-1 flex-col"
-          label={<div className="grid h-full w-full grid-cols-2 text-center"><span className={cn("flex items-center justify-center", dropSide === "left" && "bg-accent-primary/15")}>Drop into original</span><span className={cn("flex items-center justify-center", dropSide === "right" && "bg-accent-primary/15")}>Drop into modified</span></div>}
+          label={<div className="grid h-full w-full grid-cols-2 text-center"><span className={cn("flex items-center justify-center", dropSide === "left" && "bg-accent/15")}>Drop into original</span><span className={cn("flex items-center justify-center", dropSide === "right" && "bg-accent/15")}>Drop into modified</span></div>}
           onFileDrag={(event) => {
             const bounds = event.currentTarget.getBoundingClientRect();
             setDropSide(event.clientX < bounds.left + bounds.width / 2 ? "left" : "right");

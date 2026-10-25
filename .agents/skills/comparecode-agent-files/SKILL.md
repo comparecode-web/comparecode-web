@@ -15,7 +15,7 @@ Keep repository AI guidance concise, current, discoverable, and free of duplicat
 - Keep product facts, architecture, behavior, schemas, and detailed policies in their authoritative project documentation rather than duplicating them in skills.
 - Enforce deterministic requirements with tests, lint, build tooling, or CI instead of prose alone.
 - Keep one-off instructions in the current user request.
-- Do not create nested `AGENTS.md`, `AGENTS.override.md`, personal/local instruction files, or tool-specific parallel instruction files. This repository intentionally uses one root `AGENTS.md` plus root repository skills.
+- Do not create nested `AGENTS.md`, `AGENTS.override.md`, personal/local instruction files, or tool-specific parallel instruction files. This repository intentionally uses one root `AGENTS.md` plus root repository skills. The only exception is the generated `.claude/skills/<skill-name>/SKILL.md` wrappers, which let Claude Code discover the canonical `.agents/skills` files. They contain only the name, description, and a pointer, and `scripts/sync-claude-skills.mjs` owns them. Do not add a `CLAUDE.md`, because Claude Code then stops loading `AGENTS.md` by default.
 
 ## Maintain Instructions and Skills
 
@@ -24,12 +24,12 @@ Keep repository AI guidance concise, current, discoverable, and free of duplicat
 3. Use `$skill-creator` for new or structurally changed skills. Keep names lower-case and hyphenated, descriptions trigger-focused, and instructions concise and imperative.
 4. Keep repository skills instruction-only by default: add only `SKILL.md`. Add scripts, references, assets, or `agents/openai.yaml` only when the workflow has a demonstrated need.
 5. Store each rule under one authoritative owner. Summarize non-negotiable authorization and safety constraints in `AGENTS.md`; keep procedural detail in the relevant skill.
-6. Update root skill routing whenever a skill is added, renamed, repurposed, or removed. Remove stale identifiers, paths, aliases, and contradictory instructions in the same task.
+6. Update root skill routing whenever a skill is added, renamed, repurposed, or removed, and run `npm run agents:sync` to refresh the Claude Code wrappers. Remove stale identifiers, paths, aliases, and contradictory instructions in the same task.
 7. Keep all agent files and technical documentation in English, while preserving the root rule that conversation follows the user's language.
 
 ## Validation
 
-1. Run the validator supplied by `$skill-creator` for every added or changed skill.
+1. Run the validator supplied by `$skill-creator` for every added or changed skill, and run `scripts/__tests__/claude-skills.test.ts` to confirm the Claude Code wrappers match.
 2. Verify every referenced repository path exists. Search for stale skill names, missing routes, TODO placeholders, duplicate rules, non-root README files, nested agent files, and references to removed instruction systems.
 3. Run `git diff --check`, inspect the full diff, and verify changed instruction files are UTF-8 without BOM or trailing whitespace.
 4. For guidance-only changes, do not run the application build. Run build or tests only when the documentation is a runtime/build input or the same task also changes application behavior.

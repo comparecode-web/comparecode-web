@@ -7,6 +7,7 @@ import { NavigationSidebar } from "@/components/layout/NavigationSidebar";
 import { WorkspaceSidebarProvider } from "@/components/layout/WorkspaceSidebarContext";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { defaultSettings } from "@/config/defaults";
+import { AVAILABLE_THEMES } from "@/config/themes";
 
 const navigation = vi.hoisted(() => ({ pathname: "/text", replace: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => navigation.pathname, useRouter: () => ({ replace: navigation.replace }) }));
@@ -160,7 +161,10 @@ describe("Workspace navigation", () => {
     const user = userEvent.setup();
     render(<WorkspaceNavigation />);
     await user.click(screen.getByRole("button", { name: /^Theme:/ }));
-    expect(screen.getAllByRole("option")).toHaveLength(7);
+    expect(screen.getAllByRole("option")).toHaveLength(AVAILABLE_THEMES.length);
+    expect(screen.getByRole("group", { name: "Light themes" })).toContainElement(screen.getByRole("option", { name: "Sand" }));
+    expect(screen.getByRole("group", { name: "Dark themes" })).toContainElement(screen.getByRole("option", { name: "Nord" }));
+    expect(screen.queryByRole("option", { name: "Monokai" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("option", { name: "Nord" }));
     expect(useSettingsStore.getState().settings.theme).toBe("nord");
   });
