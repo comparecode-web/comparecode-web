@@ -74,4 +74,30 @@ describe("Text options controls", () => {
     expect(useSettingsStore.getState().settings).toMatchObject({ isSyntaxHighlightingEnabled: false, textSyntaxLanguage: "javascript", fontSize: defaultSettings.fontSize });
     expect(executeCompare).not.toHaveBeenCalled();
   });
+  it("toggles hidden unchanged lines, enables context only when active, and resets them with Layout", async () => {
+    const user = userEvent.setup();
+    render(<OptionsView />);
+    expect(screen.getByRole("button", { name: /Context lines:/ })).toBeDisabled();
+    await user.click(screen.getByRole("checkbox", { name: "Hide unchanged lines" }));
+    expect(useSettingsStore.getState().settings.isHideUnchangedEnabled).toBe(true);
+    await user.click(screen.getByRole("button", { name: /Context lines:/ }));
+    await user.click(screen.getByRole("option", { name: "10 lines" }));
+    expect(useSettingsStore.getState().settings.unchangedContextLines).toBe(10);
+    await user.click(screen.getByRole("button", { name: "Restore Layout defaults" }));
+    expect(useSettingsStore.getState().settings).toMatchObject({ isHideUnchangedEnabled: false, unchangedContextLines: 3, fontSize: 20 });
+  });
+  it("toggles case sensitivity and the live input editor and resets them with Comparison", async () => {
+    const user = userEvent.setup();
+    render(<OptionsView />);
+    const caseSensitive = screen.getByRole("checkbox", { name: "Case sensitive" });
+    const liveEdit = screen.getByRole("checkbox", { name: "Live input editor" });
+    expect(caseSensitive).toBeChecked();
+    expect(liveEdit).not.toBeChecked();
+    await user.click(caseSensitive);
+    await user.click(liveEdit);
+    expect(useSettingsStore.getState().settings).toMatchObject({ ignoreCase: true, isRealtimeCompareEnabled: true });
+    expect(caseSensitive).not.toBeChecked();
+    await user.click(screen.getByRole("button", { name: "Restore Comparison defaults" }));
+    expect(useSettingsStore.getState().settings).toMatchObject({ ignoreCase: false, isRealtimeCompareEnabled: false });
+  });
 });

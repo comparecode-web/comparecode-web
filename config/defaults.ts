@@ -6,8 +6,13 @@ const defaultHighlightColors = getThemeHighlightDefaults(DEFAULT_THEME_ID);
 export const defaultSettings: AppSettings = {
   isWordWrapEnabled: true,
   ignoreWhitespace: false,
+  ignoreCase: false,
+  ignoreRules: [],
+  isRealtimeCompareEnabled: false,
   precision: PrecisionLevel.Word,
   viewMode: ViewMode.Split,
+  isHideUnchangedEnabled: false,
+  unchangedContextLines: 3,
   fontSize: 13.0,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   isSyntaxHighlightingEnabled: false,

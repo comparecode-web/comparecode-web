@@ -11,7 +11,7 @@ import { cn } from "@/utils/uiHelpers";
 import { useLiveTimeTicker } from "@/features/compare/text/hooks/useLiveTimeTicker";
 
 type SnapshotTone = "initial" | "added" | "removed" | "neutral";
-type SnapshotKind = "initial" | "merge" | "swap";
+type SnapshotKind = "initial" | "merge" | "swap" | "edit";
 
 interface MergeSnapshotItem {
   id: string;
@@ -66,6 +66,8 @@ export function MergeHistoryView() {
 
       if (step.actionType === HistoryActionType.Swap) {
         kind = "swap";
+      } else if (step.actionType === HistoryActionType.Edit) {
+        kind = "edit";
       } else if (step.actionType === HistoryActionType.Merge) {
         if (step.direction === HistoryActionDirection.LeftToRight) {
           tone = "removed";
@@ -124,6 +126,10 @@ export function MergeHistoryView() {
   const renderSnapshotTitle = (snapshot: MergeSnapshotItem) => {
     if (snapshot.kind === "initial") {
       return <span className="text-xs font-semibold text-text-primary">Initial state</span>;
+    }
+
+    if (snapshot.kind === "edit") {
+      return <span className="text-xs font-semibold text-text-primary">Manual edit</span>;
     }
 
     if (snapshot.kind === "swap") {

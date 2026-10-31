@@ -12,7 +12,7 @@ export interface DiffSurface extends DiffSurfaceSpec {
 }
 
 interface SurfaceRow {
-  type: "line" | "controls" | "header-controls";
+  type: "line" | "controls" | "header-controls" | "collapsed";
   block: { id: string; isSelected?: boolean };
   isSelectable: boolean;
   isFirstLine?: boolean;

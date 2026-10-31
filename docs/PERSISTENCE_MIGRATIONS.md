@@ -27,6 +27,8 @@ Input is limited to 100 MiB, 10,000 sessions and 100,000 steps. Unknown format v
 
 Validation covers JSON round trips, legacy normalization, malformed/future formats, delimiter collisions, image portability, alignment, steps and cursors. Browser integration checks must additionally exercise real IndexedDB export/import, duplicate skipping, restoration, and rollback on failed writes.
 
+Manual edits add the `EDIT` value to `HistoryActionType`. It is an additive enum value in existing history step records, not an indexed field, so `DB_CONFIG.VERSION` does not change and no record is converted. Backup format v1 accepts it because the reader validates against the current enum. A release before this value rejects a backup that contains an `EDIT` step, and shows such a step from IndexedDB as a generic merge entry while undo and redo keep working, because steps store complete text pairs.
+
 ## Compatibility Invariants
 
 - Keep persistence ownership at the established service or storage boundary. UI components and feature stores consume normalized current values.
@@ -65,6 +67,14 @@ The `theme` setting is normalized at the settings boundary by `normalizeThemeId`
 Text syntax highlighting adds `isSyntaxHighlightingEnabled` and `textSyntaxLanguage` to the existing settings object under the same key. `services/settingsService.ts` supplies missing fields from `defaultSettings`, validates the toggle as a boolean and the language against `TEXT_SYNTAX_LANGUAGES`, and defaults malformed or unknown values independently without changing unrelated valid preferences. Loading never rewrites stored data. No database version or History format change is required; source snapshots and syntax tokens are transient comparison presentation state.
 
 Expanding the syntax-language inventory preserves the existing `plain`, `javascript`, `typescript`, `json` and `python` IDs and adds distinct IDs to the same canonical list. The compatibility reader accepts all registered values without reinterpreting old selections. Settings tests round-trip every registered language; no new key or schema migration is needed.
+
+Ignore case adds the `ignoreCase` boolean to the same settings object, shown inverted as the "Case sensitive" switch. A missing or malformed value defaults to `false`, which is case sensitive, without rewriting storage.
+
+Ignore rules add `ignoreRules`, an array of `{ id, pattern, kind, isEnabled }`. A missing or malformed list becomes empty. Items without a non-empty unique string `id`, without a string `pattern`, or with a pattern longer than 500 characters are dropped. A missing `kind` becomes `literal`, a missing `isEnabled` becomes `true`, and at most 50 rules are kept. An unknown `kind` is preserved unchanged so a newer rule type is not lost, and the engine ignores it. Loading never rewrites storage.
+
+Live input editor adds the `isRealtimeCompareEnabled` boolean, which defaults to `false` when missing or malformed, without rewriting storage. Its paused state is transient.
+
+Hide unchanged lines adds `isHideUnchangedEnabled` and `unchangedContextLines` to the same settings object. The reader validates the toggle as a boolean and the context against `UNCHANGED_CONTEXT_LINE_OPTIONS` (0, 3, 5, 10), and defaults each malformed or missing value independently without rewriting storage. Reveal state is transient UI state and is never persisted.
 
 - Keep storage keys centralized in their current owner. Do not duplicate string keys in stores or components.
 - Prefer a compatibility reader when a shape can evolve safely under the same durable key.

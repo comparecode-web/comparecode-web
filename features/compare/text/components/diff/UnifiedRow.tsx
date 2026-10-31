@@ -10,6 +10,7 @@ import { DiffFragmentList } from "./DiffFragmentList";
 import { MoveAnnotation } from "./MoveAnnotation";
 import { LINE_CELL_CLASS, LINE_NUMBER_GUTTER_CLASS, getRowContainerClass } from "./rowLayout";
 import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
+import type { CollapsedRowInfo } from "@/features/compare/text/utils/unchangedRegions";
 
 export interface UnifiedLineData {
   line1: number | string | null;
@@ -22,7 +23,7 @@ export interface UnifiedLineData {
 
 export interface UnifiedRowData {
   id: string;
-  type: "line" | "controls" | "header-controls";
+  type: "line" | "controls" | "header-controls" | "collapsed";
   block: ChangeBlock;
   lineIndex: number;
   unifiedLine?: UnifiedLineData;
@@ -31,6 +32,7 @@ export interface UnifiedRowData {
   isSelectable: boolean;
   isFirstLine?: boolean;
   isLastLine?: boolean;
+  collapsed?: CollapsedRowInfo;
 }
 
 interface UnifiedRowProps {

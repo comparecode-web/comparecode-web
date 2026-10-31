@@ -6,6 +6,25 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+## 2026-10-31
+
+### Added
+
+- **Text compare:** Hide unchanged lines with adjustable context, and reveal them step by step or all at once.
+- **Text compare:** Case sensitive option that can be turned off to treat uppercase and lowercase letters as equal.
+- **Text compare:** Ignore rules that skip text such as timestamps or build numbers on both sides.
+- **Text compare:** Transform menu in the input editor to lowercase text, sort lines, replace line breaks with spaces, or trim whitespace on one or both sides.
+- **Text compare:** JSON formatting in the Transform menu with 2-space, 4-space, or tab indentation, plus minify and sort keys, keeping numbers and key order exactly.
+- **Text compare:** Live input editor option that recalculates the comparison while you edit the input after the first comparison. When it is off, an out-of-date comparison can be updated with one click.
+
+### Changed
+
+- **Text compare:** Test text includes examples for hidden unchanged lines and case sensitivity.
+
+### Fixed
+
+- **Text compare:** Undo and redo no longer discard text typed after a comparison or merge, and Merge history shows these manual edits.
+
 ## 2026-10-25
 
 ### Added

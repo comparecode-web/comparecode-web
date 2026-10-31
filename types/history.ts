@@ -7,7 +7,8 @@ export enum HistoryActionType {
   Swap = "SWAP",
   Restore = "RESTORE",
   Undo = "UNDO",
-  Redo = "REDO"
+  Redo = "REDO",
+  Edit = "EDIT"
 }
 
 export enum HistoryActionDirection {

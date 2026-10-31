@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsService } from "./settingsService";
 import { StorageFactory } from "./storage/StorageFactory";
 import { defaultSettings } from "@/config/defaults";
-import { TEXT_SYNTAX_LANGUAGES } from "@/types/settings";
+import { TEXT_SYNTAX_LANGUAGES, UNCHANGED_CONTEXT_LINE_OPTIONS } from "@/types/settings";
 
 describe("syntax settings compatibility", () => {
   const getItem = vi.fn();
@@ -59,5 +59,82 @@ describe("syntax settings compatibility", () => {
     getItem.mockReturnValue(json);
     expect(SettingsService.loadSettings()).toEqual(defaultSettings);
     expect(setItem).not.toHaveBeenCalled();
+  });
+});
+
+describe("hide unchanged settings compatibility", () => {
+  const getItem = vi.fn();
+  const setItem = vi.fn();
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    getItem.mockReset();
+    setItem.mockReset();
+    vi.spyOn(StorageFactory, "getAdapter").mockReturnValue({ getItem, setItem, removeItem: vi.fn() });
+  });
+
+  it("defaults the new fields for released settings without writing", () => {
+    getItem.mockReturnValue(JSON.stringify({ theme: "dark", viewMode: "Unified" }));
+    expect(SettingsService.loadSettings()).toMatchObject({ theme: "dark", viewMode: "Unified", isHideUnchangedEnabled: false, unchangedContextLines: 3 });
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it.each([[undefined, 7], ["yes", -1], [1, 3.5], [null, "5"], [{}, null]])("defaults malformed values independently: %j and %j", (enabled, context) => {
+    getItem.mockReturnValue(JSON.stringify({ fontSize: 18, isHideUnchangedEnabled: enabled, unchangedContextLines: context }));
+    expect(SettingsService.loadSettings()).toMatchObject({ fontSize: 18, isHideUnchangedEnabled: false, unchangedContextLines: 3 });
+  });
+
+  it.each(UNCHANGED_CONTEXT_LINE_OPTIONS)("keeps a valid context of %i lines", (context) => {
+    getItem.mockReturnValue(JSON.stringify({ isHideUnchangedEnabled: true, unchangedContextLines: context }));
+    expect(SettingsService.loadSettings()).toMatchObject({ isHideUnchangedEnabled: true, unchangedContextLines: context });
+  });
+});
+
+describe("ignore settings compatibility", () => {
+  const getItem = vi.fn();
+  const setItem = vi.fn();
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    getItem.mockReset();
+    setItem.mockReset();
+    vi.spyOn(StorageFactory, "getAdapter").mockReturnValue({ getItem, setItem, removeItem: vi.fn() });
+  });
+
+  it("defaults ignore case and rules for released settings", () => {
+    getItem.mockReturnValue(JSON.stringify({ ignoreWhitespace: true }));
+    expect(SettingsService.loadSettings()).toMatchObject({ ignoreWhitespace: true, ignoreCase: false, ignoreRules: [] });
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it.each([null, "rules", 4, {}])("defaults malformed rule lists: %j", (ignoreRules) => {
+    getItem.mockReturnValue(JSON.stringify({ ignoreRules, ignoreCase: "yes", fontSize: 18 }));
+    expect(SettingsService.loadSettings()).toMatchObject({ ignoreRules: [], ignoreCase: false, fontSize: 18 });
+  });
+
+  it("keeps valid rules, drops invalid or duplicate ones, and preserves unknown kinds", () => {
+    getItem.mockReturnValue(JSON.stringify({ ignoreRules: [
+      { id: "a", pattern: "ts=", kind: "literal", isEnabled: false },
+      { id: "b", pattern: "x" },
+      { id: "a", pattern: "duplicate" },
+      { id: "c", pattern: 3 },
+      { pattern: "missing id" },
+      null,
+      { id: "d", pattern: "x".repeat(501) },
+      { id: "e", pattern: "\d+", kind: "regex", isEnabled: true }
+    ] }));
+    expect(SettingsService.loadSettings().ignoreRules).toEqual([
+      { id: "a", pattern: "ts=", kind: "literal", isEnabled: false },
+      { id: "b", pattern: "x", kind: "literal", isEnabled: true },
+      { id: "e", pattern: "\d+", kind: "regex", isEnabled: true }
+    ]);
+  });
+
+  it.each([[undefined, false], ["no", false], [false, false], [true, true]])("validates the live input editor %j as %j", (value, expected) => {
+    getItem.mockReturnValue(JSON.stringify({ isRealtimeCompareEnabled: value }));
+    expect(SettingsService.loadSettings().isRealtimeCompareEnabled).toBe(expected);
+  });
+
+  it("limits the number of loaded rules", () => {
+    getItem.mockReturnValue(JSON.stringify({ ignoreRules: Array.from({ length: 80 }, (_, index) => ({ id: `${index}`, pattern: "x" })) }));
+    expect(SettingsService.loadSettings().ignoreRules).toHaveLength(50);
   });
 });

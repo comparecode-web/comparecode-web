@@ -5,7 +5,7 @@ import { MergeDirection } from "@/types/ui";
 import { ComparisonService } from "./comparisonService";
 import { MergeService } from "./mergeService";
 import { calculateStats } from "@/features/compare/text/utils/diffHelpers";
-import { modifiedTestText, originalTestText } from "@/utils/testData";
+import { modifiedShowcaseSection, modifiedTestText, originalShowcaseSection, originalTestText } from "@/utils/testData";
 import { legacyModifiedLorem, legacyOriginalLorem } from "./fixtures/legacyLorem";
 import { calculateSplitRows } from "@/features/compare/text/hooks/useCalculateSplitRows";
 
@@ -167,10 +167,14 @@ describe("text comparison", () => {
     expect(blocks.filter((block) => block.move).every((block) => !block.move?.modified)).toBe(true);
   });
 
-  it("adds an independent moved section without changing either published lorem input", () => {
-    expect(originalTestText.endsWith(legacyOriginalLorem)).toBe(true);
-    const addedSection = originalTestText.slice(0, -legacyOriginalLorem.length);
-    expect(modifiedTestText.replace(addedSection, "")).toBe(legacyModifiedLorem);
+  it("adds independent moved and showcase sections without changing either published lorem input", () => {
+    const originalShowcase = `\n\n${originalShowcaseSection}`;
+    const modifiedShowcase = `\n\n${modifiedShowcaseSection}`;
+    expect(originalTestText.endsWith(legacyOriginalLorem + originalShowcase)).toBe(true);
+    expect(modifiedTestText.endsWith(modifiedShowcase)).toBe(true);
+    const originalWithoutShowcase = originalTestText.slice(0, -originalShowcase.length);
+    const addedSection = originalWithoutShowcase.slice(0, -legacyOriginalLorem.length);
+    expect(modifiedTestText.slice(0, -modifiedShowcase.length).replace(addedSection, "")).toBe(legacyModifiedLorem);
     for (const ignoreWhitespace of [false, true]) for (const precision of [PrecisionLevel.Word, PrecisionLevel.Character]) {
       const blocks = compare(originalTestText, modifiedTestText, ignoreWhitespace, precision).blocks;
       const moved = blocks.filter((block) => block.move);
@@ -213,5 +217,18 @@ describe("text comparison", () => {
     expect(result.limited).toBe(true);
     const block = result.blocks.find((item) => item.kind !== BlockType.Unchanged)!;
     expect(MergeService.mergeBlock(next, old, block, MergeDirection.LeftToRight)).toBe(old);
+  });
+});
+
+describe("bundled test text showcase", () => {
+  it("demonstrates hidden unchanged lines and case sensitivity", async () => {
+    const { getHiddenRanges } = await import("@/features/compare/text/utils/unchangedRegions");
+    const sensitive = ComparisonService.compare(originalTestText, modifiedTestText, { ignoreWhitespace: false, precision: PrecisionLevel.Word });
+    const insensitive = ComparisonService.compare(originalTestText, modifiedTestText, { ignoreWhitespace: false, precision: PrecisionLevel.Word, ignoreCase: true });
+    const caseLine = (result: typeof sensitive) => result.blocks.some((block) => block.kind !== BlockType.Unchanged &&
+      block.newLines.some((line) => line.fragments.map((fragment) => fragment.text).join("").startsWith("ALIQUAM")));
+    expect(caseLine(sensitive)).toBe(true);
+    expect(caseLine(insensitive)).toBe(false);
+    expect(getHiddenRanges(sensitive.blocks, { contextLines: 3, expansions: {} }).size).toBeGreaterThanOrEqual(1);
   });
 });

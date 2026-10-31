@@ -9,6 +9,8 @@ import { SplitRow, getSplitCellBackground } from "./SplitRow";
 import { DiffSurfaceLayer } from "./DiffSurfaceLayer";
 import { buildDiffSurfaces, getHoveredBlockSurface, getLineSurface, getSelectedBlockSurface } from "@/features/compare/text/utils/diffSurfaces";
 import { useCalculateSplitRows } from "@/features/compare/text/hooks/useCalculateSplitRows";
+import { useHiddenRanges } from "@/features/compare/text/hooks/useHiddenRanges";
+import { CollapsedRow } from "./CollapsedRow";
 import { UI_CONSTANTS } from "@/config/constants";
 import { ComparisonResult } from "@/features/compare/text/types/diff";
 import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
@@ -38,7 +40,8 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
     };
   }, [selectionSide]);
 
-  const rows = useCalculateSplitRows(comparisonResult);
+  const hiddenRanges = useHiddenRanges(comparisonResult, settings);
+  const rows = useCalculateSplitRows(comparisonResult, hiddenRanges);
 
   const maxLineChars = useMemo(() => {
     let max = 0;
@@ -61,6 +64,7 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
     const row = rows[index];
     if (row.type === "header-controls") return (row.block.move ? 28 : 0) + (row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0);
     if (row.type === "controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT : 0;
+    if (row.type === "collapsed") return UI_CONSTANTS.VIRTUAL_ROW_COLLAPSED_HEIGHT;
     return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 
@@ -116,6 +120,9 @@ export function SplitView({ syntax }: { syntax: { left: SyntaxLine[] | null; rig
           <DiffSurfaceLayer target="split-new" surfaces={lineSurfaces("new")} />
           {virtualItems.map((virtualRow: VirtualItem) => {
             const row = rows[virtualRow.index];
+            if (row.type === "collapsed" && row.collapsed) {
+              return <CollapsedRow key={virtualRow.key} blockId={row.block.id} info={row.collapsed} virtualRow={virtualRow} measureRef={virtualizer.measureElement} />;
+            }
             return (
               <SplitRow
                 key={virtualRow.key}

@@ -342,6 +342,28 @@ export class HistoryService {
     );
   }
 
+  public static async appendEditStepAsync(
+    sessionId: string,
+    beforeOriginalText: string,
+    beforeModifiedText: string,
+    afterOriginalText: string,
+    afterModifiedText: string
+  ): Promise<void> {
+    return this.appendStepAsync(
+      sessionId,
+      HistoryActionType.Edit,
+      null,
+      this.toTextSnapshot(beforeOriginalText, beforeModifiedText),
+      this.toTextSnapshot(afterOriginalText, afterModifiedText),
+      {
+        originalLinesAffected: this.getLineCount(afterOriginalText),
+        modifiedLinesAffected: this.getLineCount(afterModifiedText),
+        blockId: null,
+        blockKind: null
+      }
+    );
+  }
+
   public static async undoStepAsync(sessionId: string): Promise<HistorySnapshotState | null> {
     return db.transaction("rw", db.history, db.historySteps, () => this.undoStepInTransaction(sessionId));
   }
