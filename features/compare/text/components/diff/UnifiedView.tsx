@@ -10,6 +10,8 @@ import { buildDiffSurfaces, getHoveredBlockSurface, getLineSurface, getSelectedB
 import { useDiffVirtualizer } from "@/features/compare/text/hooks/useDiffVirtualizer";
 import { cn } from "@/utils/uiHelpers";
 import { useCalculateUnifiedRows } from "@/features/compare/text/hooks/useCalculateUnifiedRows";
+import { useHiddenRanges } from "@/features/compare/text/hooks/useHiddenRanges";
+import { CollapsedRow } from "./CollapsedRow";
 import { UI_CONSTANTS } from "@/config/constants";
 import { ComparisonResult } from "@/features/compare/text/types/diff";
 import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
@@ -26,7 +28,8 @@ export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; r
   const selectedBlockId = comparisonResult?.blocks.find((block) => block.isSelected)?.id ?? null;
   const { activeMoveId, activateMove } = useMoveFocus(comparisonResult);
 
-  const rows = useCalculateUnifiedRows(comparisonResult);
+  const hiddenRanges = useHiddenRanges(comparisonResult, settings);
+  const rows = useCalculateUnifiedRows(comparisonResult, hiddenRanges);
 
   const maxLineChars = useMemo(() => {
     let max = 0;
@@ -45,6 +48,7 @@ export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; r
     const row = rows[index];
     if (row.type === "header-controls") return (row.block.move ? 28 : 0) + (row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_HEADER_HEIGHT : 0);
     if (row.type === "controls") return row.block.isSelected ? UI_CONSTANTS.VIRTUAL_ROW_CONTROLS_HEIGHT : 0;
+    if (row.type === "collapsed") return UI_CONSTANTS.VIRTUAL_ROW_COLLAPSED_HEIGHT;
     return UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
   };
 
@@ -76,6 +80,9 @@ export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; r
         })} />
         {virtualItems.map((virtualRow: VirtualItem) => {
           const row = rows[virtualRow.index];
+          if (row.type === "collapsed" && row.collapsed) {
+            return <CollapsedRow key={virtualRow.key} blockId={row.block.id} info={row.collapsed} virtualRow={virtualRow} measureRef={unifiedVirtualizer.measureElement} />;
+          }
           return (
             <UnifiedRow
               key={virtualRow.key}

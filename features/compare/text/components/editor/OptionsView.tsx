@@ -1,6 +1,6 @@
 "use client";
 
-import { type AppSettings, PrecisionLevel, ViewMode } from "@/types/settings";
+import { type AppSettings, PrecisionLevel, UNCHANGED_CONTEXT_LINE_OPTIONS, ViewMode } from "@/types/settings";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useTextCompareActions } from "@/features/compare/text/hooks/useTextCompareActions";
@@ -17,10 +17,12 @@ import { isSettingsSectionDirty } from "@/utils/settingsReset";
 import { useTextUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { MdTextFields, MdTitle, MdVerticalSplit, MdViewAgenda } from "react-icons/md";
 import { SYNTAX_LANGUAGE_OPTIONS } from "../../services/syntax/languages";
+import { IgnoreRulesEditor } from "./IgnoreRulesEditor";
 
-const COMPARISON_SECTION_KEYS: Array<keyof AppSettings> = ["ignoreWhitespace", "precision"];
+const COMPARISON_SECTION_KEYS: Array<keyof AppSettings> = ["ignoreWhitespace", "ignoreCase", "precision", "isRealtimeCompareEnabled"];
 const APPEARANCE_SECTION_KEYS: Array<keyof AppSettings> = ["isWordWrapEnabled", "fontSize", "fontFamily", "isSyntaxHighlightingEnabled", "textSyntaxLanguage"];
-const LAYOUT_SECTION_KEYS: Array<keyof AppSettings> = ["viewMode"];
+const LAYOUT_SECTION_KEYS: Array<keyof AppSettings> = ["viewMode", "isHideUnchangedEnabled", "unchangedContextLines"];
+const CONTEXT_LINE_OPTIONS = UNCHANGED_CONTEXT_LINE_OPTIONS.map((count) => ({ value: String(count), label: `${count} lines` }));
 const MERGE_SECTION_KEYS: Array<keyof AppSettings> = ["isContinuousMergeEnabled"];
 const BUTTON_VISIBILITY_SECTION_KEYS: Array<keyof AppSettings> = ["isJumpButtonsVisible", "isMergeJumpButtonsVisible"];
 
@@ -51,7 +53,10 @@ function ComparisonSection() {
       onReset={() => resetSectionToDefaults(COMPARISON_SECTION_KEYS)}
     >
       <TextIgnoreWhitespaceControl />
+      <TextCaseSensitiveControl />
       <TextPrecisionControl />
+      <TextLiveInputEditorControl />
+      <IgnoreRulesEditor />
     </OptionsSection>
   );
 }
@@ -60,6 +65,18 @@ export function TextIgnoreWhitespaceControl() {
   const { settings, updateSettings } = useSettingsStore();
   return <Switch checked={settings.ignoreWhitespace}
     onChange={(event) => updateSettings({ ignoreWhitespace: event.target.checked })} label="Ignore whitespace" />;
+}
+
+export function TextCaseSensitiveControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <Switch checked={!settings.ignoreCase}
+    onChange={(event) => updateSettings({ ignoreCase: !event.target.checked })} label="Case sensitive" />;
+}
+
+export function TextLiveInputEditorControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <Switch checked={settings.isRealtimeCompareEnabled}
+    onChange={(event) => updateSettings({ isRealtimeCompareEnabled: event.target.checked })} label="Live input editor" />;
 }
 
 export function TextPrecisionControl() {
@@ -140,8 +157,24 @@ function LayoutSection() {
       onReset={() => resetSectionToDefaults(LAYOUT_SECTION_KEYS)}
     >
       <TextLayoutControl />
+      <TextHideUnchangedControl />
+      <div className="flex flex-col gap-1"><span className="text-sm font-medium text-text-primary">Context lines</span><TextContextLinesControl /></div>
     </OptionsSection>
   );
+}
+
+export function TextHideUnchangedControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <Switch checked={settings.isHideUnchangedEnabled}
+    onChange={(event) => updateSettings({ isHideUnchangedEnabled: event.target.checked })} label="Hide unchanged lines" />;
+}
+
+export function TextContextLinesControl() {
+  const { settings, updateSettings } = useSettingsStore();
+  return <SelectDropdown label="Context lines" value={String(settings.unchangedContextLines)}
+    onChange={(value) => updateSettings({ unchangedContextLines: Number(value) })}
+    options={CONTEXT_LINE_OPTIONS} disabled={!settings.isHideUnchangedEnabled}
+    size="sm" triggerClassName="whitespace-nowrap" />;
 }
 
 export function TextLayoutControl() {

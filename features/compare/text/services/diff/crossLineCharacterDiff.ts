@@ -2,6 +2,7 @@ import { DiffChangeType, TextFragment } from "@/features/compare/text/types/diff
 import { Token, tokenize } from "./tokenize";
 import { PrecisionLevel } from "@/types/settings";
 import { diffSequence } from "./sequenceDiff";
+import { ComparisonNormalizer } from "./comparisonNormalizer";
 
 type Match = { oldStart: number; newStart: number; length: number };
 
@@ -48,29 +49,32 @@ function stableMatches(old: string[], next: string[]): Match[] | null {
   return matches.sort((a, b) => a.oldStart - b.oldStart);
 }
 
-function gap(old: string[], next: string[], oldTarget: TextFragment[], newTarget: TextFragment[]): boolean {
-  const result = diffSequence(old, next, (a, b) => a === b, 80_000);
+interface TokenStream { keys: string[]; texts: string[] }
+
+function gap(old: TokenStream, next: TokenStream, oldStart: number, oldEnd: number, newStart: number, newEnd: number,
+  oldTarget: TextFragment[], newTarget: TextFragment[]): boolean {
+  const result = diffSequence(old.keys.slice(oldStart, oldEnd), next.keys.slice(newStart, newEnd), (a, b) => a === b, 80_000);
   if (result.limited) return false;
-  let oi = 0, ni = 0;
+  let oi = oldStart, ni = newStart;
   for (let index = 0; index < result.edits.length;) {
     const edit = result.edits[index];
     if (edit === "equal") {
       const start = index;
       while (result.edits[index] === "equal") index++;
       const surroundedByEdits = start > 0 && index < result.edits.length;
-      const common = old.slice(oi, oi + index - start);
+      const common = old.texts.slice(oi, oi + index - start);
       for (let position = 0; position < common.length;) {
         const isWord = /[\p{L}\p{N}\p{M}_]/u.test(common[position]);
         let end = position + 1;
         while (end < common.length && /[\p{L}\p{N}\p{M}_]/u.test(common[end]) === isWord) end++;
         const changed = surroundedByEdits && isWord && end - position < 3;
         for (; position < end; position++) {
-          append(oldTarget, old[oi++], changed ? DiffChangeType.Deleted : DiffChangeType.Unchanged);
-          append(newTarget, next[ni++], changed ? DiffChangeType.Inserted : DiffChangeType.Unchanged);
+          append(oldTarget, old.texts[oi++], changed ? DiffChangeType.Deleted : DiffChangeType.Unchanged);
+          append(newTarget, next.texts[ni++], changed ? DiffChangeType.Inserted : DiffChangeType.Unchanged);
         }
       }
-    } else if (edit === "delete") { append(oldTarget, old[oi++], DiffChangeType.Deleted); index++; }
-    else { append(newTarget, next[ni++], DiffChangeType.Inserted); index++; }
+    } else if (edit === "delete") { append(oldTarget, old.texts[oi++], DiffChangeType.Deleted); index++; }
+    else { append(newTarget, next.texts[ni++], DiffChangeType.Inserted); index++; }
   }
   return true;
 }
@@ -88,7 +92,7 @@ function project(fragments: TextFragment[], source: string[]): TextFragment[][] 
   return lines;
 }
 
-function restoreWhitespace(fragments: TextFragment[], source: string, tokens: Token[]): TextFragment[] | null {
+function restoreSkipped(fragments: TextFragment[], source: string, tokens: Token[]): TextFragment[] | null {
   const restored: TextFragment[] = [];
   let cursor = 0, tokenIndex = 0;
   for (const fragment of fragments) {
@@ -106,29 +110,46 @@ function restoreWhitespace(fragments: TextFragment[], source: string, tokens: To
   return restored;
 }
 
-export function crossLineCharacterDiff(oldLines: string[], newLines: string[], ignoreWhitespace = false): { old: TextFragment[][]; next: TextFragment[][] } | null {
+function characterTokens(text: string, lines: string[], normalizer: ComparisonNormalizer): { tokens: Token[]; filtered: boolean } {
+  const masks: Array<readonly [number, number]> = [];
+  let offset = 0;
+  for (const line of lines) {
+    for (const [start, end] of normalizer.maskRanges(line)) masks.push([offset + start, offset + end]);
+    offset += line.length + 1;
+  }
+  let maskIndex = 0;
+  const all = tokenize(text, PrecisionLevel.Character);
+  const tokens = all.filter((token) => {
+    if (normalizer.ignoresWhitespace && token.category === "space") return false;
+    while (maskIndex < masks.length && masks[maskIndex][1] <= token.start) maskIndex++;
+    return !(maskIndex < masks.length && token.start >= masks[maskIndex][0]);
+  });
+  return { tokens, filtered: tokens.length !== all.length || normalizer.ignoresWhitespace };
+}
+
+export function crossLineCharacterDiff(oldLines: string[], newLines: string[], normalizer: ComparisonNormalizer): { old: TextFragment[][]; next: TextFragment[][] } | null {
   const oldText = oldLines.join("\n"), newText = newLines.join("\n");
-  const oldTokens = tokenize(oldText, PrecisionLevel.Character).filter((token) => !ignoreWhitespace || token.category !== "space");
-  const newTokens = tokenize(newText, PrecisionLevel.Character).filter((token) => !ignoreWhitespace || token.category !== "space");
-  const old = oldTokens.map((token) => token.text);
-  const next = newTokens.map((token) => token.text);
-  if (old.length + next.length > 2_000) return null;
-  const matches = stableMatches(old, next);
+  const { tokens: oldTokens, filtered: oldFiltered } = characterTokens(oldText, oldLines, normalizer);
+  const { tokens: newTokens, filtered: newFiltered } = characterTokens(newText, newLines, normalizer);
+  if (oldTokens.length + newTokens.length > 2_000) return null;
+  const old: TokenStream = { texts: oldTokens.map((token) => token.text), keys: oldTokens.map((token) => normalizer.tokenKey(token.text)) };
+  const next: TokenStream = { texts: newTokens.map((token) => token.text), keys: newTokens.map((token) => normalizer.tokenKey(token.text)) };
+  const matches = stableMatches(old.keys, next.keys);
   if (!matches) return null;
   const oldFragments: TextFragment[] = [], newFragments: TextFragment[] = [];
   let oi = 0, ni = 0;
   for (const match of matches) {
-    if (!gap(old.slice(oi, match.oldStart), next.slice(ni, match.newStart), oldFragments, newFragments)) return null;
+    if (!gap(old, next, oi, match.oldStart, ni, match.newStart, oldFragments, newFragments)) return null;
     for (let index = 0; index < match.length; index++) {
-      append(oldFragments, old[match.oldStart + index], DiffChangeType.Unchanged);
-      append(newFragments, next[match.newStart + index], DiffChangeType.Unchanged);
+      append(oldFragments, old.texts[match.oldStart + index], DiffChangeType.Unchanged);
+      append(newFragments, next.texts[match.newStart + index], DiffChangeType.Unchanged);
     }
     oi = match.oldStart + match.length;
     ni = match.newStart + match.length;
   }
-  if (!gap(old.slice(oi), next.slice(ni), oldFragments, newFragments)) return null;
-  const restoredOld = ignoreWhitespace ? restoreWhitespace(oldFragments, oldText, oldTokens) : oldFragments;
-  const restoredNew = ignoreWhitespace ? restoreWhitespace(newFragments, newText, newTokens) : newFragments;
+  if (!gap(old, next, oi, old.keys.length, ni, next.keys.length, oldFragments, newFragments)) return null;
+  const restoredOld = oldFiltered ? restoreSkipped(oldFragments, oldText, oldTokens) : oldFragments;
+  const restoredNew = newFiltered ? restoreSkipped(newFragments, newText, newTokens) : newFragments;
   if (!restoredOld || !restoredNew) return null;
   return { old: project(restoredOld, oldLines), next: project(restoredNew, newLines) };
 }

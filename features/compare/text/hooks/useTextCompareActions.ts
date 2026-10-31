@@ -8,14 +8,17 @@ import { BlockType } from "@/features/compare/text/types/diff";
 export function useTextCompareActions() {
   const executeCompare = async (settings: CompareSettings, saveToHistory: boolean, preserveInputState: boolean = false) => {
     const { leftText, rightText, compare, trackHistorySession, bumpHistoryRefreshKey } = useEditorStore.getState();
-    const { setIsInputExpanded, setIsComparing, isInputExpanded } = useEditorUIStore.getState();
+    const { setIsInputExpanded, setIsComparing, isInputExpanded, resetUnchangedExpansions, setIsLiveUpdatePaused } = useEditorUIStore.getState();
 
+    resetUnchangedExpansions();
+    setIsLiveUpdatePaused(false);
     setIsComparing(true);
     await compare(settings);
     setIsInputExpanded(preserveInputState ? isInputExpanded : false);
     setIsComparing(false);
 
     if (saveToHistory && (leftText || rightText)) {
+      useEditorStore.getState().markHistorySnapshot(leftText, rightText);
       try {
         await trackHistorySession(HistoryService.addAsync(leftText, rightText));
         bumpHistoryRefreshKey();
@@ -34,10 +37,11 @@ export function useTextCompareActions() {
   };
 
   const executeSwap = async (settings: CompareSettings) => {
-    const { swapTexts, currentBlockIndex, selectBlock, leftText, rightText, queueHistoryWrite, bumpHistoryRefreshKey } = useEditorStore.getState();
+    const { swapTexts, currentBlockIndex, selectBlock, leftText, rightText, queueHistoryWrite, bumpHistoryRefreshKey, prepareManualEdit, writeManualEdit } = useEditorStore.getState();
     const prevIndex = currentBlockIndex;
     const beforeLeft = leftText;
     const beforeRight = rightText;
+    const manualEdit = prepareManualEdit({ left: rightText, right: leftText });
 
     swapTexts();
     const { leftText: afterLeft, rightText: afterRight } = useEditorStore.getState();
@@ -48,6 +52,8 @@ export function useTextCompareActions() {
       if (!sessionId) {
         sessionId = await HistoryService.createMergeSessionAsync(beforeLeft, beforeRight);
         setHistorySessionId(sessionId);
+      } else {
+        await writeManualEdit(sessionId, manualEdit);
       }
 
       await HistoryService.appendSwapStepAsync(sessionId, beforeLeft, beforeRight, afterLeft, afterRight);

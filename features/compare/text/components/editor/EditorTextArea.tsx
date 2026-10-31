@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { forwardRef, memo, useEffect, useImperativeHandle, useRef, type ReactNode } from "react";
 import { MdFileOpen } from "react-icons/md";
 import { FileDropZone } from "@/components/ui/FileDropZone";
 import { IconButton } from "@/components/ui/IconButton";
@@ -13,10 +13,12 @@ interface EditorTextAreaProps {
   isWordWrapEnabled: boolean;
   onFileDrop?: (files: FileList) => void;
   onOpenFile?: () => void;
+  mobileActions?: ReactNode;
 }
 
-export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontSize, fontFamily, isWordWrapEnabled, onFileDrop, onOpenFile }: EditorTextAreaProps) => {
+export const EditorTextArea = memo(forwardRef<HTMLTextAreaElement | null, EditorTextAreaProps>(({ label, value, onChange, placeholder, fontSize, fontFamily, isWordWrapEnabled, onFileDrop, onOpenFile, mobileActions }, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useImperativeHandle<HTMLTextAreaElement | null, HTMLTextAreaElement | null>(ref, () => textareaRef.current, []);
   const initialSyncDone = useRef(false);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
     >
       <div className="mb-1 flex items-center justify-between gap-2 sm:hidden">
         <span className="font-bold text-text-primary text-xs">{label}</span>
-        <IconButton size="sm" aria-label={`Import ${label.toLowerCase()} text file`} title="Import" onClick={onOpenFile}><MdFileOpen /></IconButton>
+        <div className="flex items-center gap-1">{mobileActions}<IconButton size="sm" aria-label={`Import ${label.toLowerCase()} text file`} title="Import" onClick={onOpenFile}><MdFileOpen /></IconButton></div>
       </div>
       <textarea
         ref={textareaRef}
@@ -57,7 +59,7 @@ export const EditorTextArea = memo(({ label, value, onChange, placeholder, fontS
       />
     </FileDropZone>
   );
-});
+}));
 
 EditorTextArea.displayName = "EditorTextArea";
 

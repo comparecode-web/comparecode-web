@@ -11,6 +11,7 @@ import { useEditorUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { OptionsView, TextTestButton } from "./OptionsView";
 import { CompactTextOptions } from "./CompactTextOptions";
 import { MergeHistoryView } from "./MergeHistoryView";
+import { useRealtimeCompare } from "@/features/compare/text/hooks/useRealtimeCompare";
 import { InputView } from "./InputView";
 import { ComparisonView } from "@/features/compare/text/components/diff/ComparisonView";
 import { cn } from "@/utils/uiHelpers";
@@ -22,6 +23,7 @@ import { useToastStore } from "@/store/useToastStore";
 export function EditorView() {
   const { comparisonResult, leftText, rightText, importText } = useEditorStore();
   const pushToast = useToastStore((state) => state.pushToast);
+  useRealtimeCompare();
   const leftFileRef = useRef<HTMLInputElement>(null);
   const rightFileRef = useRef<HTMLInputElement>(null);
   const importGeneration = useRef({ left: 0, right: 0 });

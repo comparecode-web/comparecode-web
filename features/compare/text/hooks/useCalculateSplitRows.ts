@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { ComparisonResult, DiffChangeType, BlockType } from "@/features/compare/text/types/diff";
 import { SplitRowData } from "@/features/compare/text/components/diff/SplitRow";
+import { getCollapsedRowInfo, HiddenRange } from "@/features/compare/text/utils/unchangedRegions";
 
-export function calculateSplitRows(comparisonResult: ComparisonResult | null): SplitRowData[] {
+export function calculateSplitRows(comparisonResult: ComparisonResult | null, hiddenRanges?: ReadonlyMap<string, HiddenRange> | null): SplitRowData[] {
     const result: Array<SplitRowData> = [];
     if (!comparisonResult) return result;
 
@@ -14,7 +15,8 @@ export function calculateSplitRows(comparisonResult: ComparisonResult | null): S
       }
       return real.concat(imaginary);
     };
-    comparisonResult.blocks.forEach((block) => {
+    const lastBlockIndex = comparisonResult.blocks.length - 1;
+    comparisonResult.blocks.forEach((block, blockIndex) => {
       const isSelectable = block.kind !== BlockType.Unchanged;
       const maxLines = Math.max(block.oldLines.length, block.newLines.length);
 
@@ -51,7 +53,24 @@ export function calculateSplitRows(comparisonResult: ComparisonResult | null): S
         lineRows.push({ oldIndex, newIndex });
       }
 
+      const hidden = hiddenRanges?.get(block.id);
       for (let i = 0; i < lineRows.length; i++) {
+        if (hidden && i >= hidden.start && i < hidden.end) {
+          if (i === hidden.start) {
+            result.push({
+              id: `${block.id}-collapsed`,
+              type: "collapsed",
+              block,
+              oldIndex: -1,
+              newIndex: -1,
+              isFirst: false,
+              isLast: false,
+              isSelectable: false,
+              collapsed: getCollapsedRowInfo(block, hidden, blockIndex === 0, blockIndex === lastBlockIndex)
+            });
+          }
+          continue;
+        }
         const lineRow = lineRows[i];
         result.push({
           id: `${block.id}-line-${i}`,
@@ -83,7 +102,7 @@ export function calculateSplitRows(comparisonResult: ComparisonResult | null): S
     return result;
 }
 
-export function useCalculateSplitRows(comparisonResult: ComparisonResult | null) {
-  return useMemo(() => calculateSplitRows(comparisonResult), [comparisonResult]);
+export function useCalculateSplitRows(comparisonResult: ComparisonResult | null, hiddenRanges?: ReadonlyMap<string, HiddenRange> | null) {
+  return useMemo(() => calculateSplitRows(comparisonResult, hiddenRanges), [comparisonResult, hiddenRanges]);
 }
 
