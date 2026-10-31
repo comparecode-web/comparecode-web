@@ -6,6 +6,8 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+## 2026-10-31
+
 ### Added
 
 - **Text compare:** Hide unchanged lines with adjustable context, and reveal them step by step or all at once.
