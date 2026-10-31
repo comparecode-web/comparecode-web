@@ -6,10 +6,6 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
-### Changed
-
-- **Themes:** The Support the project link uses a brighter rose red in every theme.
-
 ## 2026-10-31
 
 ### Added
@@ -24,6 +20,7 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 ### Changed
 
 - **Text compare:** Test text includes examples for hidden unchanged lines and case sensitivity.
+- **Themes:** The Support the project link uses a brighter rose red in every theme.
 
 ### Fixed
 
