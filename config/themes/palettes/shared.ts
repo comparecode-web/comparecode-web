@@ -1,7 +1,7 @@
 import { ensureContrast, mix } from "../color";
 import type { ThemeColorRoles } from "../paletteSchema";
 
-const SUPPORT_HEART_BASE = "#b9657e";
+const SUPPORT_HEART_BASE = "#e11d48";
 
 type SupportHeartRoles = Pick<ThemeColorRoles, "supportHeart" | "supportHeartHover" | "supportHeartContent">;
 
