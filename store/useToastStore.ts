@@ -4,6 +4,11 @@ import { UI_CONSTANTS } from "@/config/constants";
 export type ToastTone = "success" | "info" | "warning" | "error";
 export type ToastIcon = "info" | "success" | "warning" | "error" | "undo" | "redo";
 
+export interface ToastAction {
+  label: string;
+  onAction: () => void;
+}
+
 export interface ToastItem {
   id: string;
   message: string;
@@ -12,6 +17,7 @@ export interface ToastItem {
   dedupeKey?: string;
   icon?: ToastIcon;
   isDismissible?: boolean;
+  action?: ToastAction;
 }
 
 export interface PushToastParams {
@@ -21,6 +27,7 @@ export interface PushToastParams {
   dedupeKey?: string;
   icon?: ToastIcon;
   isDismissible?: boolean;
+  action?: ToastAction;
 }
 
 interface ToastState {
@@ -40,7 +47,8 @@ export const useToastStore = create<ToastState>((set) => ({
     durationMs = UI_CONSTANTS.TOAST_VISIBLE_DURATION_MS,
     dedupeKey,
     icon,
-    isDismissible = false
+    isDismissible = false,
+    action
   }: PushToastParams) => {
     const toast: ToastItem = {
       id: crypto.randomUUID(),
@@ -49,7 +57,8 @@ export const useToastStore = create<ToastState>((set) => ({
       durationMs,
       dedupeKey,
       icon,
-      isDismissible
+      isDismissible,
+      action
     };
 
     set((state) => {

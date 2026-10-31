@@ -1,5 +1,6 @@
 import { ComparisonResult } from "@/features/compare/text/types/diff";
 import { UI_CONSTANTS } from "@/config/constants";
+import type { HiddenRange } from "@/features/compare/text/utils/unchangedRegions";
 
 function getDiffScrollAreas(container: HTMLElement): Array<HTMLElement> {
   const explicitArea = container.querySelector<HTMLElement>("#diff-scroll-area");
@@ -32,8 +33,9 @@ function alignBlockTopInScrollArea(scrollArea: HTMLElement, blockId: string): bo
   return true;
 }
 
-function estimateScrollTop(comparisonResult: ComparisonResult, blockId: string): number {
+export function estimateScrollTop(comparisonResult: ComparisonResult, blockId: string, hiddenRanges?: ReadonlyMap<string, HiddenRange> | null): number {
   let rowsBefore = 0;
+  let collapsedBefore = 0;
 
   for (let i = 0; i < comparisonResult.blocks.length; i++) {
     const block = comparisonResult.blocks[i];
@@ -42,13 +44,15 @@ function estimateScrollTop(comparisonResult: ComparisonResult, blockId: string):
       break;
     }
 
-    rowsBefore += Math.max(block.oldLines.length, block.newLines.length);
+    const hidden = hiddenRanges?.get(block.id);
+    rowsBefore += Math.max(block.oldLines.length, block.newLines.length) - (hidden ? hidden.end - hidden.start : 0);
+    if (hidden) collapsedBefore++;
   }
 
-  return rowsBefore * UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT;
+  return rowsBefore * UI_CONSTANTS.VIRTUAL_ROW_DEFAULT_HEIGHT + collapsedBefore * UI_CONSTANTS.VIRTUAL_ROW_COLLAPSED_HEIGHT;
 }
 
-export function scrollToBlockInDOM(comparisonResult: ComparisonResult | null, blockId: string): void {
+export function scrollToBlockInDOM(comparisonResult: ComparisonResult | null, blockId: string, hiddenRanges?: ReadonlyMap<string, HiddenRange> | null): void {
   const container = document.getElementById("diff-container");
 
   if (container) {
@@ -73,7 +77,7 @@ export function scrollToBlockInDOM(comparisonResult: ComparisonResult | null, bl
       return;
     }
 
-    const targetScrollTop = estimateScrollTop(comparisonResult, blockId);
+    const targetScrollTop = estimateScrollTop(comparisonResult, blockId, hiddenRanges);
 
     scrollAreas.forEach((scrollArea) => {
       scrollArea.scrollTop = targetScrollTop;

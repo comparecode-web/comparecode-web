@@ -17,6 +17,16 @@ describe("ToastViewport", () => {
     vi.useRealTimers();
   });
 
+  it("runs a toast action once and dismisses the toast", async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    useToastStore.getState().pushToast({ message: "Text transformed.", durationMs: null, action: { label: "Undo", onAction } });
+    render(<ToastViewport />);
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("renders a dismissible icon toast and closes it from the X button", async () => {
     const user = userEvent.setup();
     useToastStore.getState().pushToast({

@@ -6,6 +6,7 @@ import { MdCheckCircleOutline, MdClose, MdErrorOutline, MdInfoOutline, MdRedo, M
 import { ToastItem, useToastStore } from "@/store/useToastStore";
 import { cn } from "@/utils/uiHelpers";
 import { IconButton } from "@/components/ui/IconButton";
+import { Button } from "@/components/ui/Button";
 
 function getToneClasses(tone: ToastItem["tone"]): string {
   if (tone === "success") {
@@ -125,6 +126,14 @@ function ToastCard({ toast }: { toast: ToastItem }) {
     >
       <ToastIcon toast={toast} />
       <span className="min-w-0 flex-1 leading-5">{toast.message}</span>
+      {toast.action && (
+        <Button size="sm" variant="outline" className="-my-0.5 shrink-0" onClick={() => {
+          toast.action?.onAction();
+          dismissToast(toast.id);
+        }}>
+          {toast.action.label}
+        </Button>
+      )}
       {toast.isDismissible && (
         <IconButton
           onClick={() => dismissToast(toast.id)}

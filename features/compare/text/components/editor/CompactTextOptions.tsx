@@ -1,12 +1,16 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { TextFontFamilyControl, TextFontSizeControl, TextIgnoreWhitespaceControl, TextLayoutControl, TextPrecisionControl, TextSyntaxHighlightingControl, TextSyntaxLanguageControl, TextWordWrapControl } from "./OptionsView";
+import { TextFontFamilyControl, TextFontSizeControl, TextCaseSensitiveControl, TextHideUnchangedControl, TextIgnoreWhitespaceControl, TextLayoutControl, TextPrecisionControl, TextSyntaxHighlightingControl, TextSyntaxLanguageControl, TextWordWrapControl } from "./OptionsView";
 import { cn } from "@/utils/uiHelpers";
+import { IgnoreRulesIndicator } from "./IgnoreRulesEditor";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { activeIgnorePatterns } from "@/features/compare/text/services/diff/comparisonNormalizer";
 
 export function CompactTextOptions({ disabled = false }: { disabled?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(0);
+  const hasActiveRules = useSettingsStore((state) => activeIgnorePatterns(state.settings.ignoreRules).length > 0);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -27,12 +31,15 @@ export function CompactTextOptions({ disabled = false }: { disabled?: boolean })
     Array.from(container.children).forEach((child) => observer.observe(child));
     update();
     return () => observer.disconnect();
-  }, []);
+  }, [hasActiveRules]);
 
   const controls = [
     <TextIgnoreWhitespaceControl key="whitespace" />,
+    <TextCaseSensitiveControl key="case" />,
+    ...(hasActiveRules ? [<IgnoreRulesIndicator key="rules" />] : []),
     <TextPrecisionControl key="precision" />,
     <TextLayoutControl key="layout" />,
+    <TextHideUnchangedControl key="hide-unchanged" />,
     <TextWordWrapControl key="wrap" />,
     <div key="size" className="w-40"><TextFontSizeControl /></div>,
     <div key="font" className="w-48"><TextFontFamilyControl /></div>,

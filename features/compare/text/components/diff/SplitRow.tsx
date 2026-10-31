@@ -11,10 +11,11 @@ import { DiffFragmentList } from "./DiffFragmentList";
 import { MoveAnnotation } from "./MoveAnnotation";
 import { LINE_CELL_CLASS, LINE_NUMBER_GUTTER_CLASS, getRowContainerClass } from "./rowLayout";
 import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
+import type { CollapsedRowInfo } from "@/features/compare/text/utils/unchangedRegions";
 
 export interface SplitRowData {
   id: string;
-  type: "line" | "controls" | "header-controls";
+  type: "line" | "controls" | "header-controls" | "collapsed";
   block: ChangeBlock;
   oldIndex: number;
   newIndex: number;
@@ -23,6 +24,7 @@ export interface SplitRowData {
   isSelectable: boolean;
   isFirstLine?: boolean;
   isLastLine?: boolean;
+  collapsed?: CollapsedRowInfo;
 }
 
 interface SplitRowProps {

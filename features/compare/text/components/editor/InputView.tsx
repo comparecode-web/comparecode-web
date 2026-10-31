@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useRef } from "react";
 import { MdDescription, MdFileOpen, MdSearch } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -7,6 +8,8 @@ import { useTextCompareActions } from "@/features/compare/text/hooks/useTextComp
 import { EditorTextArea } from "./EditorTextArea";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
+import { TransformMenu } from "./TransformMenu";
+import { useTextTransforms } from "@/features/compare/text/hooks/useTextTransforms";
 
 interface InputViewProps {
   onImportFiles: (side: "left" | "right", files: FileList) => void;
@@ -17,6 +20,11 @@ export function InputView({ onImportFiles, onOpenFile }: InputViewProps) {
   const { leftText, rightText, setLeftText, setRightText } = useEditorStore();
   const settings = useSettingsStore((state) => state.settings);
   const { executeCompare } = useTextCompareActions();
+  const leftRef = useRef<HTMLTextAreaElement>(null);
+  const rightRef = useRef<HTMLTextAreaElement>(null);
+  const textareas = useMemo(() => ({ left: leftRef, right: rightRef }), []);
+  const applyTransform = useTextTransforms(textareas);
+  const isTransformDisabled = !leftText && !rightText;
 
   const isCompareDisabled = !leftText?.trim() && !rightText?.trim();
 
@@ -35,16 +43,24 @@ export function InputView({ onImportFiles, onOpenFile }: InputViewProps) {
             <span className="font-bold text-text-primary text-sm hidden sm:inline">Original text</span>
             <span className="font-bold text-text-primary text-sm sm:hidden">Input editor</span>
           </div>
-          <IconButton size="sm" aria-label="Import original text file" title="Import" onClick={() => onOpenFile("left")} className="hidden sm:inline-flex"><MdFileOpen /></IconButton>
+          <div className="hidden items-center gap-1 sm:flex">
+            <TransformMenu side="left" label="Original" disabled={isTransformDisabled} onTransform={applyTransform} />
+            <IconButton size="sm" aria-label="Import original text file" title="Import" onClick={() => onOpenFile("left")}><MdFileOpen /></IconButton>
+          </div>
         </div>
         <div className="hidden flex-1 items-center justify-between gap-2 sm:flex">
           <div className="flex items-center gap-2"><MdDescription className="text-text-secondary text-lg" /><span className="font-bold text-text-primary text-sm">Modified text</span></div>
-          <IconButton size="sm" aria-label="Import modified text file" title="Import" onClick={() => onOpenFile("right")}><MdFileOpen /></IconButton>
+          <div className="flex items-center gap-1">
+            <TransformMenu side="right" label="Modified" disabled={isTransformDisabled} onTransform={applyTransform} />
+            <IconButton size="sm" aria-label="Import modified text file" title="Import" onClick={() => onOpenFile("right")}><MdFileOpen /></IconButton>
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row flex-1 gap-2 sm:gap-4 min-h-0">
         <EditorTextArea
+          ref={leftRef}
+          mobileActions={<TransformMenu side="left" label="Original" disabled={isTransformDisabled} onTransform={applyTransform} />}
           label="Original"
           value={leftText}
           onChange={setLeftText}
@@ -56,6 +72,8 @@ export function InputView({ onImportFiles, onOpenFile }: InputViewProps) {
           onOpenFile={() => onOpenFile("left")}
         />
         <EditorTextArea
+          ref={rightRef}
+          mobileActions={<TransformMenu side="right" label="Modified" disabled={isTransformDisabled} onTransform={applyTransform} />}
           label="Modified"
           value={rightText}
           onChange={setRightText}

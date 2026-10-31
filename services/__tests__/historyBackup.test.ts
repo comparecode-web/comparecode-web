@@ -42,6 +42,15 @@ describe("portable history backup", () => {
     entry.steps[0].sessionId = "missing";
     expect(() => parseHistoryBackup(JSON.stringify(value))).toThrow();
   });
+  it("round trips manual edit steps", () => {
+    const value = backup();
+    const entry = value.sessions[0];
+    entry.item.stepCount = 1; entry.item.stepCursor = 1;
+    entry.steps.push({ id: "edit", sessionId: "one", actionType: HistoryActionType.Edit, direction: null, beforeOriginalText: "a::b", beforeModifiedText: "c", afterOriginalText: "a::b", afterModifiedText: "typed", originalLinesAffected: 1, modifiedLinesAffected: 1, blockId: null, blockKind: null, sequenceNumber: 1, createdAt: value.exportedAt });
+    const result = parseHistoryBackup(JSON.stringify(value));
+    expect(result.sessions[0].steps[0]).toMatchObject({ actionType: "EDIT", afterSnapshot: { mode: "text", modifiedText: "typed" } });
+    expect(parseHistoryBackup(JSON.stringify(result))).toEqual(result);
+  });
   it("requires embedded image content and preserves alignment", () => {
     const entry = backup().sessions[0];
     const data = "data:image/png;base64,aGVsbG8=";

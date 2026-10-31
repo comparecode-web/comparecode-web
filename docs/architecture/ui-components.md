@@ -18,6 +18,7 @@
 | Anchored arbitrary content | `Popover` | Portal positioning, outside-click dismissal, Escape, inert-trigger handling; no menu role by default |
 | Action menu | `PopoverMenu`, `MenuItem` | `Popover` composition with menu semantics, initial focus and enabled-item arrow/Home/End navigation |
 | Modal content | `Dialog`, `DialogHeader` | Controlled native modal; focus containment/return, Escape cancellation, scrollable viewport bounds |
+| Notification | `useToastStore`, `components/layout/ToastViewport.tsx` | Tone, icon, duration, dedupe key and dismiss button. An optional `action` renders one labelled outline button that runs once and dismisses the toast |
 | Tool action row | `WorkspaceToolbar` | Inline surface; `card` for a standalone bordered toolbar |
 | Settings group | `components/settings/OptionsSection.tsx` | Explicit `compact` density; `comfortable` for page sections. Description does not select the density |
 | Page heading and gutters | `components/layout/PageHeader.tsx`, `PageContent.tsx` | Shared Home, QR, History and Settings page gutters; Home retains its own welcome heading |

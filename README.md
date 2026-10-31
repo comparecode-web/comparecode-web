@@ -23,6 +23,10 @@ When contributing, keep module boundaries strict: implement module-specific chan
 
 - **Text and Code Diff:** Compare text or code side by side, with split and unified views.
 - **High-Precision Highlighting:** Choose word-level or character-level highlighting to spot small changes.
+- **Hide Unchanged Lines:** Collapse long unchanged sections around the changes, with adjustable context, and reveal them step by step or all at once.
+- **Ignore Options:** Ignore whitespace, turn off case sensitivity, or ignore custom text such as timestamps and build numbers on both sides.
+- **Text Transforms:** Lowercase text, sort lines, join lines, trim whitespace, or format, minify and sort JSON without losing numbers or key order.
+- **Live Input Editor:** Optionally recalculate the comparison while you edit the input after the first comparison.
 - **Flexible Merging:** Move changes block-by-block from left to right or right to left.
 - **Image Comparison:** Compare screenshots and images with visual diff modes, alignment, threshold, heatmap, fade, and slider tools.
 - **Markdown Preview:** Write Markdown with live preview, line numbers, local draft persistence, GitHub-style formatting, Mermaid diagrams, KaTeX formulas, and rich paste support.
@@ -52,8 +56,9 @@ When contributing, keep module boundaries strict: implement module-specific chan
 
 1. Paste or type the original text in the left panel and the modified text in the right panel.
 2. Click **Check it!** to generate the comparison.
-3. Review highlighted differences, adjust options, and use merge controls when needed.
-4. Copy the final text back to your clipboard.
+3. Review highlighted differences, adjust options, and use merge controls when needed. Hide unchanged lines, turn off case sensitivity, or add ignore rules to focus on the changes that matter.
+4. Use the Transform menu above each input to normalize text or format JSON, and keep editing: turn on Live input editor to refresh the comparison as you type, or use Update when the comparison is out of date.
+5. Copy the final text back to your clipboard.
 
 ### Image Compare
 

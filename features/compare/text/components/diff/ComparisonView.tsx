@@ -2,7 +2,7 @@
 
 import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp, MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
 import { useEditorStore } from "@/features/compare/text/store/useTextStore";
 import { reportHistoryWriteError } from "@/store/reportHistoryWriteError";
@@ -22,6 +22,9 @@ import { useToastStore } from "@/store/useToastStore";
 import type { PushToastParams } from "@/store/useToastStore";
 import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
 import { useSyntaxHighlighting } from "../../hooks/useSyntaxHighlighting";
+import { activeIgnorePatterns } from "../../services/diff/comparisonNormalizer";
+import { isComparisonStale } from "../../hooks/useRealtimeCompare";
+import { Button } from "@/components/ui/Button";
 
 function isMacPlatform(): boolean {
   if (typeof navigator === "undefined") {
@@ -47,9 +50,10 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
     undoMergeStep,
     redoMergeStep
   } = useEditorStore();
-  const { isInputExpanded } = useEditorUIStore();
+  const { isInputExpanded, isLiveUpdatePaused } = useEditorUIStore();
   const { settings } = useSettingsStore();
   const syntax = useSyntaxHighlighting(comparisonResult, settings);
+  const ignoreRulesKey = useMemo(() => activeIgnorePatterns(settings.ignoreRules).join("\u0000"), [settings.ignoreRules]);
   const { executeCompare } = useTextCompareActions();
   const pushToast = useToastStore((state): ((toast: PushToastParams) => void) => state.pushToast);
 
@@ -92,7 +96,7 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
     if (storeRefs.current.comparisonResult) {
       storeRefs.current.executeCompare(storeRefs.current.settings, false, true);
     }
-  }, [settings.precision, settings.ignoreWhitespace]);
+  }, [settings.precision, settings.ignoreWhitespace, settings.ignoreCase, ignoreRulesKey]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -218,11 +222,21 @@ export function ComparisonView({ onImport }: { onImport: (side: "left" | "right"
 
   const hasResult = comparisonResult && comparisonResult.blocks.length > 0;
   const hideBody = !hasResult && isInputExpanded;
+  const isStale = isComparisonStale(comparisonResult, leftText, rightText);
+  const staleMessage = !isStale ? null : !settings.isRealtimeCompareEnabled
+    ? "The comparison is out of date."
+    : isLiveUpdatePaused ? "Live input editor is paused because the comparison is large." : null;
 
   return (
     <div className={cn("flex w-full min-h-0 flex-col bg-bg-primary relative", !hideBody && "h-full")}>
       {!hideBody && <ComparisonToolbar onImport={onImport} />}
       {!hideBody && <IdenticalTextInfoBar isVisible={areComparedTextsIdentical} />}
+      {!hideBody && staleMessage && (
+        <div role="status" className="flex items-center justify-between gap-3 border-b border-info-border bg-info-bg px-3 py-1.5 text-sm text-info">
+          <span>{staleMessage}</span>
+          <Button size="sm" variant="outline" className="shrink-0" onClick={() => void executeCompare(settings, false, true)}>Update</Button>
+        </div>
+      )}
       {!hideBody && comparisonResult?.limited && (
         <div role="status" className="border-b border-info-border bg-info-bg px-3 py-2 text-sm text-info">
           This comparison is large or complex. A simpler line diff is shown for some sections.
