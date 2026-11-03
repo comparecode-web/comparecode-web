@@ -6,6 +6,7 @@ export type MarkdownFormatAction =
   | "titleCase"
   | "upperCase"
   | "lowerCase"
+  | "paragraph"
   | "h1"
   | "h2"
   | "h3"
@@ -26,6 +27,14 @@ export type MarkdownFormatAction =
   | "image"
   | "table"
   | "math"
+  | "mathInline"
+  | "mathBlock"
+  | "terminalBlock"
+  | "details"
+  | "footnote"
+  | "mermaidTemplate"
+  | "indent"
+  | "outdent"
   | "emoji"
   | "symbol"
   | "alertNote"
@@ -35,3 +44,5 @@ export type MarkdownFormatAction =
   | "alertCaution";
 
 export type MarkdownViewMode = "editor" | "split" | "preview";
+
+export type MarkdownPanelTab = "options" | "history" | "outline";

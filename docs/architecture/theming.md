@@ -35,6 +35,8 @@ Palettes may start from canonical brand colors and pass them through `ensureCont
 
 `deriveThemeTokens` emits every CSS variable consumed by the application, including state tints, Markdown alerts, Mermaid colors, minimap colors, history merge colors, the hover overlay, `color-scheme`, and the themed checkbox check image. Derived values are concrete colors computed in OKLab at generation time. Mermaid and the canvas text export read CSS variables through `getComputedStyle`, so those tokens must stay opaque `#rrggbb` values instead of runtime `color-mix()` expressions. A palette may override a derived token through `overrides`. The same tests apply to the overridden value.
 
+Markdown inline code uses `markdown-inline-code-fg`, derived from `supportHeart` and adjusted to 4.5:1 on the code surface. Mermaid diagrams use derived node (`accent` tint), edge label, note, line, and group tokens. Notes use the `markBg` highlighter color, like sticky notes, and the edge label tint uses whichever of `warning`, `important`, `success`, or `info` differs most from both the node and the note color. When the highlighter color is too close to the node color, as in themes with a yellow accent, the note and label pair is chosen from those tints instead. Tests check their contrast and the color distance between nodes, labels, notes, and the diagram background.
+
 Tailwind maps the variables in an `@theme inline` block, so utilities reference the theme variable directly and also work inside a nested `data-theme` scope.
 
 ## Persistence and Startup

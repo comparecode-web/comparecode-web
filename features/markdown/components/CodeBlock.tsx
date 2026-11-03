@@ -1,120 +1,116 @@
-import type { ReactNode } from "react";
-import { cn } from "@/utils/uiHelpers";
+"use client";
+
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { MdCheck, MdContentCopy, MdTerminal } from "react-icons/md";
+import { Button } from "@/components/ui/Button";
+import { useToastStore } from "@/store/useToastStore";
+import { getMarkdownCodeLanguage } from "@/features/markdown/services/markdownCodeLanguage";
+import { highlightMarkdownCode } from "@/features/markdown/services/markdownCodeHighlight";
 
 interface CodeBlockProps {
   children: string;
-  language?: string;
+  className?: string;
   inline?: boolean;
 }
 
-const KEYWORDS = new Set([
-  "as",
-  "async",
-  "await",
-  "const",
-  "else",
-  "export",
-  "false",
-  "from",
-  "function",
-  "if",
-  "import",
-  "interface",
-  "let",
-  "null",
-  "return",
-  "string",
-  "true",
-  "type",
-  "undefined"
-]);
-
-const TOKEN_PATTERN = /(\/\/.*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b|[{}()[\]:;,.?=|<>+-])/g;
-
-function isHighlightable(language?: string): boolean {
-  return language === "ts" || language === "tsx" || language === "js" || language === "jsx" || language === "typescript" || language === "javascript";
-}
-
-function getTokenClass(token: string, previousToken: string | null): string {
-  if (token.startsWith("//") || token.startsWith("/*")) {
-    return "text-[var(--markdown-token-comment)]";
-  }
-
-  if (token.startsWith("\"") || token.startsWith("'") || token.startsWith("`")) {
-    return "text-[var(--markdown-token-string)]";
-  }
-
-  if (/^\d/.test(token)) {
-    return "text-[var(--markdown-token-number)]";
-  }
-
-  if (KEYWORDS.has(token)) {
-    return token === "string" ? "text-[var(--markdown-token-type)]" : "text-[var(--markdown-token-keyword)]";
-  }
-
-  if (previousToken === "function" || previousToken === "type" || previousToken === "interface") {
-    return "text-[var(--markdown-token-type)]";
-  }
-
-  if (/^[{}()[\]:;,.?=|<>+-]$/.test(token)) {
-    return "text-[var(--markdown-token-punctuation)]";
-  }
-
-  return "text-[var(--markdown-token-name)]";
-}
-
-function renderHighlightedCode(value: string, language?: string) {
-  if (!isHighlightable(language)) {
+function renderHighlightedCode(value: string, languageId: string | undefined): ReactNode {
+  const lines = highlightMarkdownCode(value, languageId);
+  if (!lines) {
     return value;
   }
 
-  const nodes: Array<ReactNode> = [];
-  let lastIndex = 0;
-  let previousToken: string | null = null;
+  return lines.map((line, lineIndex) => {
+    const nodes: Array<ReactNode> = [];
+    let cursor = 0;
 
-  for (const match of value.matchAll(TOKEN_PATTERN)) {
-    const token = match[0];
-    const index = match.index ?? 0;
+    for (const token of line.tokens) {
+      if (token.start > cursor) {
+        nodes.push(line.text.slice(cursor, token.start));
+      }
 
-    if (index > lastIndex) {
-      nodes.push(value.slice(lastIndex, index));
+      nodes.push(
+        <span key={token.start} className={`cc-token-${token.kind}`}>
+          {line.text.slice(token.start, token.end)}
+        </span>
+      );
+      cursor = token.end;
     }
 
-    nodes.push(
-      <span key={`${index}-${token}`} className={getTokenClass(token, previousToken)}>
-        {token}
+    if (cursor < line.text.length) {
+      nodes.push(line.text.slice(cursor));
+    }
+
+    return (
+      <span key={lineIndex}>
+        {nodes}
+        {lineIndex < lines.length - 1 ? "\n" : null}
       </span>
     );
-
-    if (/\b[A-Za-z_$][\w$]*\b/.test(token)) {
-      previousToken = token;
-    }
-
-    lastIndex = index + token.length;
-  }
-
-  if (lastIndex < value.length) {
-    nodes.push(value.slice(lastIndex));
-  }
-
-  return nodes;
+  });
 }
 
-export function CodeBlock({ children, language, inline = false }: CodeBlockProps) {
-  if (inline) {
-    return (
-      <code className="max-w-full rounded border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)] px-1.5 py-0.5 font-mono text-[0.9em] text-[var(--markdown-token-string)]">
-        {renderHighlightedCode(children, "ts")}
-      </code>
-    );
-  }
+function CodeCopyButton({ value, label }: { value: string; label: string }) {
+  const [isCopied, setIsCopied] = useState(false);
+  const pushToast = useToastStore((state) => state.pushToast);
+
+  useEffect(() => {
+    if (!isCopied) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setIsCopied(false), 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, [isCopied]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setIsCopied(true);
+    } catch {
+      pushToast({
+        message: "The code could not be copied. Select it and copy it manually.",
+        tone: "warning",
+        icon: "warning",
+        dedupeKey: "markdown-code-copy-error"
+      });
+    }
+  };
 
   return (
-    <div className="min-w-0 max-w-full overflow-hidden rounded-md border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)]">
-      <pre className="min-w-0 max-w-full overflow-auto p-4 text-sm leading-5 custom-scrollbar">
-        <code className={cn("font-mono text-[var(--markdown-code-fg)]", language && `language-${language}`)}>
-          {renderHighlightedCode(children, language)}
-        </code>
+    <Button
+      variant="ghost"
+      size="sm"
+      data-export-exclude=""
+      aria-label={isCopied ? `${label} code copied` : `Copy ${label} code`}
+      leftIcon={isCopied ? <MdCheck /> : <MdContentCopy />}
+      onClick={() => void copy()}
+    >
+      {isCopied ? "Copied" : "Copy"}
+    </Button>
+  );
+}
+
+export function CodeBlock({ children, className, inline = false }: CodeBlockProps) {
+  const language = getMarkdownCodeLanguage(className);
+  const highlighted = useMemo(() => inline ? null : renderHighlightedCode(children, language?.id), [children, inline, language?.id]);
+
+  if (inline) {
+    return <code className="cc-markdown-inline-code">{children}</code>;
+  }
+
+  const label = language?.raw ?? "Text";
+
+  return (
+    <div className="cc-markdown-code" data-code-language={language?.id ?? "plain"}>
+      <div className="cc-markdown-code-header">
+        <span className="cc-markdown-code-language" title={label}>
+          {language?.isTerminal && <MdTerminal aria-hidden="true" />}
+          <span>{label}</span>
+        </span>
+        <CodeCopyButton value={children} label={label} />
+      </div>
+      <pre className="custom-scrollbar">
+        <code className={className}>{highlighted}</code>
       </pre>
     </div>
   );

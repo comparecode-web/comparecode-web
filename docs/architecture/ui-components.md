@@ -20,6 +20,7 @@
 | Modal content | `Dialog`, `DialogHeader` | Controlled native modal; focus containment/return, Escape cancellation, scrollable viewport bounds |
 | Notification | `useToastStore`, `components/layout/ToastViewport.tsx` | Tone, icon, duration, dedupe key and dismiss button. An optional `action` renders one labelled outline button that runs once and dismisses the toast |
 | Tool action row | `WorkspaceToolbar` | Inline surface; `card` for a standalone bordered toolbar |
+| Zoom bar | `ZoomControls` | Zoom out, logarithmic slider, zoom in, percentage, Fit and 100%; the caller owns the scale, limits and fit state |
 | Settings group | `components/settings/OptionsSection.tsx` | Explicit `compact` density; `comfortable` for page sections. Description does not select the density |
 | Page heading and gutters | `components/layout/PageHeader.tsx`, `PageContent.tsx` | Shared Home, QR, History and Settings page gutters; Home retains its own welcome heading |
 

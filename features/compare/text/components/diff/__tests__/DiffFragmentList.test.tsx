@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { DiffFragmentList } from "../DiffFragmentList";
 import { DiffChangeType } from "../../../types/diff";
-import { tokenizeSyntax } from "../../../services/syntax/tokenizeSyntax";
+import { tokenizeSyntax } from "@/services/syntax/tokenizeSyntax";
 
 describe("syntax and diff composition", () => {
   it("splits a syntax token across character diff fragments without changing text or rounded backgrounds", () => {

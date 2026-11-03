@@ -11,18 +11,22 @@ import {
   readMarkdownTextFile
 } from "@/features/markdown/services/markdownFileImport";
 import { buildMarkdownPasteResult } from "@/features/markdown/services/markdownPaste";
+import type { MarkdownHistoryMode } from "@/features/markdown/store/useMarkdownStore";
+import { applyMarkdownEditResult } from "@/features/markdown/hooks/useMarkdownFormattingActions";
+import { useMarkdownKeyboardShortcuts } from "@/features/markdown/hooks/useMarkdownKeyboardShortcuts";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 import { useToastStore } from "@/store/useToastStore";
 import { cn } from "@/utils/uiHelpers";
 
 interface MarkdownEditorPaneProps {
   value: string;
-  onChange: (value: string, options?: { history?: "typing" | "checkpoint" | "skip" }) => void;
+  onChange: (value: string, options?: { history?: MarkdownHistoryMode }) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   onUndo?: () => void;
   onRedo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
+  describedById?: string;
 }
 
 export function MarkdownEditorPane({
@@ -32,13 +36,15 @@ export function MarkdownEditorPane({
   onUndo,
   onRedo,
   canUndo = false,
-  canRedo = false
+  canRedo = false,
+  describedById
 }: MarkdownEditorPaneProps) {
   const gutterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isWordWrapEnabled = useMarkdownUIStore((state) => state.isWordWrapEnabled);
   const fontSize = useMarkdownUIStore((state) => state.fontSize);
   const pushToast = useToastStore((state) => state.pushToast);
+  const { handleKeyDown, handleBlur } = useMarkdownKeyboardShortcuts({ textareaRef, onChange, onUndo, onRedo, canUndo, canRedo });
   const lineNumbers = useMemo(() => {
     const count = value.split(/\r\n|\r|\n/).length;
     return Array.from({ length: count }, (_, index) => index + 1);
@@ -122,31 +128,7 @@ export function MarkdownEditorPane({
     }
 
     event.preventDefault();
-    onChange(result.value, { history: "checkpoint" });
-
-    window.requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
-    });
-  };
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const isModifierPressed = event.ctrlKey || event.metaKey;
-    if (!isModifierPressed || event.altKey) {
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-    if (key === "z" && !event.shiftKey && canUndo) {
-      event.preventDefault();
-      onUndo?.();
-      return;
-    }
-
-    if ((key === "y" || (key === "z" && event.shiftKey)) && canRedo) {
-      event.preventDefault();
-      onRedo?.();
-    }
+    applyMarkdownEditResult(textarea, result, onChange, "checkpoint");
   };
 
   return (
@@ -173,6 +155,9 @@ export function MarkdownEditorPane({
         onScroll={handleScroll}
         onPaste={handlePaste}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        aria-describedby={describedById}
+        placeholder="Start typing Markdown, paste content, or drop a .md file."
         spellCheck={false}
         className={cn(
           "h-full min-w-0 flex-1 resize-none border-0 bg-bg-primary px-3 py-1 pr-12 font-mono text-text-primary outline-none custom-scrollbar",

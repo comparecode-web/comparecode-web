@@ -21,6 +21,7 @@
     "dexie": "^4.3.0",
     "katex": "^0.17.0",
     "mermaid": "^11.15.0",
+    "modern-screenshot": "^4.7.0",
     "next": "16.1.6",
     "qrcode": "^1.5.4",
     "react": "19.2.3",
@@ -33,9 +34,11 @@
     "remark-gemoji": "^8.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
     "tailwind-merge": "^3.5.0",
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2",
+    "unified": "^11.0.5",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

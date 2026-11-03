@@ -21,6 +21,13 @@ function setScrollRatio(element: HTMLElement, ratio: number): void {
   element.scrollTop = maxScroll * ratio;
 }
 
+const scrollSyncPauseMs = 400;
+let scrollSyncPausedUntil = 0;
+
+export function pauseMarkdownScrollSync() {
+  scrollSyncPausedUntil = performance.now() + scrollSyncPauseMs;
+}
+
 export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled, syncKey }: ScrollSyncInput): void {
   const activeSourceRef = useRef<"editor" | "preview" | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -34,6 +41,10 @@ export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled, syncKe
     }
 
     const sync = (source: HTMLElement, target: HTMLElement, sourceName: "editor" | "preview") => {
+      if (performance.now() < scrollSyncPausedUntil) {
+        return;
+      }
+
       if (activeSourceRef.current && activeSourceRef.current !== sourceName) {
         return;
       }
@@ -52,8 +63,17 @@ export function useMarkdownScrollSync({ editorRef, previewRef, isEnabled, syncKe
       });
     };
 
+    let previewScrollHeight = preview.scrollHeight;
     const onEditorScroll = () => sync(editor, preview, "editor");
-    const onPreviewScroll = () => sync(preview, editor, "preview");
+    const onPreviewScroll = () => {
+      // A preview scroll that comes with a height change is the browser keeping its place after an edit, not the reader scrolling.
+      if (preview.scrollHeight !== previewScrollHeight) {
+        previewScrollHeight = preview.scrollHeight;
+        return;
+      }
+
+      sync(preview, editor, "preview");
+    };
 
     editor.addEventListener("scroll", onEditorScroll, { passive: true });
     preview.addEventListener("scroll", onPreviewScroll, { passive: true });

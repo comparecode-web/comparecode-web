@@ -8,6 +8,8 @@ The [license texts and copyright notices](public/licenses/third-party.txt) accom
 
 The notices cover application libraries and their transitive dependencies, Next.js bundled notices, Material Design / Font Awesome / Ionicons artwork, the OFL fonts, and KaTeX fonts. DOMPurify is used under its Apache-2.0 option. This does not change CompareCode's MIT license.
 
+The Markdown image export uses the MIT-licensed `modern-screenshot` package, which has no dependencies of its own.
+
 The local QR generator uses the MIT-licensed `qrcode` package. Its newly introduced package closure, including the PNG encoder, command-line utilities shipped by the package, and TypeScript declarations, is listed in the license text with its copyright notices and MIT or ISC terms.
 
 When updating dependencies or assets, update the affected notices from their upstream license and copyright files. Source URLs and package versions are recorded alongside the texts. The dependency-based collection retains framework and transitive notices together; it is not an assertion that every listed package appears in a browser bundle.

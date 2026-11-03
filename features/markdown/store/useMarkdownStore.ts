@@ -10,7 +10,7 @@ import {
   saveMarkdownHistoryState
 } from "@/features/markdown/services/markdownStorage";
 
-type MarkdownHistoryMode = "typing" | "checkpoint" | "skip";
+export type MarkdownHistoryMode = "typing" | "checkpoint" | "operation" | "skip";
 
 interface SetMarkdownTextOptions {
   history?: MarkdownHistoryMode;
@@ -99,6 +99,12 @@ export const useMarkdownStore = create<MarkdownState>((set) => ({
 
       if (historyMode === "skip") {
         clearHistoryTimer();
+      } else if (historyMode === "operation") {
+        clearHistoryTimer();
+        const typedPast = pendingUndoValue !== null && pendingUndoValue !== state.markdownText ? [...past, pendingUndoValue] : past;
+        past = trimHistory([...typedPast, state.markdownText]);
+        future = [];
+        pendingUndoValue = null;
       } else if (historyMode === "checkpoint") {
         clearHistoryTimer();
         const baseValue = pendingUndoValue ?? state.markdownText;

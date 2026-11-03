@@ -7,7 +7,7 @@ import { useTextStore } from "../../../store/useTextStore";
 import { useSyntaxHighlighting } from "../../../hooks/useSyntaxHighlighting";
 import { SplitView } from "../SplitView";
 import { UnifiedView } from "../UnifiedView";
-import { LANGUAGE_SAMPLES, SYNTAX_REGRESSION_SAMPLES } from "../../../services/syntax/__fixtures__/languageSamples";
+import { LANGUAGE_SAMPLES, SYNTAX_REGRESSION_SAMPLES } from "@/services/syntax/__fixtures__/languageSamples";
 import { TEXT_SYNTAX_LANGUAGES } from "@/types/settings";
 
 vi.mock("@/features/compare/text/hooks/useDiffVirtualizer", () => ({

@@ -61,6 +61,9 @@
   --markdown-token-type: #8250df;
   --markdown-token-punctuation: #24292e;
   --markdown-token-name: #24292e;
+  --markdown-token-property: #0550ae;
+  --markdown-inline-code-bg: #f6f8fa;
+  --markdown-inline-code-fg: #dc2048;
   --markdown-mark-bg: #fff3b0;
   --markdown-mark-fg: #24292e;
   --markdown-alert-note-bg: #e2ebfd;
@@ -80,8 +83,18 @@
   --markdown-alert-caution-fg: #c81e1e;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%23ffffff'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #f6f8fa;
-  --markdown-mermaid-surface: #ffffff;
   --markdown-mermaid-border: #848d97;
+  --markdown-mermaid-node-bg: #d4e2fb;
+  --markdown-mermaid-node-border: #2563eb;
+  --markdown-mermaid-node-fg: #24292e;
+  --markdown-mermaid-line: #5f6773;
+  --markdown-mermaid-label-bg: #e8cdc0;
+  --markdown-mermaid-label-fg: #24292e;
+  --markdown-mermaid-note-bg: #fff3b0;
+  --markdown-mermaid-note-border: #b45309;
+  --markdown-mermaid-note-fg: #24292e;
+  --markdown-mermaid-cluster-bg: #eceff1;
+  --markdown-mermaid-cluster-border: #848d97;
 }
 
 [data-theme="solarized-light"] {
@@ -144,6 +157,9 @@
   --markdown-token-type: #6a643b;
   --markdown-token-punctuation: #073642;
   --markdown-token-name: #073642;
+  --markdown-token-property: #196a99;
+  --markdown-inline-code-bg: #eee8d5;
+  --markdown-inline-code-fg: #be3249;
   --markdown-mark-bg: #ecdcad;
   --markdown-mark-fg: #073642;
   --markdown-alert-note-bg: #e2e5da;
@@ -163,8 +179,18 @@
   --markdown-alert-caution-fg: #ab3f3a;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%23fdf6e3'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #eee8d5;
-  --markdown-mermaid-surface: #fdf6e3;
   --markdown-mermaid-border: #74888b;
+  --markdown-mermaid-node-bg: #cdd3cc;
+  --markdown-mermaid-node-border: #186895;
+  --markdown-mermaid-node-fg: #073642;
+  --markdown-mermaid-line: #4f676e;
+  --markdown-mermaid-label-bg: #c1c6ab;
+  --markdown-mermaid-label-fg: #073642;
+  --markdown-mermaid-note-bg: #ecdcad;
+  --markdown-mermaid-note-border: #6a643b;
+  --markdown-mermaid-note-fg: #073642;
+  --markdown-mermaid-cluster-bg: #e4e0cf;
+  --markdown-mermaid-cluster-border: #74888b;
 }
 
 [data-theme="sand"] {
@@ -227,6 +253,9 @@
   --markdown-token-type: #2f5f8a;
   --markdown-token-punctuation: #2b2114;
   --markdown-token-name: #2b2114;
+  --markdown-token-property: #7a5a10;
+  --markdown-inline-code-bg: #f4ead2;
+  --markdown-inline-code-fg: #c42640;
   --markdown-mark-bg: #f6dc8a;
   --markdown-mark-fg: #2b2114;
   --markdown-alert-note-bg: #e1e1da;
@@ -246,8 +275,18 @@
   --markdown-alert-caution-fg: #a3311a;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%23ffffff'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #f4ead2;
-  --markdown-mermaid-surface: #fbf4e4;
   --markdown-mermaid-border: #978054;
+  --markdown-mermaid-node-bg: #e3d0b4;
+  --markdown-mermaid-node-border: #8a4f1d;
+  --markdown-mermaid-node-fg: #2b2114;
+  --markdown-mermaid-line: #6b5634;
+  --markdown-mermaid-label-bg: #cec0c7;
+  --markdown-mermaid-label-fg: #2b2114;
+  --markdown-mermaid-note-bg: #f6dc8a;
+  --markdown-mermaid-note-border: #8a5a00;
+  --markdown-mermaid-note-fg: #2b2114;
+  --markdown-mermaid-cluster-bg: #ebe0c8;
+  --markdown-mermaid-cluster-border: #978054;
 }
 
 [data-theme="bubblegum"] {
@@ -310,6 +349,9 @@
   --markdown-token-type: #6b3fa0;
   --markdown-token-punctuation: #341a26;
   --markdown-token-name: #341a26;
+  --markdown-token-property: #2563a8;
+  --markdown-inline-code-bg: #fbeef4;
+  --markdown-inline-code-fg: #ce2145;
   --markdown-mark-bg: #ffe3a3;
   --markdown-mark-fg: #341a26;
   --markdown-alert-note-bg: #e4e5f2;
@@ -329,8 +371,18 @@
   --markdown-alert-caution-fg: #b63e14;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%23ffffff'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #fbeef4;
-  --markdown-mermaid-surface: #fff7fb;
   --markdown-mermaid-border: #af7891;
+  --markdown-mermaid-node-bg: #f3cfd8;
+  --markdown-mermaid-node-border: #b01f52;
+  --markdown-mermaid-node-fg: #341a26;
+  --markdown-mermaid-line: #7a4f63;
+  --markdown-mermaid-label-bg: #c4cbc3;
+  --markdown-mermaid-label-fg: #341a26;
+  --markdown-mermaid-note-bg: #ffe3a3;
+  --markdown-mermaid-note-border: #a35400;
+  --markdown-mermaid-note-fg: #341a26;
+  --markdown-mermaid-cluster-bg: #f3e4eb;
+  --markdown-mermaid-cluster-border: #af7891;
 }
 
 [data-theme="dark"] {
@@ -393,6 +445,9 @@
   --markdown-token-type: #d2a8ff;
   --markdown-token-punctuation: #c9d1d9;
   --markdown-token-name: #c9d1d9;
+  --markdown-token-property: #79c0ff;
+  --markdown-inline-code-bg: #161b22;
+  --markdown-inline-code-fg: #e25061;
   --markdown-mark-bg: #5a4514;
   --markdown-mark-fg: #c9d1d9;
   --markdown-alert-note-bg: #182536;
@@ -412,8 +467,18 @@
   --markdown-alert-caution-fg: #f85149;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%230d1117'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #161b22;
-  --markdown-mermaid-surface: #22272e;
   --markdown-mermaid-border: #6e7681;
+  --markdown-mermaid-node-bg: #283e59;
+  --markdown-mermaid-node-border: #58a6ff;
+  --markdown-mermaid-node-fg: #c9d1d9;
+  --markdown-mermaid-line: #8b949e;
+  --markdown-mermaid-label-bg: #264934;
+  --markdown-mermaid-label-fg: #c9d1d9;
+  --markdown-mermaid-note-bg: #5a4514;
+  --markdown-mermaid-note-border: #d29922;
+  --markdown-mermaid-note-fg: #c9d1d9;
+  --markdown-mermaid-cluster-bg: #20262d;
+  --markdown-mermaid-cluster-border: #6e7681;
 }
 
 [data-theme="dracula"] {
@@ -476,6 +541,9 @@
   --markdown-token-type: #8be9fd;
   --markdown-token-punctuation: #f8f8f2;
   --markdown-token-name: #f8f8f2;
+  --markdown-token-property: #ffb86c;
+  --markdown-inline-code-bg: #21222c;
+  --markdown-inline-code-fg: #f27d82;
   --markdown-mark-bg: #60644e;
   --markdown-mark-fg: #f8f8f2;
   --markdown-alert-note-bg: #384552;
@@ -495,8 +563,18 @@
   --markdown-alert-caution-fg: #ff8a80;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%23282a36'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #21222c;
-  --markdown-mermaid-surface: #2f303a;
   --markdown-mermaid-border: #8b97c2;
+  --markdown-mermaid-node-bg: #4b445f;
+  --markdown-mermaid-node-border: #c8a8f9;
+  --markdown-mermaid-node-fg: #f8f8f2;
+  --markdown-mermaid-line: #b4bedf;
+  --markdown-mermaid-label-bg: #425b68;
+  --markdown-mermaid-label-fg: #f8f8f2;
+  --markdown-mermaid-note-bg: #60644e;
+  --markdown-mermaid-note-border: #ffb86c;
+  --markdown-mermaid-note-fg: #f8f8f2;
+  --markdown-mermaid-cluster-bg: #2e2f3b;
+  --markdown-mermaid-cluster-border: #8b97c2;
 }
 
 [data-theme="nord"] {
@@ -559,6 +637,9 @@
   --markdown-token-type: #adcccd;
   --markdown-token-punctuation: #eceff4;
   --markdown-token-name: #eceff4;
+  --markdown-token-property: #a4cdda;
+  --markdown-inline-code-bg: #3b4252;
+  --markdown-inline-code-fg: #f1969c;
   --markdown-mark-bg: #5f5b54;
   --markdown-mark-fg: #eceff4;
   --markdown-alert-note-bg: #3c4855;
@@ -578,8 +659,18 @@
   --markdown-alert-caution-fg: #ddb3b7;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%232e3440'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #3b4252;
-  --markdown-mermaid-surface: #474e5e;
   --markdown-mermaid-border: #808da5;
+  --markdown-mermaid-node-bg: #526474;
+  --markdown-mermaid-node-border: #90c4d3;
+  --markdown-mermaid-node-fg: #eceff4;
+  --markdown-mermaid-line: #c0c8d8;
+  --markdown-mermaid-label-bg: #6f6c67;
+  --markdown-mermaid-label-fg: #eceff4;
+  --markdown-mermaid-note-bg: #5f5b54;
+  --markdown-mermaid-note-border: #ebcb8b;
+  --markdown-mermaid-note-fg: #eceff4;
+  --markdown-mermaid-cluster-bg: #474e5e;
+  --markdown-mermaid-cluster-border: #808da5;
 }
 
 [data-theme="solarized-dark"] {
@@ -642,6 +733,9 @@
   --markdown-token-type: #c5a14f;
   --markdown-token-punctuation: #fdf6e3;
   --markdown-token-name: #fdf6e3;
+  --markdown-token-property: #71acda;
+  --markdown-inline-code-bg: #073642;
+  --markdown-inline-code-fg: #f17175;
   --markdown-mark-bg: #334527;
   --markdown-mark-fg: #fdf6e3;
   --markdown-alert-note-bg: #113f48;
@@ -661,8 +755,18 @@
   --markdown-alert-caution-fg: #f28f7c;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%23002b36'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #073642;
-  --markdown-mermaid-surface: #1e444e;
   --markdown-mermaid-border: #6b7e82;
+  --markdown-mermaid-node-bg: #295669;
+  --markdown-mermaid-node-border: #7cb2db;
+  --markdown-mermaid-node-fg: #fdf6e3;
+  --markdown-mermaid-line: #a2adab;
+  --markdown-mermaid-label-bg: #49594f;
+  --markdown-mermaid-label-fg: #fdf6e3;
+  --markdown-mermaid-note-bg: #334527;
+  --markdown-mermaid-note-border: #c9a75a;
+  --markdown-mermaid-note-fg: #fdf6e3;
+  --markdown-mermaid-cluster-bg: #1a414c;
+  --markdown-mermaid-cluster-border: #6b7e82;
 }
 
 [data-theme="space"] {
@@ -725,6 +829,9 @@
   --markdown-token-type: #7dcfff;
   --markdown-token-punctuation: #eaf2ff;
   --markdown-token-name: #eaf2ff;
+  --markdown-token-property: #82aaff;
+  --markdown-inline-code-bg: #0a111e;
+  --markdown-inline-code-fg: #ea5b6c;
   --markdown-mark-bg: #4c493f;
   --markdown-mark-fg: #eaf2ff;
   --markdown-alert-note-bg: #1b2e44;
@@ -744,8 +851,18 @@
   --markdown-alert-caution-fg: #ff7a8a;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%2306101f'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #0a111e;
-  --markdown-mermaid-surface: #181f2d;
   --markdown-mermaid-border: #557098;
+  --markdown-mermaid-node-bg: #263855;
+  --markdown-mermaid-node-border: #7eb0ff;
+  --markdown-mermaid-node-fg: #eaf2ff;
+  --markdown-mermaid-line: #a8b8d4;
+  --markdown-mermaid-label-bg: #1e4b3e;
+  --markdown-mermaid-label-fg: #eaf2ff;
+  --markdown-mermaid-note-bg: #4c493f;
+  --markdown-mermaid-note-border: #ffc864;
+  --markdown-mermaid-note-fg: #eaf2ff;
+  --markdown-mermaid-cluster-bg: #171f2d;
+  --markdown-mermaid-cluster-border: #557098;
 }
 
 [data-theme="forest"] {
@@ -808,6 +925,9 @@
   --markdown-token-type: #8ccfe0;
   --markdown-token-punctuation: #e6f0e8;
   --markdown-token-name: #e6f0e8;
+  --markdown-token-property: #a8d8b9;
+  --markdown-inline-code-bg: #0d140f;
+  --markdown-inline-code-fg: #e95b67;
   --markdown-mark-bg: #4a432b;
   --markdown-mark-fg: #e6f0e8;
   --markdown-alert-note-bg: #233330;
@@ -827,6 +947,16 @@
   --markdown-alert-caution-fg: #ff8a7a;
   --checkbox-check: url("data:image/svg+xml,%3Csvg%20viewBox%3D'0%200%2016%2016'%20fill%3D'%232a1a00'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z'%2F%3E%3C%2Fsvg%3E");
   --markdown-mermaid-bg: #0d140f;
-  --markdown-mermaid-surface: #1b221d;
   --markdown-mermaid-border: #5c7264;
+  --markdown-mermaid-node-bg: #413b24;
+  --markdown-mermaid-node-border: #e3b05c;
+  --markdown-mermaid-node-fg: #e6f0e8;
+  --markdown-mermaid-line: #a9bdae;
+  --markdown-mermaid-label-bg: #2d4a32;
+  --markdown-mermaid-label-fg: #e6f0e8;
+  --markdown-mermaid-note-bg: #423e4b;
+  --markdown-mermaid-note-border: #ffb070;
+  --markdown-mermaid-note-fg: #e6f0e8;
+  --markdown-mermaid-cluster-bg: #1a221c;
+  --markdown-mermaid-cluster-border: #5c7264;
 }

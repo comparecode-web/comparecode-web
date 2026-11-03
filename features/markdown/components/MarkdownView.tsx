@@ -1,15 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { MdArticle, MdHistory, MdTune } from "react-icons/md";
+import { MdArticle, MdHistory, MdToc, MdTune } from "react-icons/md";
 import { ToolWorkspaceShell } from "@/components/layout/ToolWorkspaceShell";
 import { useOptionsPanelShortcut } from "@/components/layout/useOptionsPanelShortcut";
 import { MarkdownHistoryView } from "./MarkdownHistoryView";
 import { MarkdownLayoutControl, MarkdownOptionsView } from "./MarkdownOptionsView";
 import { MarkdownSplitView } from "./MarkdownSplitView";
 import { MarkdownToolbar } from "./MarkdownToolbar";
+import { MarkdownExportHost } from "./MarkdownExportHost";
+import { MarkdownOutlineView } from "./MarkdownOutlineView";
 import { Button } from "@/components/ui/Button";
 import { useMarkdownFormattingActions } from "@/features/markdown/hooks/useMarkdownFormattingActions";
+import { useMarkdownExport } from "@/features/markdown/hooks/useMarkdownExport";
+import { useMarkdownFullscreen } from "@/features/markdown/hooks/useMarkdownFullscreen";
+import { getMarkdownHeadingLevel } from "@/features/markdown/services/markdownEditorCommands";
 import { flushMarkdownContentSave, scheduleMarkdownContentSave, useMarkdownStore } from "@/features/markdown/store/useMarkdownStore";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 
@@ -75,6 +80,12 @@ export function MarkdownView() {
     textareaRef,
     onChange: setMarkdownText
   });
+  const { exportJob, isExporting, runExport, handleExportMount } = useMarkdownExport();
+  const { isFullscreen, toggleFullscreen } = useMarkdownFullscreen();
+  const getHeadingLevel = useCallback(() => {
+    const textarea = textareaRef.current;
+    return textarea ? getMarkdownHeadingLevel(textarea.value, textarea.selectionStart) : 0;
+  }, []);
 
   useEffect(() => {
     loadPersistedMarkdownText();
@@ -110,6 +121,7 @@ export function MarkdownView() {
       toolIcon={MdArticle}
       tabs={[
         { value: "options", title: "Options", icon: MdTune, content: <MarkdownOptionsView />, isDisabled: !hasContent },
+        { value: "outline", title: "Outline", placement: "right", icon: MdToc, content: isMarkdownReady && isOptionsPanelOpen && optionsPanelTab === "outline" ? <MarkdownOutlineView textareaRef={textareaRef} /> : null, closeLabel: "Close outline" },
         { value: "history", title: "Markdown history", placement: "right", icon: MdHistory, content: <MarkdownHistoryView /> }
       ]}
     >
@@ -120,7 +132,13 @@ export function MarkdownView() {
         canUndo={canUndo}
         canRedo={canRedo}
         isDisabled={!isMarkdownReady}
+        getHeadingLevel={getHeadingLevel}
+        onExport={(action) => void runExport(action)}
+        isExporting={isExporting}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
       />
+      {exportJob && <MarkdownExportHost job={exportJob} onMount={handleExportMount} />}
       {isMarkdownReady ? (
         <MarkdownSplitView
           value={markdownText}

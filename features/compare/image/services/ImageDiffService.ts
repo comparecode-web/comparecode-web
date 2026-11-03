@@ -1,7 +1,7 @@
 import { DiffAlgorithm } from "../store/useImageCompareStore";
 import { ImageAffineTransform } from "./alignment/types";
 import { buildAffineMatrix, getTransformedBounds, hasSameAspectRatio } from "./alignment/transformUtils";
-import { getWorkingScale, scaleSize } from "../utils/canvasBudget";
+import { getWorkingScale, scaleSize } from "@/utils/canvasBudget";
 
 export interface DiffStats {
   totalPixels: number;
