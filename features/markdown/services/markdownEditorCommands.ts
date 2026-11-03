@@ -1,4 +1,5 @@
 import type { MarkdownFormatAction } from "@/features/markdown/types/markdown";
+import { getMarkdownMermaidTemplate, type MarkdownMermaidTemplateId } from "@/features/markdown/services/markdownMermaidTemplates";
 
 interface MarkdownCommandInput {
   value: string;
@@ -7,9 +8,10 @@ interface MarkdownCommandInput {
   command: MarkdownFormatAction;
   tableRows?: number;
   tableColumns?: number;
+  mermaidTemplate?: MarkdownMermaidTemplateId;
 }
 
-interface MarkdownCommandResult {
+export interface MarkdownCommandResult {
   value: string;
   selectionStart: number;
   selectionEnd: number;
@@ -407,6 +409,237 @@ function applyCurrentLineText(value: string, range: TextRange, transform: (text:
   });
 }
 
+function removeHeading(value: string, range: TextRange): MarkdownCommandResult {
+  return replaceTouchedLines(value, range, (lines) => lines.map((line) => {
+    const indent = line.match(/^\s*/)?.[0] ?? "";
+    return `${indent}${line.slice(indent.length).replace(/^#{1,6}\s+/, "")}`;
+  }));
+}
+
+function insertInlineMath(value: string, range: TextRange): MarkdownCommandResult {
+  if (range.text.includes("\n")) {
+    return insertMath(value, range);
+  }
+
+  return wrapSelection(value, range, "$", "x^2");
+}
+
+function insertBlockMath(value: string, range: TextRange): MarkdownCommandResult {
+  const formula = range.text || "\\Delta = \\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}";
+  const plan = buildSeparatedBlock(value, range, `$$\n${formula}\n$$`);
+  const formulaStart = plan.text.indexOf(formula);
+
+  return replaceSelection(value, range, {
+    text: plan.text,
+    selectStartOffset: formulaStart,
+    selectEndOffset: formulaStart + formula.length
+  });
+}
+
+function insertFencedBlock(value: string, range: TextRange, language: string, fallback: string): MarkdownCommandResult {
+  const content = range.text || fallback;
+  const plan = buildSeparatedBlock(value, range, `\`\`\`${language}\n${content}\n\`\`\``);
+  const contentStart = plan.text.indexOf(content);
+
+  return replaceSelection(value, range, {
+    text: plan.text,
+    selectStartOffset: contentStart,
+    selectEndOffset: contentStart + content.length
+  });
+}
+
+function insertDetails(value: string, range: TextRange): MarkdownCommandResult {
+  const content = range.text || "Hidden content";
+  const plan = buildSeparatedBlock(value, range, `<details>\n<summary>Summary</summary>\n\n${content}\n\n</details>`);
+  const contentStart = plan.text.indexOf(content);
+
+  return replaceSelection(value, range, {
+    text: plan.text,
+    selectStartOffset: contentStart,
+    selectEndOffset: contentStart + content.length
+  });
+}
+
+function insertFootnote(value: string, range: TextRange): MarkdownCommandResult {
+  const usedNumbers = Array.from(value.matchAll(/\[\^(\d+)\]/g), (match) => Number(match[1]));
+  const label = String(Math.max(0, ...usedNumbers) + 1);
+  const reference = `${range.text}[^${label}]`;
+  const before = `${value.slice(0, range.start)}${reference}${value.slice(range.end)}`;
+  const separator = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+  const note = "Footnote text";
+  const nextValue = `${before}${separator}[^${label}]: ${note}`;
+
+  return {
+    value: nextValue,
+    selectionStart: nextValue.length - note.length,
+    selectionEnd: nextValue.length
+  };
+}
+
+const listItemPattern = /^( *)([-*+]|\d{1,9}[.)])( +)/;
+
+interface ListMarker {
+  indent: number;
+  contentColumn: number;
+}
+
+function getListMarker(line: string): ListMarker | null {
+  const match = listItemPattern.exec(line);
+  if (!match) {
+    return null;
+  }
+
+  return { indent: match[1].length, contentColumn: match[0].length };
+}
+
+function getLeadingSpaces(line: string): number {
+  return line.match(/^ */)?.[0].length ?? 0;
+}
+
+function findPreviousListMarker(lines: Array<string>, index: number, matches: (marker: ListMarker) => boolean): ListMarker | null {
+  for (let current = index - 1; current >= 0; current--) {
+    const line = lines[current];
+    if (!line.trim()) {
+      continue;
+    }
+
+    const marker = getListMarker(line);
+    if (!marker) {
+      if (getLeadingSpaces(line) === 0) {
+        return null;
+      }
+      continue;
+    }
+
+    if (matches(marker)) {
+      return marker;
+    }
+  }
+
+  return null;
+}
+
+function getShiftedIndent(lines: Array<string>, index: number, direction: "indent" | "outdent"): number {
+  const line = lines[index];
+  const indent = getLeadingSpaces(line);
+  const marker = getListMarker(line);
+
+  if (direction === "indent") {
+    if (marker) {
+      const sibling = findPreviousListMarker(lines, index, (candidate) => candidate.indent === indent);
+      return sibling ? sibling.contentColumn : indent + marker.contentColumn - marker.indent;
+    }
+
+    return indent + 2;
+  }
+
+  if (marker) {
+    const parent = findPreviousListMarker(lines, index, (candidate) => candidate.contentColumn === indent);
+    if (parent) {
+      return parent.indent;
+    }
+  }
+
+  return Math.max(0, indent - 2);
+}
+
+function shiftLines(value: string, range: TextRange, direction: "indent" | "outdent"): MarkdownCommandResult {
+  const lineRange = getTouchedLineRange(value, range.start, range.end);
+  const allLines = value.split("\n");
+  const firstLineIndex = value.slice(0, lineRange.start).split("\n").length - 1;
+  const touchedCount = lineRange.text.split("\n").length;
+  let firstLineDelta = 0;
+
+  for (let index = firstLineIndex; index < firstLineIndex + touchedCount; index++) {
+    const line = allLines[index];
+    if (!line.trim() && touchedCount > 1) {
+      continue;
+    }
+
+    const indent = getLeadingSpaces(line);
+    const nextIndent = getShiftedIndent(allLines, index, direction);
+    allLines[index] = `${" ".repeat(nextIndent)}${line.slice(indent)}`;
+    if (index === firstLineIndex) {
+      firstLineDelta = nextIndent - indent;
+    }
+  }
+
+  const replacement = allLines.slice(firstLineIndex, firstLineIndex + touchedCount).join("\n");
+  const nextValue = `${value.slice(0, lineRange.start)}${replacement}${value.slice(lineRange.end)}`;
+
+  if (range.start === range.end) {
+    const caret = Math.max(lineRange.start, range.start + firstLineDelta);
+    return { value: nextValue, selectionStart: caret, selectionEnd: caret };
+  }
+
+  return { value: nextValue, selectionStart: lineRange.start, selectionEnd: lineRange.start + replacement.length };
+}
+
+function isInsideFencedCode(value: string, position: number): boolean {
+  let fence: string | null = null;
+
+  for (const line of value.slice(0, position).split("\n").slice(0, -1)) {
+    const match = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    if (!match) {
+      continue;
+    }
+
+    if (fence === null) {
+      fence = match[1];
+    } else if (match[1][0] === fence[0] && match[1].length >= fence.length) {
+      fence = null;
+    }
+  }
+
+  return fence !== null;
+}
+
+export function continueMarkdownList(value: string, selectionStart: number, selectionEnd: number): MarkdownCommandResult | null {
+  if (selectionStart !== selectionEnd || isInsideFencedCode(value, selectionStart)) {
+    return null;
+  }
+
+  const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
+  const lineEndIndex = value.indexOf("\n", selectionStart);
+  const lineEnd = lineEndIndex === -1 ? value.length : lineEndIndex;
+  const line = value.slice(lineStart, lineEnd);
+  const listMatch = /^( *)([-*+]|(\d{1,9})([.)]))( +)(\[[ xX]\] +)?/.exec(line);
+  const quoteMatch = listMatch ? null : /^( *(?:> ?)+)/.exec(line);
+  const prefix = listMatch?.[0] ?? quoteMatch?.[0];
+
+  if (!prefix || selectionStart < lineStart + prefix.length) {
+    return null;
+  }
+
+  if (!line.slice(prefix.length).trim()) {
+    const separator = lineStart === 0 || value.slice(0, lineStart).endsWith("\n\n") ? "" : "\n";
+    const nextValue = `${value.slice(0, lineStart)}${separator}${value.slice(lineEnd)}`;
+    const caret = lineStart + separator.length;
+    return { value: nextValue, selectionStart: caret, selectionEnd: caret };
+  }
+
+  let nextPrefix = prefix;
+  if (listMatch) {
+    const [, indent, bullet, number, delimiter, spacing, task] = listMatch;
+    const marker = number ? `${Number(number) + 1}${delimiter}` : bullet;
+    nextPrefix = `${indent}${marker}${spacing}${task ? "[ ] " : ""}`;
+  }
+
+  const insertion = `\n${nextPrefix}`;
+  const nextValue = `${value.slice(0, selectionStart)}${insertion}${value.slice(selectionEnd)}`;
+  const caret = selectionStart + insertion.length;
+
+  return { value: nextValue, selectionStart: caret, selectionEnd: caret };
+}
+
+export function getMarkdownHeadingLevel(value: string, position: number): number {
+  const lineStart = value.lastIndexOf("\n", Math.max(0, position - 1)) + 1;
+  const lineEndIndex = value.indexOf("\n", position);
+  const line = value.slice(lineStart, lineEndIndex === -1 ? value.length : lineEndIndex);
+
+  return /^ {0,3}(#{1,6})\s/.exec(line)?.[1].length ?? 0;
+}
+
 export function applyMarkdownEditorCommand(input: MarkdownCommandInput): MarkdownCommandResult {
   const range = clampSelection(input.value, input.selectionStart, input.selectionEnd);
   const lineRange = getTouchedLineRange(input.value, range.start, range.end);
@@ -428,6 +661,8 @@ export function applyMarkdownEditorCommand(input: MarkdownCommandInput): Markdow
       return applyCurrentLineText(input.value, range, toUpperCase);
     case "lowerCase":
       return applyCurrentLineText(input.value, range, toLowerCase);
+    case "paragraph":
+      return removeHeading(input.value, lineRange);
     case "h1":
       return applyHeading(input.value, lineRange, 1);
     case "h2":
@@ -473,6 +708,22 @@ export function applyMarkdownEditorCommand(input: MarkdownCommandInput): Markdow
       );
     case "math":
       return insertMath(input.value, range);
+    case "mathInline":
+      return insertInlineMath(input.value, range);
+    case "mathBlock":
+      return insertBlockMath(input.value, range);
+    case "terminalBlock":
+      return insertFencedBlock(input.value, range, "bash", "npm run dev");
+    case "details":
+      return insertDetails(input.value, range);
+    case "footnote":
+      return insertFootnote(input.value, range);
+    case "mermaidTemplate":
+      return insertFencedBlock(input.value, range, "mermaid", getMarkdownMermaidTemplate(input.mermaidTemplate).source);
+    case "indent":
+      return shiftLines(input.value, range, "indent");
+    case "outdent":
+      return shiftLines(input.value, range, "outdent");
     case "emoji":
       return replaceSelection(input.value, range, { text: ":joy:" });
     case "symbol":

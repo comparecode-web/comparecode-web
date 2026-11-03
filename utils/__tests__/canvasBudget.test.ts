@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MAX_CANVAS_SIDE, MAX_WORKING_PIXELS, SAFE_CANVAS_PIXELS, canAllocateCanvas, getWorkingScale, scaleSize } from "../canvasBudget";
+import { MAX_CANVAS_SIDE, MAX_WORKING_PIXELS, SAFE_CANVAS_PIXELS, canAllocateCanvas, getWorkingScale, scaleSize } from "@/utils/canvasBudget";
 
 describe("canvasBudget", () => {
   afterEach(() => {

@@ -106,4 +106,41 @@ describe("ToolWorkspaceShell", () => {
     await user.click(screen.getByRole("button", { name: "History" }));
     expect(screen.getByText("History content")).toBeVisible();
   });
+
+  it("switches between several right side panels with one open at a time", async () => {
+    const user = userEvent.setup();
+    function TwoPanels() {
+      const [isOpen, setIsOpen] = useState(false);
+      const [tab, setTab] = useState<"options" | "outline" | "history">("options");
+      return (
+        <ToolWorkspaceShell
+          isPanelOpen={isOpen}
+          onPanelOpenChange={setIsOpen}
+          activePanelTab={tab}
+          onPanelTabChange={setTab}
+          tabs={[
+            { value: "options", title: "Options", icon: MdTune, content: <div>Options content</div> },
+            { value: "outline", title: "Outline", placement: "right", icon: MdCode, content: <div>Outline content</div>, closeLabel: "Close outline" },
+            { value: "history", title: "History", placement: "right", icon: MdHistory, content: <div>History content</div> }
+          ]}
+        >
+          <div>Main content</div>
+        </ToolWorkspaceShell>
+      );
+    }
+
+    render(<TwoPanels />);
+    await user.click(screen.getByRole("button", { name: "Outline" }));
+    expect(screen.getByText("Outline content")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Outline" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByText("History content")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "History" }));
+    expect(screen.getByText("History content")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Outline" })).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(screen.getByRole("button", { name: "Outline" }));
+    await user.click(screen.getByRole("button", { name: "Close outline" }));
+    expect(screen.getByRole("button", { name: "Outline" })).toHaveFocus();
+  });
 });

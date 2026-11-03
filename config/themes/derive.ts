@@ -1,4 +1,4 @@
-import { ensureContrast, mix, withAlpha } from "./color";
+import { deltaE, ensureContrast, mix, withAlpha } from "./color";
 import type { ThemePalette, ThemeTokens } from "./paletteSchema";
 
 const ALERT_KINDS = [
@@ -8,6 +8,8 @@ const ALERT_KINDS = [
   ["warning", "warning"],
   ["caution", "destructive"]
 ] as const;
+
+const MIN_MERMAID_FILL_DELTA_E = 5;
 
 export const DIFF_TOKEN_NAMES = ["diff-added-bg", "diff-added-fg", "diff-removed-bg", "diff-removed-fg"] as const;
 
@@ -85,6 +87,9 @@ export function deriveThemeTokens(palette: ThemePalette): ThemeTokens {
     "markdown-token-type": roles.syntaxType,
     "markdown-token-punctuation": roles.textPrimary,
     "markdown-token-name": roles.textPrimary,
+    "markdown-token-property": roles.syntaxProperty,
+    "markdown-inline-code-bg": roles.codeSurface,
+    "markdown-inline-code-fg": ensureContrast(roles.supportHeart, roles.codeSurface, 4.5, roles.textPrimary),
     "markdown-mark-bg": roles.markBg,
     "markdown-mark-fg": roles.textPrimary
   };
@@ -98,9 +103,31 @@ export function deriveThemeTokens(palette: ThemePalette): ThemeTokens {
   }
 
   tokens["checkbox-check"] = checkboxCheckImage(roles.accentContent);
-  tokens["markdown-mermaid-bg"] = roles.codeSurface;
-  tokens["markdown-mermaid-surface"] = isDark ? mix(roles.codeSurface, roles.textPrimary, 0.08) : roles.page;
+  const mermaidBg = roles.codeSurface;
+  const mermaidNodeBg = mix(mermaidBg, roles.accent, isDark ? 0.28 : 0.16);
+  const mermaidTints = [roles.warning, roles.important, roles.success, roles.info].map((color) => mix(mermaidBg, color, isDark ? 0.32 : 0.26));
+  const mermaidAnnotationPairs = [roles.markBg, ...mermaidTints].flatMap((note) => mermaidTints
+    .filter((label) => label !== note)
+    .map((label) => ({ note, label, distance: Math.min(deltaE(note, mermaidNodeBg), deltaE(label, mermaidNodeBg), deltaE(note, label)) })));
+  const mostDistinct = (pairs: typeof mermaidAnnotationPairs) => pairs.reduce((best, pair) => pair.distance > best.distance ? pair : best);
+  const highlighterNotePair = mostDistinct(mermaidAnnotationPairs.filter((pair) => pair.note === roles.markBg));
+  const { note: mermaidNoteBg, label: mermaidLabelBg } = highlighterNotePair.distance >= MIN_MERMAID_FILL_DELTA_E
+    ? highlighterNotePair
+    : mostDistinct(mermaidAnnotationPairs);
+  const mermaidClusterBg = mix(mermaidBg, roles.textSecondary, isDark ? 0.1 : 0.06);
+  tokens["markdown-mermaid-bg"] = mermaidBg;
   tokens["markdown-mermaid-border"] = roles.borderStrong;
+  tokens["markdown-mermaid-node-bg"] = mermaidNodeBg;
+  tokens["markdown-mermaid-node-border"] = ensureContrast(roles.accent, [mermaidNodeBg, mermaidBg], 3, roles.textPrimary);
+  tokens["markdown-mermaid-node-fg"] = readableOn(roles.textPrimary, mermaidNodeBg);
+  tokens["markdown-mermaid-line"] = ensureContrast(roles.textSecondary, [mermaidBg, mermaidClusterBg], 3, roles.textPrimary);
+  tokens["markdown-mermaid-label-bg"] = mermaidLabelBg;
+  tokens["markdown-mermaid-label-fg"] = readableOn(roles.textPrimary, mermaidLabelBg);
+  tokens["markdown-mermaid-note-bg"] = mermaidNoteBg;
+  tokens["markdown-mermaid-note-border"] = ensureContrast(roles.warning, [mermaidNoteBg, mermaidBg], 3, roles.textPrimary);
+  tokens["markdown-mermaid-note-fg"] = readableOn(roles.textPrimary, mermaidNoteBg);
+  tokens["markdown-mermaid-cluster-bg"] = mermaidClusterBg;
+  tokens["markdown-mermaid-cluster-border"] = roles.borderStrong;
 
   return { ...tokens, ...palette.overrides } as ThemeTokens;
 }

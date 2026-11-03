@@ -16,7 +16,7 @@ import { AVAILABLE_FONTS } from "@/config/fonts";
 import { isSettingsSectionDirty } from "@/utils/settingsReset";
 import { useTextUIStore } from "@/features/compare/text/store/useTextUIStore";
 import { MdTextFields, MdTitle, MdVerticalSplit, MdViewAgenda } from "react-icons/md";
-import { SYNTAX_LANGUAGE_OPTIONS } from "../../services/syntax/languages";
+import { SYNTAX_LANGUAGE_OPTIONS } from "@/services/syntax/languages";
 import { IgnoreRulesEditor } from "./IgnoreRulesEditor";
 
 const COMPARISON_SECTION_KEYS: Array<keyof AppSettings> = ["ignoreWhitespace", "ignoreCase", "precision", "isRealtimeCompareEnabled"];

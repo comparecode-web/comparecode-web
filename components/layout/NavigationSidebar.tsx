@@ -33,7 +33,7 @@ const navItems = [
 export function NavigationSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { desktopExpanded, setDesktopExpanded, mobileOpen, setMobileOpen } = useWorkspaceSidebar();
+  const { desktopExpanded, setDesktopExpanded, mobileOpen, setMobileOpen, isFocusMode } = useWorkspaceSidebar();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isPending, startTransition] = useTransition();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
@@ -104,7 +104,7 @@ export function NavigationSidebar() {
 
   return (
     <>
-      <aside className={cn("@container/navigation hidden shrink-0 flex-col overflow-hidden border-r border-border-default bg-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none md:flex", desktopExpanded === null ? "w-14 xl:w-52" : desktopExpanded ? "w-52" : "w-14")}>
+      <aside className={cn("@container/navigation hidden shrink-0 flex-col overflow-hidden border-r border-border-default bg-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none md:flex", isFocusMode && "md:hidden", desktopExpanded === null ? "w-14 xl:w-52" : desktopExpanded ? "w-52" : "w-14")}>
         <div className="flex h-14 shrink-0 items-center px-2">
           <Link href="/" className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-accent @max-[12rem]/navigation:hidden" aria-label="CompareCode home">
             {brand(false)}

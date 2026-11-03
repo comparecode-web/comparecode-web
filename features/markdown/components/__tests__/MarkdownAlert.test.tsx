@@ -10,7 +10,8 @@ describe("MarkdownAlert", () => {
       </MarkdownAlert>
     );
 
-    expect(screen.getByText("Note").parentElement).toHaveClass("text-[var(--markdown-alert-note-fg)]");
+    expect(screen.getByText("Note").parentElement).toHaveClass("cc-markdown-alert-title");
+    expect(screen.getByText("Note").closest(".cc-markdown-alert")).toHaveClass("cc-markdown-alert-note");
     expect(screen.getByText("Useful information that users should know.")).toBeInTheDocument();
   });
 
@@ -22,7 +23,8 @@ describe("MarkdownAlert", () => {
       </MarkdownAlert>
     );
 
-    expect(screen.getByText("Warning").parentElement).toHaveClass("text-[var(--markdown-alert-warning-fg)]");
+    expect(screen.getByText("Warning").parentElement).toHaveClass("cc-markdown-alert-title");
+    expect(screen.getByText("Warning").closest(".cc-markdown-alert")).toHaveClass("cc-markdown-alert-warning");
     expect(screen.getByText("Urgent info that needs attention.")).toBeInTheDocument();
     expect(screen.queryByText("[!WARNING]")).not.toBeInTheDocument();
   });
@@ -40,7 +42,8 @@ describe("MarkdownAlert", () => {
 
     const contentParagraph = screen.getByText("Key information users need to know.").closest("p");
 
-    expect(screen.getByText("Important").parentElement).toHaveClass("text-[var(--markdown-alert-important-fg)]");
+    expect(screen.getByText("Important").parentElement).toHaveClass("cc-markdown-alert-title");
+    expect(screen.getByText("Important").closest(".cc-markdown-alert")).toHaveClass("cc-markdown-alert-important");
     expect(contentParagraph?.querySelector("br")).not.toBeInTheDocument();
     expect(container.querySelector("p")?.textContent).toBe("Key information users need to know.");
   });

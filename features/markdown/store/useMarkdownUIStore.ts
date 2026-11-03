@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { loadMarkdownUIState, saveMarkdownUIState } from "@/features/markdown/services/markdownStorage";
-import type { MarkdownViewMode } from "@/features/markdown/types/markdown";
+import type { MarkdownPanelTab, MarkdownViewMode } from "@/features/markdown/types/markdown";
 
 export const defaultMarkdownUISettings = {
   isSyncScrollEnabled: true,
@@ -15,14 +15,14 @@ export type MarkdownUISettingKey = keyof typeof defaultMarkdownUISettings;
 interface MarkdownUIState {
   isLoaded: boolean;
   isOptionsPanelOpen: boolean;
-  optionsPanelTab: "options" | "history";
+  optionsPanelTab: MarkdownPanelTab;
   isSyncScrollEnabled: boolean;
   editorPaneWidthPercent: number;
   isWordWrapEnabled: boolean;
   fontSize: number;
   viewMode: MarkdownViewMode;
   setIsOptionsPanelOpen: (value: boolean) => void;
-  setOptionsPanelTab: (tab: "options" | "history") => void;
+  setOptionsPanelTab: (tab: MarkdownPanelTab) => void;
   setIsSyncScrollEnabled: (value: boolean) => void;
   setEditorPaneWidthPercent: (value: number) => void;
   setIsWordWrapEnabled: (value: boolean) => void;

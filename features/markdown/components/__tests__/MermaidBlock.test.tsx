@@ -1,10 +1,18 @@
+import type { CSSProperties } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MermaidBlock } from "../MermaidBlock";
 
+const gate = vi.hoisted(() => ({ release: null as null | (() => void) }));
 const mermaid = vi.hoisted(() => ({
   initialize: vi.fn(),
   render: vi.fn(async (id: string, chart: string) => {
+    if (chart.includes("Slow")) {
+      await new Promise<void>((resolve) => {
+        gate.release = resolve;
+      });
+      return { svg: `<svg id="${id}"><text>Stale</text></svg>` };
+    }
     if (chart.includes("Works")) {
       return { svg: `<svg id="${id}"><text>Works</text></svg>` };
     }
@@ -42,5 +50,30 @@ describe("MermaidBlock", () => {
 
     expect(await screen.findByText("Works", {}, { timeout: 3000 })).toBeInTheDocument();
     expect(mermaid.render).toHaveBeenCalledTimes(2);
+  });
+
+  it("discards a result that finishes after the chart changed", async () => {
+    const { rerender } = render(<MermaidBlock chart={"graph TD\n  Slow --> A"} />);
+    await waitFor(() => expect(mermaid.render).toHaveBeenCalledTimes(1));
+
+    rerender(<MermaidBlock chart={"graph TD\n  Fresh --> Works"} />);
+    gate.release?.();
+
+    expect(await screen.findByText("Works", {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.queryByText("Stale")).not.toBeInTheDocument();
+  });
+
+  it("reads theme colors from its own element so a nested theme applies", async () => {
+    render(
+      <div style={{ "--markdown-mermaid-node-bg": "#123456" } as CSSProperties}>
+        <MermaidBlock chart={"graph TD\n  Themed --> Works"} />
+      </div>
+    );
+
+    expect(await screen.findByText("Works", {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(mermaid.initialize).toHaveBeenLastCalledWith(expect.objectContaining({
+      htmlLabels: true,
+      themeVariables: expect.objectContaining({ primaryColor: "#123456", edgeLabelBackground: expect.any(String) })
+    }));
   });
 });

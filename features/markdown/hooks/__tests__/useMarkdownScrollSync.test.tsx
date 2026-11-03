@@ -62,4 +62,31 @@ describe("useMarkdownScrollSync", () => {
 
     expect(remountedPreview.scrollTop).toBe(200);
   });
+
+  it("follows the reader scrolling the preview but not a scroll caused by a preview height change", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    render(<ScrollSyncHarness syncKey="split" />);
+    const editor = screen.getByTestId("editor");
+    const preview = screen.getByTestId("preview");
+    defineScrollMetrics(editor, 300, 100);
+    defineScrollMetrics(preview, 500, 100);
+
+    preview.scrollTop = 200;
+    fireEvent.scroll(preview);
+    expect(editor.scrollTop).toBe(0);
+
+    fireEvent.scroll(preview);
+    expect(editor.scrollTop).toBe(100);
+    vi.advanceTimersByTime(100);
+
+    defineScrollMetrics(preview, 900, 100);
+    preview.scrollTop = 300;
+    fireEvent.scroll(preview);
+    expect(editor.scrollTop).toBe(100);
+
+    preview.scrollTop = 600;
+    fireEvent.scroll(preview);
+    expect(editor.scrollTop).toBe(150);
+    vi.useRealTimers();
+  });
 });

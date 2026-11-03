@@ -1,4 +1,4 @@
-import type { SyntaxKind, SyntaxLine } from "../../services/syntax/tokenizeSyntax";
+import type { SyntaxKind, SyntaxLine } from "@/services/syntax/tokenizeSyntax";
 
 const tokenClasses: Record<SyntaxKind, string> = {
   comment: "text-syntax-comment", string: "text-syntax-string", number: "text-syntax-number",

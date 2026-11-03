@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type ComponentType, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { MdClose, MdExpandLess, MdExpandMore } from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
@@ -15,6 +15,7 @@ export interface ToolWorkspaceTab<T extends string> {
   content: ReactNode;
   placement?: "top" | "right";
   isDisabled?: boolean;
+  closeLabel?: string;
 }
 
 export interface ToolWorkspaceQuickAction {
@@ -58,10 +59,19 @@ export function ToolWorkspaceShell<T extends string>({
   const activeTab = tabs.find((tab) => tab.value === activePanelTab) ?? tabs[0];
   const panelId = useId();
   const controlsRef = useRef<HTMLDivElement>(null);
-  const historyTriggerRef = useRef<HTMLButtonElement>(null);
+  const rightTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
   const historyPanelId = useId();
-  const historyTab = tabs.find((tab) => tab.placement === "right");
+  const rightTabs = tabs.filter((tab) => tab.placement === "right");
   const isHistoryOpen = isPanelOpen && activeTab?.placement === "right";
+  const [lastRightTabValue, setLastRightTabValue] = useState<T | undefined>(rightTabs[0]?.value);
+  if (isHistoryOpen && activeTab && lastRightTabValue !== activeTab.value) {
+    setLastRightTabValue(activeTab.value);
+  }
+  const historyTab = rightTabs.find((tab) => tab.value === (isHistoryOpen ? activeTab?.value : lastRightTabValue)) ?? rightTabs[0];
+  const historyTabValue = historyTab?.value;
+  const focusRightTrigger = () => {
+    if (historyTabValue) rightTriggerRefs.current.get(historyTabValue)?.focus();
+  };
   const isOptionsOpen = isPanelOpen && !isHistoryOpen;
   const optionsTab = tabs.find((tab) => tab.placement !== "right");
 
@@ -70,11 +80,11 @@ export function ToolWorkspaceShell<T extends string>({
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || event.defaultPrevented || document.querySelector("dialog[open]")) return;
       onPanelOpenChange(false);
-      historyTriggerRef.current?.focus();
+      if (historyTabValue) rightTriggerRefs.current.get(historyTabValue)?.focus();
     };
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [isHistoryOpen, onPanelOpenChange]);
+  }, [historyTabValue, isHistoryOpen, onPanelOpenChange]);
 
   useEffect(() => {
     const query = window.matchMedia?.(WORKSPACE_MEDIA.belowSmall);
@@ -98,7 +108,7 @@ export function ToolWorkspaceShell<T extends string>({
           if (event.key === "Escape" && !event.defaultPrevented && isPanelOpen) {
             event.stopPropagation();
             onPanelOpenChange(false);
-            if (isHistoryOpen) historyTriggerRef.current?.focus();
+            if (isHistoryOpen) focusRightTrigger();
             else controlsRef.current?.querySelector<HTMLButtonElement>("[data-panel-toggle]")?.focus();
           }
         }}
@@ -154,21 +164,29 @@ export function ToolWorkspaceShell<T extends string>({
               </Button>
             );
           })}
-          {historyTab && (
-            <Button
-              ref={historyTriggerRef}
-              size="sm"
-              variant={isHistoryOpen ? "primary" : "outline"}
-              className="shrink-0 px-2"
-              title={historyTab.title}
-              aria-label={historyTab.title}
-              aria-expanded={isHistoryOpen}
-              aria-controls={historyPanelId}
-              onClick={() => { onPanelTabChange(historyTab.value); onPanelOpenChange(!isHistoryOpen); }}
-            >
-              <historyTab.icon className="text-lg" />
-            </Button>
-          )}
+          {rightTabs.map((tab) => {
+            const isTabOpen = isHistoryOpen && activeTab?.value === tab.value;
+            return (
+              <Button
+                key={tab.value}
+                ref={(element) => {
+                  if (element) rightTriggerRefs.current.set(tab.value, element);
+                  else rightTriggerRefs.current.delete(tab.value);
+                }}
+                size="sm"
+                variant={isTabOpen ? "primary" : "outline"}
+                className="shrink-0 px-2"
+                title={tab.title}
+                aria-label={tab.title}
+                aria-expanded={isTabOpen}
+                aria-controls={historyPanelId}
+                disabled={tab.isDisabled}
+                onClick={() => { onPanelTabChange(tab.value); onPanelOpenChange(!isTabOpen); }}
+              >
+                <tab.icon className="text-lg" />
+              </Button>
+            );
+          })}
           </div>
         </div>
         <div
@@ -199,7 +217,7 @@ export function ToolWorkspaceShell<T extends string>({
         <div className="flex h-full min-h-0 w-[min(90vw,20rem)] flex-col border-l border-border-default">
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border-default p-3">
             <h2 className="font-semibold">{historyTab.title}</h2>
-            <IconButton size="sm" variant="outline" aria-label="Close history" onClick={() => { onPanelOpenChange(false); historyTriggerRef.current?.focus(); }}><MdClose /></IconButton>
+            <IconButton size="sm" variant="outline" aria-label={historyTab.closeLabel ?? "Close history"} onClick={() => { onPanelOpenChange(false); focusRightTrigger(); }}><MdClose /></IconButton>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">{historyTab.content}</div>
         </div>

@@ -8,6 +8,7 @@ const TEXT = 4.5;
 const NON_TEXT = 3;
 const MIN_LINE_DELTA_E = 3;
 const MIN_ADDED_REMOVED_DELTA_E = 10;
+const MIN_MERMAID_DELTA_E = 5;
 
 const SYNTAX_ROLES: ReadonlyArray<ThemeColorRole> = ["syntaxComment", "syntaxString", "syntaxNumber", "syntaxKeyword", "syntaxType", "syntaxProperty"];
 const TEXT_SURFACES: ReadonlyArray<ThemeColorRole> = ["page", "surface"];
@@ -71,8 +72,17 @@ function derivedPairs(palette: ThemePalette): Pair[] {
   add("text-primary", "info-bg");
   add("text-primary", "destructive-surface");
   add("destructive", "destructive-surface");
-  add("text-primary", "markdown-mermaid-surface");
   add("text-primary", "markdown-mermaid-bg");
+  add("markdown-inline-code-fg", "markdown-inline-code-bg");
+  add("markdown-mermaid-node-fg", "markdown-mermaid-node-bg");
+  add("markdown-mermaid-label-fg", "markdown-mermaid-label-bg");
+  add("markdown-mermaid-note-fg", "markdown-mermaid-note-bg");
+  add("markdown-mermaid-note-border", "markdown-mermaid-note-bg", NON_TEXT);
+  add("text-primary", "markdown-mermaid-cluster-bg");
+  add("markdown-mermaid-node-border", "markdown-mermaid-node-bg", NON_TEXT);
+  add("markdown-mermaid-node-border", "markdown-mermaid-bg", NON_TEXT);
+  add("markdown-mermaid-line", "markdown-mermaid-bg", NON_TEXT);
+  add("markdown-mermaid-line", "markdown-mermaid-cluster-bg", NON_TEXT);
   return pairs;
 }
 
@@ -96,6 +106,15 @@ describe.each(THEME_PALETTES.map((palette) => [palette.id, palette] as const))("
   it("uses opaque colors for every role", () => {
     const translucent = Object.entries(palette.roles).filter(([, value]) => parseColor(value).a < 1).map(([role]) => role);
     expect(translucent).toEqual([]);
+  });
+
+  it("keeps Mermaid nodes, edge labels and notes visibly distinct", () => {
+    const tokens = deriveThemeTokens(palette);
+    expect(deltaE(tokens["markdown-mermaid-node-bg"], tokens["markdown-mermaid-label-bg"])).toBeGreaterThanOrEqual(MIN_MERMAID_DELTA_E);
+    expect(deltaE(tokens["markdown-mermaid-note-bg"], tokens["markdown-mermaid-node-bg"])).toBeGreaterThanOrEqual(MIN_MERMAID_DELTA_E);
+    expect(deltaE(tokens["markdown-mermaid-note-bg"], tokens["markdown-mermaid-label-bg"])).toBeGreaterThanOrEqual(MIN_MERMAID_DELTA_E);
+    expect(deltaE(tokens["markdown-mermaid-node-bg"], tokens["markdown-mermaid-bg"])).toBeGreaterThanOrEqual(MIN_LINE_DELTA_E);
+    expect(deltaE(tokens["markdown-mermaid-label-bg"], tokens["markdown-mermaid-bg"])).toBeGreaterThanOrEqual(MIN_LINE_DELTA_E);
   });
 
   it("emits opaque hex colors for tokens read by Mermaid and canvas export", () => {

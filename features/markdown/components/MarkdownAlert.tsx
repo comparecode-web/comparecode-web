@@ -9,37 +9,12 @@ interface ParsedAlert {
   content: Array<ReactNode>;
 }
 
-const alertStyles: Record<AlertKind, { title: string; icon: ReactNode; className: string; titleClassName: string }> = {
-  NOTE: {
-    title: "Note",
-    icon: <MdInfo />,
-    className: "border-[var(--markdown-alert-note-border)] bg-[var(--markdown-alert-note-bg)] text-text-primary",
-    titleClassName: "text-[var(--markdown-alert-note-fg)]"
-  },
-  TIP: {
-    title: "Tip",
-    icon: <MdLightbulb />,
-    className: "border-[var(--markdown-alert-tip-border)] bg-[var(--markdown-alert-tip-bg)] text-text-primary",
-    titleClassName: "text-[var(--markdown-alert-tip-fg)]"
-  },
-  IMPORTANT: {
-    title: "Important",
-    icon: <MdError />,
-    className: "border-[var(--markdown-alert-important-border)] bg-[var(--markdown-alert-important-bg)] text-text-primary",
-    titleClassName: "text-[var(--markdown-alert-important-fg)]"
-  },
-  WARNING: {
-    title: "Warning",
-    icon: <MdWarning />,
-    className: "border-[var(--markdown-alert-warning-border)] bg-[var(--markdown-alert-warning-bg)] text-text-primary",
-    titleClassName: "text-[var(--markdown-alert-warning-fg)]"
-  },
-  CAUTION: {
-    title: "Caution",
-    icon: <MdCancel />,
-    className: "border-[var(--markdown-alert-caution-border)] bg-[var(--markdown-alert-caution-bg)] text-text-primary",
-    titleClassName: "text-[var(--markdown-alert-caution-fg)]"
-  }
+const alertStyles: Record<AlertKind, { title: string; icon: ReactNode; className: string }> = {
+  NOTE: { title: "Note", icon: <MdInfo aria-hidden="true" />, className: "cc-markdown-alert-note" },
+  TIP: { title: "Tip", icon: <MdLightbulb aria-hidden="true" />, className: "cc-markdown-alert-tip" },
+  IMPORTANT: { title: "Important", icon: <MdError aria-hidden="true" />, className: "cc-markdown-alert-important" },
+  WARNING: { title: "Warning", icon: <MdWarning aria-hidden="true" />, className: "cc-markdown-alert-warning" },
+  CAUTION: { title: "Caution", icon: <MdCancel aria-hidden="true" />, className: "cc-markdown-alert-caution" }
 };
 
 function getTextContent(node: ReactNode): string {
@@ -177,22 +152,18 @@ export function MarkdownAlert({ children }: MarkdownAlertProps) {
   const alert = parseAlert(children);
 
   if (!alert) {
-    return (
-      <blockquote className="my-3 border-l-4 border-border-default bg-transparent px-3 py-0.5 text-text-primary">
-        {children}
-      </blockquote>
-    );
+    return <blockquote>{children}</blockquote>;
   }
 
   const styles = alertStyles[alert.kind];
 
   return (
-    <div className={cn("my-3 rounded-md border-l-4 px-3 py-2", styles.className)}>
-      <div className={cn("mb-0.5 flex items-center gap-2 font-semibold", styles.titleClassName)}>
-        <span className="text-base">{styles.icon}</span>
+    <div className={cn("cc-markdown-alert", styles.className)}>
+      <div className="cc-markdown-alert-title">
+        {styles.icon}
         <span>{styles.title}</span>
       </div>
-      <div className="[&_p]:!my-0 [&_p]:text-text-primary">
+      <div className="cc-markdown-alert-body">
         {alert.content}
       </div>
     </div>
