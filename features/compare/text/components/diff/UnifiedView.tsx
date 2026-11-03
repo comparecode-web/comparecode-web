@@ -15,7 +15,7 @@ import { CollapsedRow } from "./CollapsedRow";
 import { UI_CONSTANTS } from "@/config/constants";
 import { ComparisonResult } from "@/features/compare/text/types/diff";
 import { useMoveFocus } from "@/features/compare/text/hooks/useMoveFocus";
-import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
+import type { SyntaxLine } from "@/services/syntax/tokenizeSyntax";
 
 export function UnifiedView({ syntax }: { syntax: { left: SyntaxLine[] | null; right: SyntaxLine[] | null } }) {
   const { comparisonResult, selectBlock, mergeBlock, leftText, rightText } = useEditorStore();

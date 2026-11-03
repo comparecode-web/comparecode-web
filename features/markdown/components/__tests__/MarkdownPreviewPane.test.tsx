@@ -117,9 +117,7 @@ flowchart TD
     const table = container.querySelector("table");
     const cells = container.querySelectorAll("tbody td");
 
-    expect(table).toHaveClass("w-auto");
-    expect(table).toHaveClass("table-auto");
-    expect(table).not.toHaveClass("w-full");
+    expect(table?.parentElement).toHaveClass("cc-markdown-table-wrap");
     expect(cells[0]).not.toHaveStyle({ textAlign: "center" });
     expect(cells[1]).toHaveStyle({ textAlign: "center" });
     expect(cells[2]).toHaveStyle({ textAlign: "center" });
@@ -205,8 +203,6 @@ workspace: Local browser draft
 
     expect(screen.getByText("highlighted text").tagName).toBe("MARK");
     expect(screen.getByText("underlines").tagName).toBe("U");
-    expect(screen.getByText("underlines")).toHaveClass("underline");
-    expect(screen.getByText("underlines")).not.toHaveClass("decoration-accent");
     expect(screen.getByText("Ctrl").tagName).toBe("KBD");
   });
 
@@ -267,8 +263,7 @@ Safe content
 
     expect(checkboxes).toHaveLength(2);
     expect(taskItems).toHaveLength(2);
-    expect(taskItems[0]).toHaveClass("list-none");
-    expect(taskItems[1]).toHaveClass("list-none");
+    expect(container.querySelector(".cc-markdown-task-list, ul.contains-task-list")).toBeInTheDocument();
     expect(checkboxes[0]).toBeChecked();
     expect(checkboxes[1]).not.toBeChecked();
     expect(checkboxes[0]).toHaveAttribute("readonly");

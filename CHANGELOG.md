@@ -6,6 +6,38 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+## 2026-11-03
+
+### Added
+
+- **Markdown:** Download the rendered document as HTML or a PNG image, print it or save it as PDF, and copy it as Markdown or formatted text, even from the editor-only view.
+- **Markdown:** Mermaid diagrams can be expanded in a zoomable viewer, copied as an image, and downloaded as PNG or SVG.
+- **Markdown:** Full screen mode hides the navigation and keeps the current Editor, Split, or Preview layout.
+- **Markdown:** Outline panel lists the document headings, jumps to them in the preview and the editor, and copies a table of contents.
+- **Markdown:** Headings get anchors, so links such as `[Intro](#intro)` jump to the matching section.
+- **Markdown:** Ctrl+B, Ctrl+I, Ctrl+K, and Ctrl+E (Cmd on macOS) format the selection as bold, italic, link, or inline code.
+- **Markdown:** Pressing Enter continues bullet, numbered, task, and quote lists, and Tab or Shift+Tab indents and outdents lines. Press Esc, then Tab to leave the editor.
+- **Markdown:** Code blocks show their language and a Copy button, and highlight 21 languages.
+- **Markdown:** The toolbar can insert inline or block math, terminal blocks, collapsible sections, footnotes, and Mermaid diagram templates.
+- **Markdown:** Tables can be inserted by picking a size on an 8 by 8 grid.
+- **Markdown:** The preview shows an estimated reading time.
+
+### Changed
+
+- **Markdown:** Heading levels, text case, and alignment are grouped into compact toolbar menus, with all six heading levels and a Paragraph option.
+- **Markdown:** Inline code is highlighted in a rose red color that stays readable in every theme.
+- **Markdown:** Mermaid diagram boxes, arrow labels, notes, and groups use distinct theme colors, with notes in a highlighter yellow where the theme allows it.
+- **Markdown:** Undo reverts formatting, indentation, and automatic list items separately from the text typed just before them.
+
+### Fixed
+
+- **Markdown:** Footnote links and back links now jump to their targets instead of opening a new tab.
+- **Markdown:** Reference links keep working anywhere in the document.
+- **Markdown:** Sentences that contain a "|" character render as normal paragraphs instead of raw text.
+- **Markdown:** A Mermaid diagram edited while it was rendering no longer keeps showing the previous version.
+- **Markdown:** Code blocks keep the full language name, such as `c++`.
+- **Markdown:** Formatting from the toolbar, keyboard shortcuts, or paste no longer makes the editor or the preview jump to another position.
+
 ## 2026-10-31
 
 ### Added

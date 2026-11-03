@@ -10,7 +10,7 @@ import { BlockHeaderControls } from "./BlockHeaderControls";
 import { DiffFragmentList } from "./DiffFragmentList";
 import { MoveAnnotation } from "./MoveAnnotation";
 import { LINE_CELL_CLASS, LINE_NUMBER_GUTTER_CLASS, getRowContainerClass } from "./rowLayout";
-import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
+import type { SyntaxLine } from "@/services/syntax/tokenizeSyntax";
 import type { CollapsedRowInfo } from "@/features/compare/text/utils/unchangedRegions";
 
 export interface SplitRowData {

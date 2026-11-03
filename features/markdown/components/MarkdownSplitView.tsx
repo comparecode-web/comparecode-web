@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, type RefObject } from "react";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 import { MarkdownPreviewPane } from "./MarkdownPreviewPane";
 import { MarkdownStatsBar } from "./MarkdownStatsBar";
 import { useMarkdownScrollSync } from "@/features/markdown/hooks/useMarkdownScrollSync";
 import { useResizableMarkdownSplit } from "@/features/markdown/hooks/useResizableMarkdownSplit";
+import type { MarkdownHistoryMode } from "@/features/markdown/store/useMarkdownStore";
 import { useMarkdownUIStore } from "@/features/markdown/store/useMarkdownUIStore";
 import { WORKSPACE_MEDIA } from "@/config/responsive";
 import { Button } from "@/components/ui/Button";
 
 interface MarkdownSplitViewProps {
   value: string;
-  onChange: (value: string, options?: { history?: "typing" | "checkpoint" | "skip" }) => void;
+  onChange: (value: string, options?: { history?: MarkdownHistoryMode }) => void;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   onUndo?: () => void;
   onRedo?: () => void;
@@ -20,10 +21,16 @@ interface MarkdownSplitViewProps {
   canRedo?: boolean;
 }
 
-function MarkdownPaneHeader({ title, showStats, value }: { title: string; showStats?: boolean; value: string }) {
+function MarkdownPaneHeader({ title, showStats, value, hintId }: { title: string; showStats?: boolean; value: string; hintId?: string }) {
   return (
     <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border-default bg-bg-secondary px-3 text-xs font-bold text-text-secondary">
-      <span className="min-w-0 truncate">{title}</span>
+      <span className="shrink-0 truncate">{title}</span>
+      {hintId && (
+        <span className="invisible min-w-0 truncate font-semibold group-has-[textarea:focus]/editor:visible">
+          <span id={hintId} className="hidden sm:inline">Esc then Tab to leave the editor</span>
+          <span className="sm:hidden" aria-hidden="true">Esc, Tab to leave</span>
+        </span>
+      )}
       {showStats && (
         <span className="min-w-0 shrink-0 sm:ml-auto">
           <span className="hidden sm:block">
@@ -72,6 +79,7 @@ export function MarkdownSplitView({
   canRedo
 }: MarkdownSplitViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorHintId = useId();
   const previewRef = useRef<HTMLDivElement>(null);
   const [mobileSplitPane, setMobileSplitPane] = useState<"editor" | "preview">("editor");
   const isMobileLayout = useMobileMarkdownLayout();
@@ -95,9 +103,9 @@ export function MarkdownSplitView({
   if (viewMode === "editor") {
     return (
       <div ref={containerRef} className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-primary">
-        <section className="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <section className="group/editor min-h-0 min-w-0 flex-1 overflow-hidden">
           <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-            <MarkdownPaneHeader title="Markdown" showStats value={value} />
+            <MarkdownPaneHeader title="Markdown" showStats value={value} hintId={editorHintId} />
             <MarkdownEditorPane
               value={value}
               onChange={onChange}
@@ -106,6 +114,7 @@ export function MarkdownSplitView({
               onRedo={onRedo}
               canUndo={canUndo}
               canRedo={canRedo}
+              describedById={editorHintId}
             />
           </div>
         </section>
@@ -143,9 +152,9 @@ export function MarkdownSplitView({
             </Button>
           ))}
         </div>
-        <section className="min-h-0 min-w-0 max-w-full flex-1 overflow-hidden">
+        <section className="group/editor min-h-0 min-w-0 max-w-full flex-1 overflow-hidden">
           <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-            <MarkdownPaneHeader title={isEditorPaneVisible ? "Markdown" : "Preview"} showStats value={value} />
+            <MarkdownPaneHeader title={isEditorPaneVisible ? "Markdown" : "Preview"} showStats value={value} hintId={isEditorPaneVisible ? editorHintId : undefined} />
             {isEditorPaneVisible ? (
               <MarkdownEditorPane
                 value={value}
@@ -155,6 +164,7 @@ export function MarkdownSplitView({
                 onRedo={onRedo}
                 canUndo={canUndo}
                 canRedo={canRedo}
+                describedById={editorHintId}
               />
             ) : (
               <MarkdownPreviewPane value={value} previewRef={previewRef} />
@@ -171,9 +181,9 @@ export function MarkdownSplitView({
       className="grid min-h-0 min-w-0 flex-1 overflow-hidden bg-bg-primary"
       style={{ gridTemplateColumns: `${editorPaneWidthPercent}fr 0.5rem ${100 - editorPaneWidthPercent}fr` }}
     >
-      <section className="min-h-0 min-w-0 overflow-hidden border-r border-border-default">
+      <section className="group/editor min-h-0 min-w-0 overflow-hidden border-r border-border-default">
         <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-          <MarkdownPaneHeader title="Markdown" value={value} />
+          <MarkdownPaneHeader title="Markdown" value={value} hintId={editorHintId} />
           <MarkdownEditorPane
             value={value}
             onChange={onChange}
@@ -182,6 +192,7 @@ export function MarkdownSplitView({
             onRedo={onRedo}
             canUndo={canUndo}
             canRedo={canRedo}
+            describedById={editorHintId}
           />
         </div>
       </section>

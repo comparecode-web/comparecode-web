@@ -2,7 +2,7 @@ import { memo } from "react";
 import { DiffChangeType, TextFragment } from "@/features/compare/text/types/diff";
 import { getFragmentColorClass, getFragmentRoundingClass } from "@/features/compare/text/utils/diffHelpers";
 import { cn } from "@/utils/uiHelpers";
-import type { SyntaxLine } from "../../services/syntax/tokenizeSyntax";
+import type { SyntaxLine } from "@/services/syntax/tokenizeSyntax";
 import { SyntaxText } from "./SyntaxText";
 
 interface DiffFragmentListProps {

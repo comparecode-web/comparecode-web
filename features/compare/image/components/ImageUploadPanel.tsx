@@ -7,7 +7,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { ImageFileMeta, useImageCompareStore } from "../store/useImageCompareStore";
 import { useToastStore } from "@/store/useToastStore";
 import { readExifData } from "../utils/exifReader";
-import { canAllocateCanvas } from "../utils/canvasBudget";
+import { canAllocateCanvas } from "@/utils/canvasBudget";
 
 function reportUploadError(message: string) {
   useToastStore.getState().pushToast({ message, tone: "error", dedupeKey: `image-upload-error:${message}` });

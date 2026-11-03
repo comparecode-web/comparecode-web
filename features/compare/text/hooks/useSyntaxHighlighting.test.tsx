@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { defaultSettings } from "@/config/defaults";
 import { TextCompareService } from "../services/TextCompareService";
 import { useSyntaxHighlighting } from "./useSyntaxHighlighting";
-import * as syntax from "../services/syntax/tokenizeSyntax";
+import * as syntax from "@/services/syntax/tokenizeSyntax";
 
 describe("comparison syntax lifecycle", () => {
   const settings = { ...defaultSettings, isSyntaxHighlightingEnabled: true };

@@ -1,81 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { MdAccountTree } from "react-icons/md";
+import { readMermaidThemeVariables, renderMermaidDiagram } from "@/features/markdown/services/markdownMermaidRenderer";
+import { MermaidDiagramToolbar } from "./MermaidDiagramToolbar";
 
 interface MermaidBlockProps {
   chart: string;
+  renderImmediately?: boolean;
 }
 
-function readThemeVariable(name: string, fallback: string): string {
-  if (typeof window === "undefined") {
-    return fallback;
-  }
-
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+interface MermaidRenderResult {
+  key: string;
+  svg: string;
+  failed: boolean;
 }
 
-function getMermaidThemeVariables() {
-  const mermaidBg = readThemeVariable("--markdown-mermaid-bg", "#eef2f7");
-  const mermaidSurface = readThemeVariable("--markdown-mermaid-surface", "#ffffff");
-  const mermaidBorder = readThemeVariable("--markdown-mermaid-border", "#c7d0dc");
+let renderCounter = 0;
 
-  return {
-    background: "transparent",
-    mainBkg: mermaidSurface,
-    secondBkg: mermaidBg,
-    primaryColor: mermaidSurface,
-    primaryTextColor: readThemeVariable("--text-primary", "#24292e"),
-    primaryBorderColor: mermaidBorder,
-    lineColor: readThemeVariable("--text-secondary", "#6b7280"),
-    secondaryColor: mermaidSurface,
-    tertiaryColor: mermaidBg,
-    noteBkgColor: readThemeVariable("--markdown-alert-note-bg", "#dbeafe"),
-    noteTextColor: readThemeVariable("--text-primary", "#24292e"),
-    noteBorderColor: readThemeVariable("--markdown-alert-note-border", "#2563eb"),
-    fontFamily: "ui-sans-serif, system-ui, sans-serif"
-  };
-}
-
-export function MermaidBlock({ chart }: MermaidBlockProps) {
+export function MermaidBlock({ chart, renderImmediately = false }: MermaidBlockProps) {
   const reactId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [svg, setSvg] = useState("");
-  const [error, setError] = useState("");
-  const [isRendering, setIsRendering] = useState(false);
   const [themeVersion, setThemeVersion] = useState(0);
-
-  const renderChart = useCallback(async () => {
-    setIsRendering(true);
-    setError("");
-    const id = `comparecode-mermaid-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}-${themeVersion}`;
-
-    try {
-      const mermaid = (await import("mermaid/dist/mermaid.esm.min.mjs")).default;
-      mermaid.initialize({
-        startOnLoad: false,
-        securityLevel: "strict",
-        suppressErrorRendering: true,
-        theme: "base",
-        themeVariables: getMermaidThemeVariables()
-      });
-
-      const result = await mermaid.render(id, chart);
-
-      setSvg(result.svg);
-    } catch (err) {
-      setSvg("");
-      setError(err instanceof Error ? err.message : "Unable to render Mermaid diagram.");
-    } finally {
-      document.getElementById(`d${id}`)?.remove();
-      setIsRendering(false);
-    }
-  }, [chart, reactId, themeVersion]);
-
-  useEffect(() => {
-    setSvg("");
-    setError("");
-  }, [chart, themeVersion]);
+  const [isVisible, setIsVisible] = useState(renderImmediately);
+  const [result, setResult] = useState<MermaidRenderResult | null>(null);
+  const renderKey = `${themeVersion}\u0000${chart}`;
+  const current = result?.key === renderKey ? result : null;
 
   useEffect(() => {
     if (typeof MutationObserver === "undefined") {
@@ -83,7 +33,7 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
     }
 
     const observer = new MutationObserver(() => {
-      setThemeVersion((current) => current + 1);
+      setThemeVersion((value) => value + 1);
     });
 
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "style"] });
@@ -95,41 +45,19 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
 
   useEffect(() => {
     const element = containerRef.current;
-    if (!element || svg || error || isRendering) {
+    if (isVisible || !element) {
       return;
     }
 
-    let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
-
-    const scheduleRender = () => {
-      if ("requestIdleCallback" in window) {
-        const idleId = window.requestIdleCallback(() => {
-          renderChart();
-        }, { timeout: 1500 });
-
-        return () => window.cancelIdleCallback(idleId);
-      }
-
-      timeoutId = globalThis.setTimeout(() => {
-        renderChart();
-      }, 120);
-
-      return () => {
-        if (timeoutId !== null) {
-          globalThis.clearTimeout(timeoutId);
-        }
-      };
-    };
-
-    if (!("IntersectionObserver" in window)) {
-      return scheduleRender();
+    if (typeof IntersectionObserver === "undefined") {
+      const frameId = globalThis.requestAnimationFrame(() => setIsVisible(true));
+      return () => globalThis.cancelAnimationFrame(frameId);
     }
 
-    let cancelScheduledRender: (() => void) | null = null;
     const observer = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         observer.disconnect();
-        cancelScheduledRender = scheduleRender();
+        setIsVisible(true);
       }
     }, { rootMargin: "240px" });
 
@@ -137,39 +65,81 @@ export function MermaidBlock({ chart }: MermaidBlockProps) {
 
     return () => {
       observer.disconnect();
-      cancelScheduledRender?.();
     };
-  }, [error, isRendering, renderChart, svg]);
+  }, [isVisible]);
 
-  if (error) {
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!isVisible || current || !element) {
+      return;
+    }
+
+    let isCancelled = false;
+    const key = renderKey;
+    const run = () => {
+      renderCounter += 1;
+      const id = `comparecode-mermaid-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}-${renderCounter}`;
+
+      renderMermaidDiagram({ id, chart, themeVariables: readMermaidThemeVariables(element) })
+        .then((svg) => {
+          if (!isCancelled) {
+            setResult({ key, svg, failed: false });
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setResult({ key, svg: "", failed: true });
+          }
+        });
+    };
+
+    if (renderImmediately) {
+      run();
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(run, { timeout: 1500 });
+      return () => {
+        isCancelled = true;
+        window.cancelIdleCallback(idleId);
+      };
+    }
+
+    const timeoutId = globalThis.setTimeout(run, 120);
+    return () => {
+      isCancelled = true;
+      globalThis.clearTimeout(timeoutId);
+    };
+  }, [chart, current, isVisible, reactId, renderImmediately, renderKey]);
+
+  if (current?.failed) {
     return (
-      <div className="rounded-md border border-[var(--markdown-mermaid-border)] bg-[var(--markdown-mermaid-bg)] p-3 text-sm text-text-primary">
-        <pre className="overflow-auto whitespace-pre-wrap font-mono text-xs leading-5 custom-scrollbar">
-          {chart}
-        </pre>
+      <div ref={containerRef} className="cc-markdown-mermaid cc-markdown-mermaid-source" data-mermaid-state="error">
+        <pre className="custom-scrollbar">{chart}</pre>
       </div>
     );
   }
 
-  if (!svg) {
+  if (!current) {
     return (
-      <div ref={containerRef} className="flex flex-col gap-3 rounded-md border border-[var(--markdown-mermaid-border)] bg-[var(--markdown-mermaid-bg)] p-4 text-sm text-text-secondary shadow-sm">
-        <div className="flex items-center gap-2 font-semibold text-text-primary">
-          <MdAccountTree className="text-lg text-accent" />
+      <div ref={containerRef} className="cc-markdown-mermaid cc-markdown-mermaid-pending" data-mermaid-state="pending">
+        <div className="cc-markdown-mermaid-title">
+          <MdAccountTree aria-hidden="true" />
           <span>Mermaid diagram</span>
         </div>
-        <pre className="max-h-56 overflow-auto rounded border border-[var(--markdown-code-border)] bg-[var(--markdown-code-bg)] p-3 font-mono text-xs leading-5 text-text-secondary custom-scrollbar">
-          {chart}
-        </pre>
-        <span className="text-xs font-semibold text-text-secondary">{isRendering ? "Rendering diagram..." : "Diagram will render automatically when visible."}</span>
+        <pre className="custom-scrollbar">{chart}</pre>
+        <span className="cc-markdown-mermaid-status">{isVisible ? "Rendering diagram..." : "Diagram will render automatically when visible."}</span>
       </div>
     );
   }
 
   return (
-    <div
-      className="overflow-auto rounded-md border border-[var(--markdown-mermaid-border)] bg-[var(--markdown-mermaid-bg)] p-4 text-text-primary shadow-sm custom-scrollbar [&_svg]:mx-auto [&_svg]:max-w-full"
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+    <div ref={containerRef} className="cc-markdown-mermaid group/diagram" data-mermaid-state="ready">
+      <MermaidDiagramToolbar svg={current.svg} chart={chart} containerRef={containerRef} />
+      <div className="cc-markdown-mermaid-svg custom-scrollbar" dangerouslySetInnerHTML={{ __html: current.svg }} />
+    </div>
   );
 }
