@@ -6,6 +6,8 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+## 2026-11-03
+
 ### Added
 
 - **Markdown:** Download the rendered document as HTML or a PNG image, print it or save it as PDF, and copy it as Markdown or formatted text, even from the editor-only view.
