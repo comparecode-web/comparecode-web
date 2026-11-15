@@ -3,9 +3,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { prepareZXingModule, readBarcodes } from "zxing-wasm/reader";
+import sharp from "sharp";
 import { buildQrPayload, type QrContent } from "../qrPayload";
-import { createQrSymbol, QR_BORDER } from "../qrImage";
+import { createQrSvg, createQrSymbol, DEFAULT_QR_COLORS, QR_BORDER } from "../qrImage";
 import { describeQrScanContent } from "../qrScanContent";
+import { DEFAULT_QR_STYLE, QR_BORDER_SHAPES, QR_CENTER_SHAPES, QR_MODULE_SHAPES, type QrStyle } from "../qrShapes";
 
 const modulePixels = 4;
 
@@ -50,5 +52,22 @@ describe("QR decoding with an independent reader", () => {
 
     expect(results.map((result) => result.text)).toEqual([payload]);
     expect(describeQrScanContent(results[0].text).fields.map((field) => [field.label, field.value])).toEqual(fields);
+  });
+
+  const styledCases: Array<{ label: string; shape: Partial<QrStyle> }> = [
+    ...QR_MODULE_SHAPES.map((modules) => ({ label: `${modules} modules`, shape: { modules } })),
+    ...QR_BORDER_SHAPES.map((border) => ({ label: `${border} corner border`, shape: { modules: "dots" as const, border, center: border } })),
+    ...QR_CENTER_SHAPES.map((center) => ({ label: `${center} corner center`, shape: { modules: "dots" as const, border: "rounded" as const, center } }))
+  ];
+
+  it.each(styledCases)("reads back the exported SVG with $label at full and small size", async ({ shape }) => {
+    const payload = "https://www.comparecodeweb.com/";
+    const svg = createQrSvg(createQrSymbol(payload, "M"), DEFAULT_QR_COLORS, { ...DEFAULT_QR_STYLE, ...shape });
+
+    for (const size of [512, 160]) {
+      const { data, info } = await sharp(Buffer.from(svg)).resize(size, size).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      const results = await readBarcodes({ width: info.width, height: info.height, data: new Uint8ClampedArray(data), colorSpace: "srgb" } as ImageData, { formats: ["QRCodeModel2"] });
+      expect(results.map((result) => result.text)).toEqual([payload]);
+    }
   });
 });
