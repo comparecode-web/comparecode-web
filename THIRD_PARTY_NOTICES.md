@@ -12,6 +12,8 @@ The Markdown image export uses the MIT-licensed `modern-screenshot` package, whi
 
 The local QR generator uses the MIT-licensed `qrcode` package. Its newly introduced package closure, including the PNG encoder, command-line utilities shipped by the package, and TypeScript declarations, is listed in the license text with its copyright notices and MIT or ISC terms.
 
+The QR scanner uses the MIT-licensed `zxing-wasm` package. Its reader WebAssembly file contains the Apache-2.0 zxing-cpp library and binding code, stb_image under its MIT option, and the Emscripten runtime under its MIT option. These, plus the package's type-only dependencies `type-fest` and `@types/emscripten`, are listed in the license text. The barcode writer and its BSD-licensed zint code are not used.
+
 When updating dependencies or assets, update the affected notices from their upstream license and copyright files. Source URLs and package versions are recorded alongside the texts. The dependency-based collection retains framework and transitive notices together; it is not an assertion that every listed package appears in a browser bundle.
 
 The hosted web application does not distribute sharp/libvips native server binaries to browsers. If a future release ships those binaries in an installer, container, or server archive, that distribution must separately satisfy their LGPL and other license obligations, including applicable corresponding-source and replacement/relinking requirements.

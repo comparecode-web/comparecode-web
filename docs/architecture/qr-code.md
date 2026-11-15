@@ -2,7 +2,7 @@
 
 ## Ownership and route
 
-`app/(workspace)/qr/page.tsx` owns the `/qr` route and its metadata. `features/qr` owns the input forms, payload encoding, QR matrix creation, SVG/PNG rendering, and export. The module does not depend on Text, Image, Markdown, or comparison history. Shared UI controls remain in `components/ui` and `components/settings`.
+`app/(workspace)/qr/page.tsx` owns the `/qr` route and its metadata. `features/qr` owns the input forms, payload encoding, QR matrix creation, SVG/PNG rendering, export, and scanning QR codes from images. The module does not depend on Text, Image, Markdown, or comparison history. Shared UI controls remain in `components/ui` and `components/settings`.
 
 The route renders a server page with the interactive `QrGeneratorView` client component. `NavigationSidebar` and the home page link to the route; `config/seo.ts` and `app/sitemap.ts` describe it to search engines.
 
@@ -11,9 +11,22 @@ Content fields compose shared `Input`, `Textarea` and `FormField`; choice and co
 ## Data flow
 
 1. `QrGeneratorView` holds the active content form and appearance options in page-local React state. The Website form starts with `https://www.comparecodeweb.com/` so a QR preview is ready immediately. Nothing is written to IndexedDB, local storage, session storage, a URL, or an API. Navigating away or reloading restores defaults.
-2. `qrPayload.ts` converts a typed form into one payload string. Website URLs are limited to `http:` and `https:`; text is preserved; Wi-Fi syntax follows the ZXing convention with escaped separators. Unknown runtime content types return an error without producing a payload.
+2. `qrPayload.ts` converts a typed form into one payload string. Website URLs are limited to `http:` and `https:`; text is preserved; Wi-Fi syntax follows the ZXing convention with escaped separators. Email produces a `mailto:` link (RFC 6068) with a simple address check and percent-encoded subject and message, using CRLF line breaks. Phone produces a `tel:` link (RFC 3966) after removing spaces, dots, dashes, and parentheses, and accepts only digits with an optional leading `+`. Unknown runtime content types return an error without producing a payload. `mailto:` and lowercase `tel:` match what Apple documents for the iPhone Camera and what most major generators and libraries emit (checked in November 2026). The built-in Xiaomi scanner shows both as plain text and only recognizes the DoCoMo `MATMSG:` email format, but MATMSG is a minority format with no documented iPhone support, so it is not generated.
 3. `qrImage.ts` passes the payload to the MIT-licensed `qrcode` package. The package selects the version and mask; the user selects the error correction level. Its matrix is the single source for SVG preview, SVG export, and pixel-aligned PNG export.
 4. The preview is a local SVG data URL. Downloads create a Blob URL and release it after the browser starts the download. No remote QR service, redirect, or analytics endpoint is used.
+
+## Scanning
+
+The page header has a "Scan image" button and an icon-only paste button. Ctrl+V anywhere on the page and a page-wide `FileDropZone` start the same scan. A paste into a form field is left alone when the clipboard also holds text, so typing and pasting into inputs keeps working. There is no separate Generate/Scan mode, and the generator state is never touched by a scan.
+
+1. `useQrScanner` owns the scan state. Each new image gets a request number, and results from an older request are ignored. It creates one object URL for the preview and revokes it on the next scan, on close, and on unmount, when it also disposes the worker.
+2. `qrScanner.ts` decodes the image with the browser (so PNG, JPEG, WebP, AVIF, GIF, and sized SVG all work), scales it to at most `SAFE_CANVAS_PIXELS` while creating an `ImageBitmap`, and transfers the bitmap to one lazily created module worker.
+3. `workers/qrScanner.worker.ts` runs the MIT-licensed `zxing-wasm` reader build. The worker draws the bitmap on a white `OffscreenCanvas`, then tries the full size, a 1200-pixel long side, and a denoised 1200-pixel pass, and stops at the first pass that finds a code. It reads only the QR Code model 1 and 2 formats. Micro QR and rMQR stay off until representative fixtures exist.
+4. The WebAssembly file is bundled as a same-origin static asset through `new URL("zxing-wasm/reader/zxing_reader.wasm", import.meta.url)` and resolved against the worker origin, because Turbopack emits a root-relative path and the worker may run from a blob URL. The package's jsDelivr default is never used, and the file is only downloaded on the first scan.
+5. `qrScanContent.ts` recognizes Website, Email, Phone, SMS (`sms:` and `SMSTO:`), Wi-Fi, Contact (vCard and MECARD), Event, Location (`geo:`), and plain text. It only labels and splits fields for display. The raw text is always kept unchanged and is what Copy copies.
+6. `QrScanDialog` shows the image, a status line, and one card per code. Only `http:` and `https:` links get an "Open link" anchor with `target="_blank"` and `rel="noopener noreferrer"`, under the full address and the parsed host. A host with a punycode label gets a neutral note. Nothing opens automatically, and decoded text is rendered as React text, never as HTML.
+
+`utils/clipboardImage.ts` is the shared owner for reading an image from paste events and from `navigator.clipboard.read()`. Image compare uses it too.
 
 ## Invariants
 
@@ -27,10 +40,10 @@ Content fields compose shared `Input`, `Textarea` and `FormField`; choice and co
 - SVG contains only the generated paths and validated colors. User content is encoded in the matrix and never interpolated into SVG markup or HTML.
 - Invalid or oversized content and invalid colors disable downloads and show a clear message. No payload is silently truncated.
 - QR codes are static. Wi-Fi passwords are readable by anyone who obtains the code; the interface states this plainly.
-- The supported content types are Website, Text, and Wi-Fi. Unknown runtime content types cannot produce a code.
+- The supported content types are Website, Text, Wi-Fi, Email, and Phone. Unknown runtime content types cannot produce a code. The type selector shows all five in one row with stacked icons and labels, so it fits narrow screens.
 
 ## Validation
 
-Focused tests under `features/qr` cover payload escaping, unknown content rejection, URL restrictions, independently generated reference matrices for all supported content types, SVG border/markup, exact PNG canvas size and integer pixel boundaries, colors, and UI state. Browser checks cover responsive layout, navigation, input errors, exports, and the absence of network transfer or persistence.
+Focused tests under `features/qr` cover payload escaping, unknown content rejection, URL, email, and phone restrictions, independently generated reference matrices for Website, Text, and Wi-Fi, SVG border/markup, exact PNG canvas size and integer pixel boundaries, colors, and UI state. `qrDecode.test.ts` renders the generated matrix of every supported type and reads it back with the zxing-wasm reader in Node, which checks the payload and its scanned fields with a decoder that is independent of the encoder. Scanner tests cover paste, drop, the paste button, text pastes into fields, non-image files, multiple codes, and link safety. Browser checks cover responsive layout, navigation, input errors, exports, same-origin worker and WebAssembly loading, scans of styled SVG previews and large rotated photos, and the absence of other network transfer or persistence.
 
 Shape changes additionally require independent decoding of exported symbols, PNG/SVG appearance parity, and representative scanning checks. A desktop decoder pass does not establish compatibility with every phone camera. Gradients and transparent backgrounds are deferred; this release keeps the required clear background and border.
