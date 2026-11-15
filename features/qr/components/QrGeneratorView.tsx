@@ -1,17 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageContent } from "@/components/layout/PageContent";
-import { MdDownload, MdLink, MdQrCode2, MdTextFields, MdWifi } from "react-icons/md";
+import { MdContentPaste, MdDownload, MdEmail, MdLink, MdPhone, MdQrCode2, MdQrCodeScanner, MdTextFields, MdWifi } from "react-icons/md";
 import { OptionsSection } from "@/components/settings/OptionsSection";
 import { Button } from "@/components/ui/Button";
 import { ColorInput } from "@/components/ui/ColorInput";
+import { FileDropZone } from "@/components/ui/FileDropZone";
+import { IconButton } from "@/components/ui/IconButton";
 import { SelectionBar } from "@/components/ui/SelectionBar";
 import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import { QrContentFields } from "./QrContentFields";
+import { QrScanDialog } from "./QrScanDialog";
 import { QrShapeOptions } from "./QrShapeOptions";
+import { useQrScanner } from "../hooks/useQrScanner";
+import { useToastStore } from "@/store/useToastStore";
+import { clipboardHasText, getImageFileFromClipboardData, readClipboardImage } from "@/utils/clipboardImage";
+import { isEditableTarget } from "@/utils/workspaceKeyboard";
 import { DEFAULT_QR_STYLE, type QrStyle } from "../services/qrShapes";
 import { downloadBlob } from "@/utils/downloadBlob";
 import { buildQrPayload, DEFAULT_QR_WEBSITE_URL, type QrContent } from "../services/qrPayload";
@@ -30,7 +37,9 @@ type QrContentType = QrContent["type"];
 const contentTypes = [
   { value: "url", label: "Website", icon: <MdLink /> },
   { value: "text", label: "Text", icon: <MdTextFields /> },
-  { value: "wifi", label: "Wi-Fi", icon: <MdWifi /> }
+  { value: "wifi", label: "Wi-Fi", icon: <MdWifi /> },
+  { value: "email", label: "Email", icon: <MdEmail /> },
+  { value: "phone", label: "Phone", icon: <MdPhone /> }
 ] as const;
 
 const pngSizes = [512, 1024, 2048] as const;
@@ -46,6 +55,8 @@ function emptyContent(type: QrContentType): QrContent {
     case "url": return { type, url: DEFAULT_QR_WEBSITE_URL };
     case "text": return { type, text: "" };
     case "wifi": return { type, ssid: "", password: "", security: "WPA", hidden: false };
+    case "email": return { type, to: "", subject: "", body: "" };
+    case "phone": return { type, number: "" };
   }
 }
 
@@ -54,6 +65,8 @@ function hasInput(content: QrContent): boolean {
     case "url": return content.url.length > 0;
     case "text": return content.text.length > 0;
     case "wifi": return content.ssid.length > 0 || content.password.length > 0;
+    case "email": return content.to.length > 0 || content.subject.length > 0 || content.body.length > 0;
+    case "phone": return content.number.length > 0;
   }
 }
 
@@ -65,6 +78,28 @@ export function QrGeneratorView() {
   const [pngTargetSize, setPngTargetSize] = useState<number>(1024);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const scanner = useQrScanner();
+  const scanInputRef = useRef<HTMLInputElement>(null);
+  const pushToast = useToastStore((store) => store.pushToast);
+  const { scan } = scanner;
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      if (event.defaultPrevented) return;
+      const file = getImageFileFromClipboardData(event.clipboardData);
+      if (!file || (isEditableTarget(event.target) && clipboardHasText(event.clipboardData))) return;
+      event.preventDefault();
+      void scan(file);
+    };
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [scan]);
+
+  const pasteImage = async () => {
+    const result = await readClipboardImage();
+    if (result.file) void scan(result.file);
+    else pushToast({ message: result.error, tone: "warning", icon: "warning", dedupeKey: "qr-scan-paste" });
+  };
 
   const payload = useMemo(() => buildQrPayload(content), [content]);
   const colorError = getQrStyleError(colors, style);
@@ -100,8 +135,31 @@ export function QrGeneratorView() {
   };
 
   return (
+    <FileDropZone className="flex h-full min-h-0 min-w-0 flex-1" label="Drop an image to scan its QR code" onFilesDrop={(files) => { if (files[0]) void scan(files[0]); }}>
     <PageContent>
-        <PageHeader title="QR code generator" description="Create a static QR code in your browser. Your content is not uploaded or saved." icon={MdQrCode2} />
+        <PageHeader
+          title="QR code generator"
+          description="Create a QR code, or scan one by dropping or pasting an image. Nothing is uploaded or saved."
+          icon={MdQrCode2}
+          actions={(
+            <div className="flex items-center gap-2">
+              <Button variant="outline" leftIcon={<MdQrCodeScanner />} onClick={() => scanInputRef.current?.click()}>Scan image</Button>
+              <IconButton variant="outline" aria-label="Paste image to scan" title="Paste image to scan (Ctrl+V)" onClick={() => void pasteImage()}><MdContentPaste /></IconButton>
+              <input
+                ref={scanInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                aria-label="Image to scan"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (file) void scan(file);
+                }}
+              />
+            </div>
+          )}
+        />
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
           <div className="min-w-0 space-y-5">
@@ -112,8 +170,9 @@ export function QrGeneratorView() {
                 options={[...contentTypes]}
                 value={content.type}
                 onChange={(type) => { updateContent(emptyContent(type)); setPasswordVisible(false); }}
-                className="mt-4 grid grid-cols-3"
-                buttonClassName="min-h-11 min-w-0 px-2"
+                contentLayout="stacked"
+                className="mt-4 grid grid-cols-5"
+                buttonClassName="min-h-14 min-w-0 gap-1 px-1 py-1.5 text-xs sm:text-sm"
               />
               <div className="mt-5"><QrContentFields content={content} onChange={updateContent} passwordVisible={passwordVisible} onPasswordVisibleChange={setPasswordVisible} /></div>
             </section>
@@ -168,5 +227,7 @@ export function QrGeneratorView() {
           </section>
         </div>
       </PageContent>
+      <QrScanDialog state={scanner.state} onClose={scanner.close} onScanFile={(file) => void scan(file)} />
+    </FileDropZone>
   );
 }

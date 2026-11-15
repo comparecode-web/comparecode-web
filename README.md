@@ -34,7 +34,8 @@ When contributing, keep module boundaries strict: implement module-specific chan
 - **Local History:** Store recent comparison history locally in the browser.
 - **Portable History:** Export and import comparison history, embedded images, bookmarks, alignment and merge steps using a versioned JSON backup.
 - **Markdown Download:** Save the current draft as a UTF-8 Markdown file.
-- **QR Code Generator:** Create static QR codes for URLs, text, and Wi-Fi with PNG and SVG exports.
+- **QR Code Generator:** Create static QR codes for URLs, text, Wi-Fi, email, and phone numbers with PNG and SVG exports.
+- **QR Scanner:** Read a QR code from an image you choose, paste, or drop on the page. Decoding runs locally in the browser.
 - **QR Styles:** Customize modules, corner borders and centers with linked or independent colors.
 - **No Account Required:** Core workflows run directly in the browser.
 
@@ -75,10 +76,11 @@ When contributing, keep module boundaries strict: implement module-specific chan
 
 ### QR Code Generator
 
-1. Open **QR code generator** and choose Website, Text, or Wi-Fi.
+1. Open **QR code generator** and choose Website, Text, Wi-Fi, Email, or Phone.
 2. Enter the content and adjust colors, error correction, or PNG size if needed.
 3. Check the preview, then download a PNG or SVG file. The QR code is static, and its content and settings are not saved or sent to a server.
 4. Scan the exported file before sharing or printing it. A Wi-Fi QR code reveals its password to anyone who can scan it.
+5. To read a QR code, click **Scan image**, paste an image with Ctrl+V, or drop it anywhere on the page.
 
 ## 💻 Local Development
 

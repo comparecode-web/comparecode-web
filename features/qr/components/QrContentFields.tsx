@@ -18,7 +18,7 @@ function TextField({ label, value, onChange, placeholder, type = "text" }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: "text" | "password" | "url";
+  type?: "text" | "password" | "url" | "email" | "tel";
 }) {
   return (
     <FormField label={label}>{field => <Input {...field} type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} autoComplete="off" spellCheck={false} />}</FormField>
@@ -47,6 +47,22 @@ export function QrContentFields({ content, onChange, passwordVisible, onPassword
           <Switch label="Hidden network" checked={content.hidden} onChange={(event) => onChange({ ...content, hidden: event.target.checked })} />
           <p className="text-xs leading-5 text-text-secondary">Off: for networks shown in Wi-Fi lists. On: tells supported scanners to connect to a network that does not broadcast its name.</p>
           <p className="text-xs leading-5 text-text-secondary">Anyone who scans or receives this QR code can read the network password.</p>
+        </div>
+      );
+    case "email":
+      return (
+        <div className="grid gap-4">
+          <TextField label="Email address" type="email" value={content.to} onChange={(to) => onChange({ ...content, to })} placeholder="name@example.com" />
+          <TextField label="Subject (optional)" value={content.subject} onChange={(subject) => onChange({ ...content, subject })} placeholder="Hello" />
+          <FormField label="Message (optional)">{field => <Textarea {...field} className="min-h-28" value={content.body} onChange={(event) => onChange({ ...content, body: event.target.value })} placeholder="Write a message" />}</FormField>
+          <p className="text-xs leading-5 text-text-secondary">Scanning opens a new email with these details filled in.</p>
+        </div>
+      );
+    case "phone":
+      return (
+        <div className="grid gap-2">
+          <TextField label="Phone number" type="tel" value={content.number} onChange={(number) => onChange({ ...content, number })} placeholder="+1 202 555 0123" />
+          <p className="text-xs leading-5 text-text-secondary">Add the country code, like +1, so the number works from anywhere. Scanning offers to call it.</p>
         </div>
       );
   }

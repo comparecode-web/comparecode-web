@@ -6,6 +6,15 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+## 2026-11-15
+
+### Added
+
+- **QR code:** Scan a QR code from an image. Choose a file, paste with Ctrl+V or the paste button, or drop the image anywhere on the page. The content is shown with a Copy button, and links open only when you click Open link.
+- **QR code:** Create Email and Phone QR codes.
+- **QR code:** New code shapes: Diamond, Leaf, Vertical bars, Horizontal bars, Plus, and Star. Corners can also be Leaf or Octagon, and corner centers can be Diamond or Star.
+- **Image compare:** Each image slot has a Paste button that loads an image from the clipboard.
+
 ## 2026-11-03
 
 ### Added

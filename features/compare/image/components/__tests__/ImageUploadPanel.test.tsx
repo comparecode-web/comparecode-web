@@ -90,4 +90,31 @@ describe("ImageUploadPanel", () => {
     await waitFor(() => expect(useImageCompareStore.getState().originalImage).toMatchObject({ name: "photo.jpg", width: 100, height: 50 }));
     expect(toastMessages()).toEqual([]);
   });
+
+  describe("paste button", () => {
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, "clipboard");
+    });
+
+    it("loads a clipboard image into the matching side", async () => {
+      const read = vi.fn(async () => [{ types: ["image/png"], getType: vi.fn(async () => new Blob(["png"], { type: "image/png" })) }]);
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: { read } });
+      const { getAllByRole } = render(<ImageUploadPanel />);
+
+      fireEvent.click(getAllByRole("button", { name: "Paste" })[1]);
+
+      await waitFor(() => expect(useImageCompareStore.getState().modifiedImage).toMatchObject({ name: "pasted-image.png", width: 100, height: 50 }));
+      expect(useImageCompareStore.getState().originalImage).toBeNull();
+    });
+
+    it("explains when the clipboard has no image", async () => {
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: { read: vi.fn(async () => [{ types: ["text/plain"], getType: vi.fn() }]) } });
+      const { getAllByRole } = render(<ImageUploadPanel />);
+
+      fireEvent.click(getAllByRole("button", { name: "Paste" })[0]);
+
+      await waitFor(() => expect(toastMessages()).toEqual(["There is no image in the clipboard. Copy an image first."]));
+      expect(useImageCompareStore.getState().originalImage).toBeNull();
+    });
+  });
 });

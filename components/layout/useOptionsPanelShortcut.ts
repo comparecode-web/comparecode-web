@@ -1,20 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  if (target.isContentEditable) {
-    return true;
-  }
-
-  const tag = target.tagName;
-  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-}
+import { isEditableTarget, isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 
 export function useOptionsPanelShortcut(toggleOptionsPanel: () => void) {
   useEffect(() => {
