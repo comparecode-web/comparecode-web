@@ -1,6 +1,6 @@
 "use client";
 
-import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
+import { isEditableTarget, isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 
 import { useEffect, useMemo, useRef } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp, MdKeyboardDoubleArrowDown, MdKeyboardDoubleArrowUp } from "react-icons/md";
@@ -20,7 +20,6 @@ import { cn } from "@/utils/uiHelpers";
 import { IconButton } from "@/components/ui/IconButton";
 import { useToastStore } from "@/store/useToastStore";
 import type { PushToastParams } from "@/store/useToastStore";
-import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
 import { useSyntaxHighlighting } from "../../hooks/useSyntaxHighlighting";
 import { activeIgnorePatterns } from "../../services/diff/comparisonNormalizer";
 import { isComparisonStale } from "../../hooks/useRealtimeCompare";

@@ -18,6 +18,7 @@ import { QrShapeOptions } from "./QrShapeOptions";
 import { useQrScanner } from "../hooks/useQrScanner";
 import { useToastStore } from "@/store/useToastStore";
 import { clipboardHasText, getImageFileFromClipboardData, readClipboardImage } from "@/utils/clipboardImage";
+import { isEditableTarget } from "@/utils/workspaceKeyboard";
 import { DEFAULT_QR_STYLE, type QrStyle } from "../services/qrShapes";
 import { downloadBlob } from "@/utils/downloadBlob";
 import { buildQrPayload, DEFAULT_QR_WEBSITE_URL, type QrContent } from "../services/qrPayload";
@@ -67,10 +68,6 @@ function hasInput(content: QrContent): boolean {
     case "email": return content.to.length > 0 || content.subject.length > 0 || content.body.length > 0;
     case "phone": return content.number.length > 0;
   }
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || target.closest("input, textarea, select") !== null);
 }
 
 export function QrGeneratorView() {

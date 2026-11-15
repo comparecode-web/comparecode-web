@@ -15,8 +15,7 @@ import { useRealtimeCompare } from "@/features/compare/text/hooks/useRealtimeCom
 import { InputView } from "./InputView";
 import { ComparisonView } from "@/features/compare/text/components/diff/ComparisonView";
 import { cn } from "@/utils/uiHelpers";
-import { isEditableTarget } from "@/features/compare/text/utils/keyboard";
-import { isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
+import { isEditableTarget, isWorkspaceShortcutBlocked } from "@/utils/workspaceKeyboard";
 import { readTextCompareFile, TextImportError, TEXT_IMPORT_ACCEPT } from "@/features/compare/text/services/textFileImport";
 import { useToastStore } from "@/store/useToastStore";
 

@@ -20,7 +20,7 @@ function encodeMailtoField(value: string): string {
   return encodeURIComponent(value.replace(/\r?\n/g, "\r\n"));
 }
 
-export function normalizePhoneNumber(value: string): string {
+function normalizePhoneNumber(value: string): string {
   return value.trim().replace(/[\s().-]/g, "");
 }
 
