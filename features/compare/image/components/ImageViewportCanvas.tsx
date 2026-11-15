@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { cn } from "@/utils/uiHelpers";
+import { isEditableTarget } from "@/utils/workspaceKeyboard";
 import { useImageCompareStore } from "../store/useImageCompareStore";
 import {
   DEFAULT_VIEWPORT,
@@ -37,10 +38,6 @@ type Gesture =
 const DIVIDER_STEP = 0.01;
 const DIVIDER_LARGE_STEP = 0.1;
 const KEYBOARD_PAN_RATIO = 0.1;
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
-}
 
 function wheelDelta(event: WheelEvent): number {
   if (event.deltaMode === 1) return event.deltaY * 16;

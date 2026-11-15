@@ -6,7 +6,6 @@ export const QR_CENTER_SHAPES = ["square", "rounded", "circle", "leaf", "octagon
 export type QrModuleShape = typeof QR_MODULE_SHAPES[number];
 export type QrBorderShape = typeof QR_BORDER_SHAPES[number];
 export type QrCenterShape = typeof QR_CENTER_SHAPES[number];
-export type QrEyeShape = QrCenterShape;
 export interface QrStyle {
   modules: QrModuleShape;
   border: QrBorderShape;
@@ -52,7 +51,7 @@ function octagonShape(x: number, y: number, size: number): string {
 }
 
 /** Corner marker part. Mirrored leaves round the other diagonal, so every leaf points toward the code center. */
-export function eyeShape(x: number, y: number, size: number, shape: QrEyeShape, mirrored = false): string {
+export function eyeShape(x: number, y: number, size: number, shape: QrCenterShape, mirrored = false): string {
   switch (shape) {
     case "circle": { const r = size / 2; return `M${x} ${y + r}a${r} ${r} 0 1 0 ${size} 0a${r} ${r} 0 1 0 ${-size} 0Z`; }
     case "leaf": { const r = size * .38; return cornerShape(x, y, size, size, mirrored ? [0, r, 0, r] : [r, 0, r, 0]); }
