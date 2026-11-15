@@ -28,8 +28,8 @@ const tools = [
   },
   {
     href: "/qr", title: "QR code generator", icon: MdQrCode2,
-    description: "Share a link, a note or your Wi-Fi details. Create a code and take it with you.",
-    detail: "Links · Text · Wi-Fi · PNG & SVG",
+    description: "Share a link, a note or your Wi-Fi details. Create a code, or scan one from an image.",
+    detail: "Create · Scan · PNG & SVG",
   },
 ] as const;
 

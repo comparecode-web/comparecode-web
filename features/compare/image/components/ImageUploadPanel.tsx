@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { MdCloudUpload, MdImage, MdClose } from "react-icons/md";
+import { MdCloudUpload, MdImage, MdClose, MdContentPaste } from "react-icons/md";
 import { cn } from "@/utils/uiHelpers";
+import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { ImageFileMeta, useImageCompareStore } from "../store/useImageCompareStore";
 import { useToastStore } from "@/store/useToastStore";
 import { readExifData } from "../utils/exifReader";
 import { canAllocateCanvas } from "@/utils/canvasBudget";
+import { getImageFileFromClipboardData, readClipboardImage } from "@/utils/clipboardImage";
 
 function reportUploadError(message: string) {
   useToastStore.getState().pushToast({ message, tone: "error", dedupeKey: `image-upload-error:${message}` });
@@ -99,15 +101,21 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
   const handleDragLeave = () => setIsDragging(false);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    const items = e.clipboardData.items;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.startsWith("image/")) {
-        const file = items[i].getAsFile();
-        if (file) processFile(file);
-        break;
-      }
-    }
+    const file = getImageFileFromClipboardData(e.clipboardData);
+    if (file) processFile(file);
   }, [processFile]);
+
+  const pasteFromClipboard = async () => {
+    const result = await readClipboardImage();
+    if (result.file) await processFile(result.file);
+    else reportUploadError(result.error);
+  };
+
+  const pasteButton = (
+    <Button variant="outline" size="sm" leftIcon={<MdContentPaste />} onClick={() => void pasteFromClipboard()} className="ml-auto">
+      Paste
+    </Button>
+  );
 
   if (image) {
     return (
@@ -116,12 +124,12 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-semibold text-text-secondary">{label}</span>
             <span className={cn("text-xs font-bold shrink-0", dimensionsClassName)}>{`${image.width}x${image.height}`}</span>
+            {pasteButton}
             <IconButton
               variant="danger"
               size="sm"
               onClick={onClear}
               title={`Clear ${label.toLowerCase()} image`}
-              className="ml-auto"
             >
               <MdClose className="text-lg" />
             </IconButton>
@@ -142,7 +150,10 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 rounded-xl border border-border-default bg-bg-primary p-4 shadow-sm">
-      <span className="text-xs font-semibold text-text-secondary">{label}</span>
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="text-xs font-semibold text-text-secondary">{label}</span>
+        {pasteButton}
+      </div>
       <div
         role="button"
         tabIndex={0}
@@ -169,7 +180,7 @@ function ImageUploadSlot({ label, image, onImageLoad, onClear }: ImageUploadSlot
         </div>
         <div className="text-center">
           <p className="text-sm font-semibold text-text-primary">Drop image here</p>
-          <p className="text-xs text-text-secondary mt-0.5">or click to browse · paste from clipboard</p>
+          <p className="text-xs text-text-secondary mt-0.5">or click to browse</p>
         </div>
         <p className="text-xs text-text-secondary">PNG, JPG, GIF, WebP, BMP, AVIF</p>
       </div>

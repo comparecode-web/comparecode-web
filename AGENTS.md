@@ -2,7 +2,7 @@
 
 ## Project Snapshot
 
-- CompareCode is a free and open-source, local-first browser application for comparing text, code, and images, editing Markdown, and generating QR codes.
+- CompareCode is a free and open-source, local-first browser application for comparing text, code, and images, editing Markdown, and generating and scanning QR codes.
 - The stack is Next.js, React, TypeScript, Tailwind CSS, Zustand, Vitest, Testing Library, Dexie, and IndexedDB.
 - `package.json` is the source of truth for available commands and dependency versions.
 - Deployed application versions use UTC in `YYYYMMDD.HHmm` format, displayed as `Version 20261008.1510` without a timezone or commit suffix. Generate them only through the deployment build; never bump them manually or regenerate them on startup. See [deployment versioning](docs/deployment-versioning.md).
@@ -70,7 +70,7 @@
 - Use `$comparecode-text-compare` for text input, diff calculation or rendering, merge behavior, block navigation, text settings, or text-history restoration.
 - Use `$comparecode-image-compare` for image upload, comparison modes, canvas rendering, diff algorithms, alignment, metadata, or image-history restoration.
 - Use `$comparecode-markdown` for Markdown editing, preview rendering, formatting, paste, import, scroll sync, session history, or Markdown persistence.
-- Use `$comparecode-qr` for QR content inputs, payload encoding, symbol generation, preview, PNG/SVG export, or QR-specific validation.
+- Use `$comparecode-qr` for QR content inputs, payload encoding, symbol generation, preview, PNG/SVG export, scanning QR codes from images, or QR-specific validation.
 - Use `$comparecode-git-workflow` for branch, staging, commit, changelog, release, push, fork, pull-request title, or pull-request description work.
 - Use `$comparecode-code-review` for code reviews, pull-request reviews, diff audits, or pre-merge assessments.
 - Use `$comparecode-clarify-open-questions` when material requirements remain unresolved or the user explicitly asks for questions, options, or a recommendation before implementation.

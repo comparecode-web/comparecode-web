@@ -1,6 +1,6 @@
 ---
 name: comparecode-qr
-description: Implement or review CompareCode QR content inputs, payload encoding, symbol generation, preview, PNG/SVG export, or QR-specific validation.
+description: Implement or review CompareCode QR content inputs, payload encoding, symbol generation, preview, PNG/SVG export, scanning QR codes from images, or QR-specific validation.
 ---
 
 # CompareCode QR
@@ -14,7 +14,7 @@ Read `docs/architecture/qr-code.md` before changing QR code. Its supported conte
 ## Workflow
 
 1. Inspect the `/qr` route, the affected component or service, its direct callers, and the nearest tests.
-2. Keep content encoding in `features/qr/services/qrPayload.ts` and matrix, color, SVG, and PNG behavior in `features/qr/services/qrImage.ts`. Keep page-local UI state in the generator component; do not add persistence or network calls without a separate product decision.
+2. Keep content encoding in `features/qr/services/qrPayload.ts` and matrix, color, SVG, and PNG behavior in `features/qr/services/qrImage.ts`. Keep image decoding in `qrScanner.ts` and its worker, and scanned-content labeling in `qrScanContent.ts`. Never change the raw scanned text or open a link without a click. Keep page-local UI state in the generator component; do not add persistence or network calls without a separate product decision.
 3. Preserve one generated symbol as the source for preview and both exports. Keep the four-module clear border, exact PNG dimensions, and validated colors. Never interpolate raw user content into SVG markup.
 4. Reject unsupported content safely before symbol generation. Check the architecture contract before exposing a new content type or claiming scanner compatibility.
 5. Use `$comparecode-ui-components` when shared controls change and `$comparecode-browser-testing` for visible, responsive, or download behavior.

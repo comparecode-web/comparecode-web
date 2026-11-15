@@ -81,7 +81,7 @@ export const markdownMetadata = createPageMetadata({
 export const qrMetadata = createPageMetadata({
   path: "/qr",
   title: "Free QR Code Generator - Create PNG and SVG Codes | CompareCode",
-  description: "Create static QR codes for websites, text, and Wi-Fi in your browser. Customize colors and error correction, then download PNG or SVG without uploading content."
+  description: "Create static QR codes for websites, text, Wi-Fi, email, and phone numbers, or scan a QR code from an image. Everything runs in your browser without uploading content."
 });
 
 export const settingsMetadata = createPageMetadata({
@@ -114,6 +114,7 @@ export const softwareApplicationJsonLd = {
     "Local comparison history",
     "Merge controls",
     "Image alignment",
-    "QR code generation"
+    "QR code generation",
+    "QR code scanning from images"
   ]
 };
