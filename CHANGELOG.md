@@ -6,6 +6,10 @@ Add entries under "Unreleased" in the same commit as the change. Use the categor
 
 ## Unreleased
 
+### Changed
+
+- **Home:** FAQ explains local comparison processing, free access, browser-local history, and transferring backups between browsers or devices.
+
 ## 2026-11-15
 
 ### Added

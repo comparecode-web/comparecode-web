@@ -40,20 +40,20 @@ const workspaceLinks = [
 
 const faq: FaqItem[] = [
   {
-    question: "Is CompareCode free? Do I need an account?",
-    answer: "Yes, all tools are free to use. You don’t need an account or a subscription. Just choose a tool and get started.",
+    question: "Are my text and images uploaded?",
+    answer: "No. Text and image comparisons run locally in your browser. Your comparison content is not uploaded to a server for processing.",
   },
   {
-    question: "Is CompareCode just for code?",
-    answer: "No. You can compare everyday text too, like notes, lists or two drafts of the same message. There are also tools for comparing images, writing Markdown and creating QR codes.",
+    question: "Is CompareCode free to use?",
+    answer: "Yes. All tools are free and open source. No account or subscription is required.",
   },
   {
-    question: "Are my files uploaded to a server?",
-    answer: "No. Text and image comparisons run in your browser. The content you choose isn’t uploaded to a server for comparison.",
+    question: "Where are my comparisons saved?",
+    answer: "Saved comparisons are stored in this browser on this device. Open History to revisit them. Clearing this site's browser data removes saved history, so export a backup if you want to keep it.",
   },
   {
-    question: "Can I reopen a comparison later?",
-    answer: "Yes. Open History in the same browser to find your saved comparisons. Clearing this site’s browser data removes them, so use Export history if you’d like to keep a backup.",
+    question: "Can I move my history to another browser or device?",
+    answer: "Yes. Use Export history to download a backup, then import it into CompareCode in the other browser or on the other device. History does not sync automatically.",
   },
 ];
 
@@ -113,10 +113,10 @@ function Questions() {
   return (
     <section className={styles.questions}>
       <div className={styles.questionsIntro}>
-        <span className={styles.eyebrow}>A little help getting started</span>
-        <h2>Glad you’re here.<br />Got a question?</h2>
-        <p>Here are a few things you might be wondering. We hope you feel right at home.</p>
-        <a href={`${PROJECT_LINKS.github}/issues`} target="_blank" rel="noopener noreferrer">Have an idea? Let us know <Arrow /></a>
+        <span className={styles.eyebrow}>Good to know</span>
+        <h2>Frequently asked questions</h2>
+        <p>Learn how CompareCode handles your files and saves your work.</p>
+        <a href={`${PROJECT_LINKS.github}/issues`} target="_blank" rel="noopener noreferrer">Report a bug or suggest a feature <Arrow /></a>
       </div>
       <FaqAccordion items={faq} />
     </section>
